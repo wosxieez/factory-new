@@ -1,0 +1,61 @@
+{
+  "name": "xiaomei",
+  "productName": "xiaomei",
+  "version": "0.0.1",
+  "private": true,
+  "homepage": ".",
+  "author": "合肥小木软件有限公司",
+  "description": "小美收银管理平台",
+  "main": "src/index.js",
+  "build": {
+    "appId": "com.xiaomu.xiaomei",
+    "copyright": "coco",
+    "productName": "xiaomei",
+    "publish": {
+      "provider": "generic",
+      "url": "https://ixiaomu.cn/xiaomei/"
+    }
+  },
+  "dependencies": {
+    "antd": "^3.26.7",
+    "axios": "^0.18.0",
+    "bizcharts": "^3.5.6",
+    "md5": "^2.2.1",
+    "qrcode.react": "^1.0.0",
+    "react": "^16.12.0",
+    "react-dnd": "^10.0.2",
+    "react-dnd-html5-backend": "^10.0.2",
+    "react-dom": "^16.12.0",
+    "react-loadable": "^5.5.0",
+    "react-router-dom": "^4.3.1",
+    "uuid": "^7.0.2",
+    "xlsx": "^0.15.6"
+  },
+  "scripts": {
+    "analyze": "source-map-explorer 'build/static/js/*.js'",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "devDependencies": {
+    "antd-dayjs-webpack-plugin": "^0.0.8",
+    "babel-plugin-import": "^1.13.0",
+    "customize-cra": "^0.9.1",
+    "less": "^3.10.3",
+    "less-loader": "^5.0.0",
+    "react-app-rewire-compression-plugin": "^1.0.0",
+    "react-app-rewire-uglifyjs": "^0.1.1",
+    "react-app-rewired": "^2.1.5",
+    "react-scripts": "^3.3.1",
+    "webpack-ant-icon-loader": "^1.0.8"
+  }
+}
