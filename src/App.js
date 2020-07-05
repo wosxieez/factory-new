@@ -1,6 +1,6 @@
 import React, { useReducer } from 'react'
 import { HashRouter, Route } from 'react-router-dom'
-import LoginView from './view/LoginView.jsx'
+import MainView from './view/MainView.jsx'
 
 //------------------------------------------------------------------------------------------------------------
 // 全局状态管理
@@ -16,7 +16,7 @@ export default () => {
     <AppContext.Provider value={reducer}>
       <HashRouter>
         <div style={{ width: '100%', height: '100%' }}>
-          <Route path='/' exact component={LoginView} />
+          <Route path='/' exact component={MainView} />
         </div>
       </HashRouter>
     </AppContext.Provider>
