@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react'
 import { Breadcrumb, Col, Row, Button, List, Avatar, Icon, Modal, message, Menu, Dropdown } from 'antd'
-import AddForm from './AddForm'
-import UpdateForm from './UpdateForm'
 
 import api from '../../http'
 import { useEffect, useCallback } from 'react'
+import AddForm from './AddFrom';
+import UpdateForm from './UpdateForm';
 const { confirm } = Modal
 
 
@@ -15,32 +15,32 @@ export default () => {
   const updateForm = useRef()
 
   const [dataSource, setDataSource] = useState([])
-  const [departments, setDepartments] = useState([])
+  const [Tags, setTags] = useState([])
   const [listIsLoading, setListIsLoading] = useState(false)
   const [currentItem, setCurrentItem] = useState({})
 
   const listData = useCallback(async () => {
     setListIsLoading(true)
-    const response = await api.listDepartment(departments.length > 0 ? departments[departments.length - 1].id : null)
+    const response = await api.listTag(Tags.length > 0 ? Tags[Tags.length - 1].id : null)
     if (response.code === 0) {
       setDataSource(response.data)
       setListIsLoading(false)
     }
-  }, [departments])
+  }, [Tags])
 
   const addData = useCallback(
     async data => {
-      if (departments.length > 0) data.did = departments[departments.length - 1].id
-      const response = await api.addDepartment(data)
+      if (Tags.length > 0) data.tid = Tags[Tags.length - 1].id
+      const response = await api.addTag(data)
       if (response.code === 0) {
         setIsAdding(false)
         listData()
       }
     },
-    [departments, listData]
+    [Tags, listData]
   )
 
-  const deleteDepartment = useCallback((item) => {
+  const deleteTag = useCallback((item) => {
     confirm({
       title: `确定删除【${item.name}】吗？`,
       content: '请慎重选择',
@@ -48,24 +48,24 @@ export default () => {
       okType: 'danger',
       cancelText: '取消',
       onOk: async () => {
-        let result = await api.removeDepartment(item.id)
-        if (result.code === 0) { message.success('删除成功', 3); listData(departments) }
+        let result = await api.removeTag(item.id)
+        if (result.code === 0) { message.success('删除成功', 3); listData(Tags) }
       },
       onCancel() {
         console.log('Cancel');
       },
     });
-  }, [departments, listData])
+  }, [Tags, listData])
 
   const updateData = useCallback(async (data) => {
-    let result = await api.updateDepartment({ id: currentItem.id, ...data })
-    if (result.code === 0) { message.success('修改成功', 3); setIsUpdating(false); listData(departments) }
-  }, [currentItem.id, departments, listData])
+    let result = await api.updateTag({ id: currentItem.id, ...data })
+    if (result.code === 0) { message.success('修改成功', 3); setIsUpdating(false); listData(Tags) }
+  }, [currentItem.id, Tags, listData])
 
   useEffect(() => {
     listData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [departments])
+  }, [Tags])
 
   return (
     <div style={styles.root}>
@@ -81,9 +81,9 @@ export default () => {
       <Row type='flex' align='middle'>
         <Col span={16}>
           <Breadcrumb style={styles.breadcrumb}>
-            <Breadcrumb.Item><a onClick={(e) => { setDepartments([]) }}>中国节能</a></Breadcrumb.Item>
-            {departments.map((department, index) => (
-              <Breadcrumb.Item key={index}><a onClick={(e) => { setDepartments(departments.slice(0, index + 1)) }}>{department.name}</a></Breadcrumb.Item>
+            <Breadcrumb.Item><a onClick={(e) => { setTags([]) }}>中国节能</a></Breadcrumb.Item>
+            {Tags.map((Tag, index) => (
+              <Breadcrumb.Item key={index}><a onClick={(e) => { setTags(Tags.slice(0, index + 1)) }}>{Tag.name}</a></Breadcrumb.Item>
             ))}
           </Breadcrumb>
         </Col>
@@ -96,13 +96,13 @@ export default () => {
             <List.Item style={styles.listItem}>
               <List.Item.Meta
                 onClick={() => {
-                  const newDepartments = [...departments, item]
-                  setDepartments(newDepartments)
+                  const newTags = [...Tags, item]
+                  setTags(newTags)
                 }}
                 avatar={<Avatar style={styles.avatar} >{item.name}</Avatar>}
                 title={item.name} description={item.remark} />
               <div style={styles.icon_more}>
-                <Dropdown overlay={<Menu style={{ padding: 10 }} onClick={(e) => { if (e.key === '2') { deleteDepartment(item) } else { setCurrentItem(item); setIsUpdating(true) } }}>
+                <Dropdown overlay={<Menu style={{ padding: 10 }} onClick={(e) => { if (e.key === '2') { deleteTag(item) } else { setCurrentItem(item); setIsUpdating(true) } }}>
                   <Menu.Item key='1'><span style={{ color: '#1890ff' }}><Icon type="edit" />修改</span></Menu.Item>
                   <Menu.Divider />
                   <Menu.Item key='2'><span style={{ color: '#f5222d' }}><Icon type="delete" />删除</span></Menu.Item>
@@ -116,7 +116,7 @@ export default () => {
       />
       <AddForm
         ref={addForm}
-        title='新增部门'
+        title='新增标签'
         visible={isAdding}
         onCancel={setIsAdding.bind(this, false)}
         onOk={() => {
@@ -128,7 +128,7 @@ export default () => {
       <UpdateForm
         data={currentItem}
         ref={updateForm}
-        title='修改部门'
+        title='修改标签'
         visible={isUpdating}
         onCancel={setIsUpdating.bind(this, false)}
         onOk={() => {

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Modal, Form, Input } from 'antd'
 
-const AddFrom = Form.create({ name: 'from' })(props => {
+const AddForm = Form.create({ name: 'form' })(props => {
   return (
     <Modal {...props} >
       <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
@@ -16,4 +16,4 @@ const AddFrom = Form.create({ name: 'from' })(props => {
   )
 })
 
-export default AddFrom
+export default AddForm
