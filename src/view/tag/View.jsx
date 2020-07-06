@@ -118,10 +118,10 @@ export default () => {
         ref={addForm}
         title='新增标签'
         visible={isAdding}
-        onCancel={setIsAdding.bind(this, false)}
+        onCancel={() => { addForm.current.resetFields(); setIsAdding(false) }}
         onOk={() => {
           addForm.current.validateFields(async (error, data) => {
-            if (!error) addData(data)
+            if (!error) { addData(data); addForm.current.resetFields(); }
           })
         }}
       />
@@ -130,7 +130,7 @@ export default () => {
         ref={updateForm}
         title='修改标签'
         visible={isUpdating}
-        onCancel={setIsUpdating.bind(this, false)}
+        onCancel={() => { updateForm.current.resetFields(); setIsUpdating(false) }}
         onOk={() => {
           updateForm.current.validateFields(async (error, data) => {
             if (!error) updateData(data)
