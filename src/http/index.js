@@ -40,6 +40,11 @@ const api = {
   listTag: tid => axios.post(SERVER_URL + 'listTag', { tid }, { headers: { token: thisToken } }),
   updateTag: params => axios.post(SERVER_URL + 'updateTag', params, { headers: { token: thisToken } }),
   removeTag: id => axios.post(SERVER_URL + 'removeTag', { id }, { headers: { token: thisToken } }),
+  /**************************************************员工*******************************************************/
+  addUser: user => axios.post(SERVER_URL + 'addUser', user, { headers: { token: thisToken } }),
+  listUser: did => axios.post(SERVER_URL + 'listUser', { did }, { headers: { token: thisToken } }),
+  updateUser: params => axios.post(SERVER_URL + 'updateUser', params, { headers: { token: thisToken } }),
+  removeUser: id => axios.post(SERVER_URL + 'removeUser', { id }, { headers: { token: thisToken } }),
 }
 
 export default api

@@ -1,6 +1,7 @@
 import React from 'react'
 import DepartmentView from './department/View'
 import TagView from './tag/View'
+import UserView from './user/View'
 import { useEffect } from 'react'
 import api from '../http'
 import { useState } from 'react'
@@ -21,6 +22,7 @@ export default props => {
     login()
   }, [])
 
-  return <div>{ok ? <DepartmentView /> : null}</div>
-  // return <div>{ok ? <TagView /> : null}</div>
+  // return <div>{ok ? <UserView /> : null}</div>
+  // return <div>{ok ? <DepartmentView /> : null}</div>
+  return <div>{ok ? <TagView /> : null}</div>
 }

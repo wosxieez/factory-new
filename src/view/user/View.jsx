@@ -15,32 +15,37 @@ export default () => {
   const updateForm = useRef()
 
   const [dataSource, setDataSource] = useState([])
-  const [Tags, setTags] = useState([])
+  const [Users, setUsers] = useState([])
   const [listIsLoading, setListIsLoading] = useState(false)
   const [currentItem, setCurrentItem] = useState({})
 
   const listData = useCallback(async () => {
     setListIsLoading(true)
-    const response = await api.listTag(Tags.length > 0 ? Tags[Tags.length - 1].id : null)
+    const response = await api.listUser(Users.length > 0 ? Users[Users.length - 1].id : null)
+    const response_dpt = await api.listDepartment(Users.length > 0 ? Users[Users.length - 1].id : null)
+    response.data = response.data.map((item) => { item.type = 'user'; return item })
+    response_dpt.data = response_dpt.data.map((item) => { item.type = 'department'; return item })
+    // console.log('response:', response.data)
+    // console.log('response_dpt:', response_dpt.data)
     if (response.code === 0) {
-      setDataSource(response.data)
+      setDataSource([...response_dpt.data, ...response.data])
       setListIsLoading(false)
     }
-  }, [Tags])
+  }, [Users])
 
   const addData = useCallback(
     async data => {
-      if (Tags.length > 0) data.tid = Tags[Tags.length - 1].id
-      const response = await api.addTag(data)
+      if (Users.length > 0) data.did = Users[Users.length - 1].id
+      const response = await api.addUser(data)
       if (response.code === 0) {
         setIsAdding(false)
         listData()
       }
     },
-    [Tags, listData]
+    [Users, listData]
   )
 
-  const deleteTag = useCallback((item) => {
+  const deleteUser = useCallback((item) => {
     confirm({
       title: `确定删除【${item.name}】吗？`,
       content: '请慎重选择',
@@ -48,24 +53,24 @@ export default () => {
       okType: 'danger',
       cancelText: '取消',
       onOk: async () => {
-        let result = await api.removeTag(item.id)
-        if (result.code === 0) { message.success('删除成功', 3); listData(Tags) }
+        let result = await api.removeUser(item.id)
+        if (result.code === 0) { message.success('删除成功', 3); listData(Users) }
       },
       onCancel() {
         console.log('Cancel');
       },
     });
-  }, [Tags, listData])
+  }, [Users, listData])
 
   const updateData = useCallback(async (data) => {
-    let result = await api.updateTag({ id: currentItem.id, ...data })
-    if (result.code === 0) { message.success('修改成功', 3); setIsUpdating(false); listData(Tags) }
-  }, [currentItem.id, Tags, listData])
+    let result = await api.updateUser({ id: currentItem.id, ...data })
+    if (result.code === 0) { message.success('修改成功', 3); setIsUpdating(false); listData(Users) }
+  }, [currentItem.id, Users, listData])
 
   useEffect(() => {
     listData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Tags])
+  }, [Users])
 
   return (
     <div style={styles.root}>
@@ -81,9 +86,9 @@ export default () => {
       <Row type='flex' align='middle'>
         <Col span={16}>
           <Breadcrumb style={styles.breadcrumb}>
-            <Breadcrumb.Item><a onClick={(e) => { setTags([]) }}>中国节能</a></Breadcrumb.Item>
-            {Tags.map((Tag, index) => (
-              <Breadcrumb.Item key={index}><a onClick={(e) => { setTags(Tags.slice(0, index + 1)) }}>{Tag.name}</a></Breadcrumb.Item>
+            <Breadcrumb.Item><a onClick={(e) => { setUsers([]) }}>中国节能</a></Breadcrumb.Item>
+            {Users.map((User, index) => (
+              <Breadcrumb.Item key={index}><a onClick={(e) => { setUsers(Users.slice(0, index + 1)) }}>{User.name}</a></Breadcrumb.Item>
             ))}
           </Breadcrumb>
         </Col>
@@ -96,27 +101,32 @@ export default () => {
             <List.Item style={styles.listItem}>
               <List.Item.Meta
                 onClick={() => {
-                  const newTags = [...Tags, item]
-                  setTags(newTags)
+                  if (item.type === 'department') {
+                    const newUsers = [...Users, item]
+                    setUsers(newUsers)
+                  }
                 }}
-                avatar={<Avatar style={styles.avatar} >{item.name}</Avatar>}
+                // avatar={<Avatar style={styles.avatar} >{item.name}</Avatar>}
+                avatar={item.type === 'user' ? < Avatar src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" /> :
+                  <Avatar style={styles.avatar} >{item.name}</Avatar>}
                 title={item.name} description={item.remark} />
-              <div style={styles.icon_more}>
-                <Dropdown overlay={<Menu style={{ padding: 10 }} onClick={(e) => { if (e.key === '2') { deleteTag(item) } else { setCurrentItem(item); setIsUpdating(true) } }}>
-                  <Menu.Item key='1'><span style={{ color: '#1890ff' }}><Icon type="edit" />修改</span></Menu.Item>
-                  <Menu.Divider />
-                  <Menu.Item key='2'><span style={{ color: '#f5222d' }}><Icon type="delete" />删除</span></Menu.Item>
-                </Menu>} placement="bottomRight" trigger={['click']}>
-                  <Icon type="more" style={styles.icon_more2} />
-                </Dropdown>
-              </div>
+              {item.type === 'user' ?
+                <div style={styles.icon_more}>
+                  <Dropdown overlay={<Menu style={{ padding: 10 }} onClick={(e) => { if (e.key === '2') { deleteUser(item) } else { setCurrentItem(item); setIsUpdating(true) } }}>
+                    <Menu.Item key='1'><span style={{ color: '#1890ff' }}><Icon type="edit" />修改</span></Menu.Item>
+                    <Menu.Divider />
+                    <Menu.Item key='2'><span style={{ color: '#f5222d' }}><Icon type="delete" />删除</span></Menu.Item>
+                  </Menu>} placement="bottomRight" trigger={['click']}>
+                    <Icon type="more" style={styles.icon_more2} />
+                  </Dropdown>
+                </div> : null}
             </List.Item>
           )
         }}
       />
-      <AddForm
+      < AddForm
         ref={addForm}
-        title='新增标签'
+        title='新增员工'
         visible={isAdding}
         onCancel={() => { addForm.current.resetFields(); setIsAdding(false) }}
         onOk={() => {
@@ -125,10 +135,10 @@ export default () => {
           })
         }}
       />
-      <UpdateForm
+      < UpdateForm
         data={currentItem}
         ref={updateForm}
-        title='修改标签'
+        title='修改员工'
         visible={isUpdating}
         onCancel={() => { updateForm.current.resetFields(); setIsUpdating(false) }}
         onOk={() => {
@@ -137,7 +147,7 @@ export default () => {
           })
         }}
       />
-    </div>
+    </div >
   )
 }
 
@@ -171,6 +181,6 @@ const styles = {
   listItem: {
     cursor: 'pointer'
   },
-  avatar: { backgroundColor: '#f56a00', verticalAlign: 'middle' }
+  avatar: { backgroundColor: '#1890ff', verticalAlign: 'middle' }
 }
 
