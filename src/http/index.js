@@ -45,6 +45,11 @@ const api = {
   listUser: did => axios.post(SERVER_URL + 'listUser', { did }, { headers: { token: thisToken } }),
   updateUser: params => axios.post(SERVER_URL + 'updateUser', params, { headers: { token: thisToken } }),
   removeUser: id => axios.post(SERVER_URL + 'removeUser', { id }, { headers: { token: thisToken } }),
+  /**************************************************仓库*******************************************************/
+  addStore: store => axios.post(SERVER_URL + 'addStore', store, { headers: { token: thisToken } }),
+  listStore: did => axios.post(SERVER_URL + 'listStore', { did }, { headers: { token: thisToken } }),
+  updateStore: params => axios.post(SERVER_URL + 'updateStore', params, { headers: { token: thisToken } }),
+  removeStore: id => axios.post(SERVER_URL + 'removeStore', { id }, { headers: { token: thisToken } }),
 }
 
 export default api

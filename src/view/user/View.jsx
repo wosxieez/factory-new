@@ -123,7 +123,7 @@ export default () => {
           )
         }}
       />
-      < AddForm
+      <AddForm
         ref={addForm}
         title='新增员工'
         visible={isAdding}
@@ -134,7 +134,7 @@ export default () => {
           })
         }}
       />
-      < UpdateForm
+      <UpdateForm
         data={currentItem}
         ref={updateForm}
         title='修改员工'
