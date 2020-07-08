@@ -106,7 +106,6 @@ export default () => {
                     setUsers(newUsers)
                   }
                 }}
-                // avatar={<Avatar style={styles.avatar} >{item.name}</Avatar>}
                 avatar={item.type === 'user' ? < Avatar src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" /> :
                   <Avatar style={styles.avatar} >{item.name}</Avatar>}
                 title={item.name} description={item.remark} />
@@ -131,7 +130,7 @@ export default () => {
         onCancel={() => { addForm.current.resetFields(); setIsAdding(false) }}
         onOk={() => {
           addForm.current.validateFields(async (error, data) => {
-            if (!error) { addData(data); addForm.current.resetFields(); }
+            if (!error) { delete data.confirm_password; addData(data); addForm.current.resetFields() }
           })
         }}
       />
@@ -143,7 +142,7 @@ export default () => {
         onCancel={() => { updateForm.current.resetFields(); setIsUpdating(false) }}
         onOk={() => {
           updateForm.current.validateFields(async (error, data) => {
-            if (!error) updateData(data)
+            if (!error) { delete data.confirm_password; updateData(data) }
           })
         }}
       />

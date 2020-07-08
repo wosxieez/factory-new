@@ -22,7 +22,7 @@ export default props => {
     login()
   }, [])
 
-  // return <div>{ok ? <UserView /> : null}</div>
+  return <div>{ok ? <UserView /> : null}</div>
   // return <div>{ok ? <DepartmentView /> : null}</div>
-  return <div>{ok ? <TagView /> : null}</div>
+  // return <div>{ok ? <TagView /> : null}</div>
 }
