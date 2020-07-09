@@ -5,9 +5,7 @@ import moment from 'moment'
 import AddForm from './AddFrom';
 import UpdateForm from './UpdateForm';
 import { getJsonTree } from '../../util/tool';
-// var node = {};
 var originStoreList;
-// const testData = [{ 'name': 'aa' }, { 'name': 'bb' }, { 'name': 'cc' }, { 'name': 'dd' }].map((item, index) => { item.key = index; return item })
 /**
  * 员工信息表单
  */
@@ -22,7 +20,9 @@ export default props => {
     const [currentItem, setCurrentItem] = useState({})
     const [selectedRowKeys, setSelectedRowKeys] = useState([])
     const [selectedRows, setSelectedRows] = useState([])
-
+    const [searchName, setSearchName] = useState('')
+    const [searchTags, setSearchTags] = useState([])
+    const [searchTime, setSearchTime] = useState([])
     const listStore = useCallback(async () => {
         setIsLoading(true)
         setSelectedRowKeys([])
@@ -121,7 +121,7 @@ export default props => {
                 <Col span={6} >
                     <Row {...rowProps}>
                         <Col span={4}>名称:</Col>
-                        <Col span={20}><Input /></Col>
+                        <Col span={20}><Input allowClear placeholder={'请输入物品名称'} value={searchName} onChange={(e) => { setSearchName(e.target.value) }} /></Col>
                     </Row>
                 </Col>
                 <Col span={6}>
@@ -138,22 +138,24 @@ export default props => {
                             placeholder="请选择标签-支持搜索"
                             treeCheckable={true}
                             showCheckedStrategy={TreeSelect.SHOW_PARENT}
+                            value={searchTags}
+                            onChange={(v) => { setSearchTags(v) }}
                         /></Col>
                     </Row>
                 </Col>
                 <Col span={8}>
                     <Row {...rowProps}>
                         <Col span={6}>入库时间:</Col>
-                        <Col span={18}><DatePicker.RangePicker ranges={{
+                        <Col span={18}><DatePicker.RangePicker value={searchTime} ranges={{
                             '今日': [moment(), moment()],
                             '本月': [moment().startOf('month'), moment().endOf('month')],
-                        }} onChange={(m) => { console.log('m', m) }} /></Col>
+                        }} onChange={(t) => { setSearchTime(t) }} /></Col>
                     </Row>
                 </Col>
                 <Col span={4}>
                     <div style={styles.headerCell}>
-                        <Button type='primary' style={styles.button}>查询</Button>
-                        <Button style={styles.button}>重置</Button>
+                        <Button type='primary' style={styles.button} onClick={() => { console.log(searchTime, searchTags, searchName) }}>查询</Button>
+                        <Button style={styles.button} onClick={() => { setSearchName(''); setSearchTags([]); setSearchTime([]) }}>重置</Button>
                     </div>
                 </Col>
             </Row>
