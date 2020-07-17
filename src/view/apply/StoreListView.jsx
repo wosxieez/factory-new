@@ -14,7 +14,7 @@ export default (props) => {
         response.data = response.data.map((item) => { item.type = 'store'; return item })
         response_tag.data = response_tag.data.map((item) => { item.type = 'tag'; return item })
         ///查询现有的 那些处于待审核 和 审核中的 申请。得到对应的物品的id 和 count -- 对现有的store 数据进行相减
-        const response_order = await api.query(`select * from orders where isdelete = 0 and status in (0,1)`)
+        const response_order = await api.query(`select * from orders where isdelete = 0 and status in (0,1) and type_id = 1`)
         if (response_order.code === 0 && response_order.data[0].length > 0) {
             let orderList = response_order.data[0];
             // console.log('申请列表数据:', orderList)
