@@ -144,8 +144,8 @@ export default () => {
                   item.type === 'user' ? (
                     <Avatar src='https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png' />
                   ) : (
-                    <Avatar style={styles.avatar}>{item.name}</Avatar>
-                  )
+                      <Avatar style={styles.avatar}>{item.name}</Avatar>
+                    )
                 }
                 title={item.name}
                 description={item.remark}
@@ -161,7 +161,9 @@ export default () => {
                             deleteUser(item)
                           } else {
                             setCurrentItem(item)
-                            setIsUpdating(true)
+                            setTimeout(() => {
+                              setIsUpdating(true)
+                            }, 500);
                           }
                         }}>
                         <Menu.Item key='1'>

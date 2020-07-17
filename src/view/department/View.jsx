@@ -143,7 +143,9 @@ export default () => {
                           deleteDepartment(item)
                         } else {
                           setCurrentItem(item)
-                          setIsUpdating(true)
+                          setTimeout(() => {
+                            setIsUpdating(true)
+                          }, 500);
                         }
                       }}>
                       <Menu.Item key='1'>
