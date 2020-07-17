@@ -26,7 +26,11 @@ export default props => {
         onClick={async () => {
           const response = await api.login(username, password)
           if (response.code === 0) {
-            api.setToken(response.token)
+            localStorage.setItem('token', response.token)
+
+            const response2 = await api.getCompany()
+            if (response2.code === 0 && response2.data) localStorage.setItem('cname', response2.data.name)
+
             props.history.push('/main')
           }
         }}>

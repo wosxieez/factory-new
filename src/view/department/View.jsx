@@ -81,30 +81,23 @@ export default () => {
 
   return (
     <div style={styles.root}>
-      <div style={styles.header}>
-        <div>
-          <Avatar style={styles.avatar} icon={<Icon type='apartment' />} />
-          <span style={styles.title}>中国节能</span>
-        </div>
-        <div>
-          <Button style={styles.button} type='primary' icon={'plus'} onClick={setIsAdding.bind(this, true)}></Button>
-        </div>
-      </div>
       <Row type='flex' align='middle'>
         <Col span={16}>
-          <Breadcrumb style={styles.breadcrumb}>
+          <Breadcrumb>
             <Breadcrumb.Item>
               <Button
+                size='small'
                 type='link'
                 onClick={e => {
                   setDepartments([])
                 }}>
-                中国节能
+                {localStorage.getItem('cname')}
               </Button>
             </Breadcrumb.Item>
             {departments.map((department, index) => (
               <Breadcrumb.Item key={index}>
                 <Button
+                  size='small'
                   type='link'
                   onClick={e => {
                     setDepartments(departments.slice(0, index + 1))
@@ -115,8 +108,17 @@ export default () => {
             ))}
           </Breadcrumb>
         </Col>
+        <Col span={8} style={{ textAlign: 'right' }}>
+          <Button
+            style={styles.button}
+            size='small'
+            type='primary'
+            icon={'plus'}
+            onClick={setIsAdding.bind(this, true)}></Button>
+        </Col>
       </Row>
       <List
+        style={{ marginTop: 12 }}
         loading={listIsLoading}
         dataSource={dataSource}
         renderItem={item => {
@@ -135,7 +137,7 @@ export default () => {
                 <Dropdown
                   overlay={
                     <Menu
-                      style={{ padding: 10 }}
+                      style={{ width: 120, textAlign: 'center' }}
                       onClick={e => {
                         if (e.key === '2') {
                           deleteDepartment(item)
@@ -145,17 +147,10 @@ export default () => {
                         }
                       }}>
                       <Menu.Item key='1'>
-                        <span style={{ color: '#1890ff' }}>
-                          <Icon type='edit' />
-                          修改
-                        </span>
+                        <span style={{ color: '#1890ff' }}>修改</span>
                       </Menu.Item>
-                      <Menu.Divider />
                       <Menu.Item key='2'>
-                        <span style={{ color: '#f5222d' }}>
-                          <Icon type='delete' />
-                          删除
-                        </span>
+                        <span style={{ color: '#f5222d' }}>删除</span>
                       </Menu.Item>
                     </Menu>
                   }
@@ -206,11 +201,7 @@ export default () => {
 
 const styles = {
   root: {
-    padding: '0 24px 0 24px'
-  },
-  title: {
-    marginLeft: 10,
-    fontSize: 15
+    padding: '12px 24px 12px 24px'
   },
   header: {
     borderBottomStyle: 'solid',
@@ -225,17 +216,13 @@ const styles = {
     marginLeft: 10
   },
   icon_more: {
-    // backgroundColor: 'red',
     width: 70,
     height: 18,
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'flex-end'
   },
   icon_more2: { fontSize: 18 },
-  breadcrumb: {
-    marginTop: 8
-  },
   listItem: {
     cursor: 'pointer'
   },

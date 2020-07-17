@@ -5,7 +5,7 @@ import MainView from './view/MainView.jsx'
 // 全局状态管理
 //------------------------------------------------------------------------------------------------------------
 const appState = {}
-function appReducer(state, action) { }
+function appReducer(state, action) {}
 export const AppContext = React.createContext(null)
 
 export default () => {
@@ -13,11 +13,6 @@ export default () => {
 
   return (
     <AppContext.Provider value={reducer}>
-      {/* <HashRouter>
-        <div style={{ width: '100%', height: '100%' }}>
-          <Route path='/' exact component={MainView} />
-        </div>
-      </HashRouter> */}
       <MainView />
     </AppContext.Provider>
   )

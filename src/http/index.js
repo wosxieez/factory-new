@@ -4,8 +4,6 @@ import { message } from 'antd'
 const SERVER_URL = 'http://192.168.1.102:3210/'
 // const SERVER_URL = 'http://chengliankeji.cn:3210/'
 
-let thisToken = ''
-
 // 响应拦截器
 axios.interceptors.response.use(
   response => {
@@ -28,33 +26,42 @@ axios.interceptors.response.use(
 )
 
 const api = {
+  query: sql => axios.post(SERVER_URL + 'query', { sql }, { headers: { token: localStorage.getItem('token') } }),
   login: (username, password) => axios.post(SERVER_URL + 'login', { username, password }),
-  setToken: token => {
-    thisToken = token
-  },
-  /**************************************************query*******************************************************/
-  query: sql => axios.post(SERVER_URL + 'query', { sql }, { headers: { token: thisToken } }),
+  /**************************************************公司*******************************************************/
+  getCompany: () => axios.post(SERVER_URL + 'getCompany', {}, { headers: { token: localStorage.getItem('token') } }),
   /**************************************************部门*******************************************************/
-  addDepartment: department => axios.post(SERVER_URL + 'addDepartment', department, { headers: { token: thisToken } }),
-  listDepartment: did => axios.post(SERVER_URL + 'listDepartment', { did }, { headers: { token: thisToken } }),
-  updateDepartment: params => axios.post(SERVER_URL + 'updateDepartment', params, { headers: { token: thisToken } }),
-  removeDepartment: id => axios.post(SERVER_URL + 'removeDepartment', { id }, { headers: { token: thisToken } }),
+  addDepartment: department =>
+    axios.post(SERVER_URL + 'addDepartment', department, { headers: { token: localStorage.getItem('token') } }),
+  listDepartment: did =>
+    axios.post(SERVER_URL + 'listDepartment', { did }, { headers: { token: localStorage.getItem('token') } }),
+  updateDepartment: params =>
+    axios.post(SERVER_URL + 'updateDepartment', params, { headers: { token: localStorage.getItem('token') } }),
+  removeDepartment: id =>
+    axios.post(SERVER_URL + 'removeDepartment', { id }, { headers: { token: localStorage.getItem('token') } }),
   /**************************************************标签*******************************************************/
-  addTag: tag => axios.post(SERVER_URL + 'addTag', tag, { headers: { token: thisToken } }),
-  listTag: tid => axios.post(SERVER_URL + 'listTag', { tid }, { headers: { token: thisToken } }),
-  updateTag: params => axios.post(SERVER_URL + 'updateTag', params, { headers: { token: thisToken } }),
-  removeTag: id => axios.post(SERVER_URL + 'removeTag', { id }, { headers: { token: thisToken } }),
+  addTag: tag => axios.post(SERVER_URL + 'addTag', tag, { headers: { token: localStorage.getItem('token') } }),
+  listTag: tid => axios.post(SERVER_URL + 'listTag', { tid }, { headers: { token: localStorage.getItem('token') } }),
+  updateTag: params =>
+    axios.post(SERVER_URL + 'updateTag', params, { headers: { token: localStorage.getItem('token') } }),
+  removeTag: id => axios.post(SERVER_URL + 'removeTag', { id }, { headers: { token: localStorage.getItem('token') } }),
   /**************************************************员工*******************************************************/
-  addUser: user => axios.post(SERVER_URL + 'addUser', user, { headers: { token: thisToken } }),
-  listUser: did => axios.post(SERVER_URL + 'listUser', { did }, { headers: { token: thisToken } }),
-  updateUser: params => axios.post(SERVER_URL + 'updateUser', params, { headers: { token: thisToken } }),
-  removeUser: id => axios.post(SERVER_URL + 'removeUser', { id }, { headers: { token: thisToken } }),
+  addUser: user => axios.post(SERVER_URL + 'addUser', user, { headers: { token: localStorage.getItem('token') } }),
+  listUser: did => axios.post(SERVER_URL + 'listUser', { did }, { headers: { token: localStorage.getItem('token') } }),
+  updateUser: params =>
+    axios.post(SERVER_URL + 'updateUser', params, { headers: { token: localStorage.getItem('token') } }),
+  removeUser: id =>
+    axios.post(SERVER_URL + 'removeUser', { id }, { headers: { token: localStorage.getItem('token') } }),
   /**************************************************仓库*******************************************************/
-  addStore: store => axios.post(SERVER_URL + 'addStore', store, { headers: { token: thisToken } }),
-  listStore: tid => axios.post(SERVER_URL + 'listStore', { tid }, { headers: { token: thisToken } }),
-  updateStore: params => axios.post(SERVER_URL + 'updateStore', params, { headers: { token: thisToken } }),
-  removeStore: id => axios.post(SERVER_URL + 'removeStore', { id }, { headers: { token: thisToken } }),
-  updateStoreCount: params => axios.post(SERVER_URL + 'updateStoreCount', params, { headers: { token: thisToken } }),
+  addStore: store => axios.post(SERVER_URL + 'addStore', store, { headers: { token: localStorage.getItem('token') } }),
+  listStore: tid =>
+    axios.post(SERVER_URL + 'listStore', { tid }, { headers: { token: localStorage.getItem('token') } }),
+  updateStore: params =>
+    axios.post(SERVER_URL + 'updateStore', params, { headers: { token: localStorage.getItem('token') } }),
+  removeStore: id =>
+    axios.post(SERVER_URL + 'removeStore', { id }, { headers: { token: localStorage.getItem('token') } }),
+  updateStoreCount: params =>
+    axios.post(SERVER_URL + 'updateStoreCount', params, { headers: { token: localStorage.getItem('token') } })
 }
 
 export default api

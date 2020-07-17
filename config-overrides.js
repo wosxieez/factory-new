@@ -11,9 +11,9 @@ module.exports = override(
     }),
     addLessLoader({
         javascriptEnabled: true,
-        modifyVars: {
-            '@border-radius-base': 0
-        },
+        // modifyVars: {
+        //     '@border-radius-base': 0
+        // },
     }),
     addWebpackPlugin(new AntdDayjsWebpackPlugin()),
     (config) => {
