@@ -94,21 +94,23 @@ export default () => {
         <Col span={16}>
           <Breadcrumb style={styles.breadcrumb}>
             <Breadcrumb.Item>
-              <a
+              <Button
+                type='link'
                 onClick={e => {
                   setDepartments([])
                 }}>
                 中国节能
-              </a>
+              </Button>
             </Breadcrumb.Item>
             {departments.map((department, index) => (
               <Breadcrumb.Item key={index}>
-                <a
+                <Button
+                  type='link'
                   onClick={e => {
                     setDepartments(departments.slice(0, index + 1))
                   }}>
                   {department.name}
-                </a>
+                </Button>
               </Breadcrumb.Item>
             ))}
           </Breadcrumb>

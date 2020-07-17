@@ -1,5 +1,4 @@
 import React, { useReducer } from 'react'
-import { HashRouter, Route } from 'react-router-dom'
 import MainView from './view/MainView.jsx'
 
 //------------------------------------------------------------------------------------------------------------
