@@ -1,18 +1,14 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Modal, Form, Input, TreeSelect } from 'antd'
 import api from '../../http'
-import { getJsonTree } from '../../util/tool'
+import { getDepartmentTree } from '../../util/tool'
 
 const UpdateForm = Form.create({ name: 'form' })(props => {
   const [treeData, setTreeData] = useState([])
+
   const listData = useCallback(async () => {
     let result = await api.listAllDepartment()
-    if (result.code === 0) {
-      let treeResult = result.data.map(item => {
-        return { id: item.id, pId: item.dids ? JSON.parse(item.dids)[0] : 0, value: item.id, title: item.name }
-      })
-      setTreeData(getJsonTree(treeResult, 0))
-    }
+    if (result.code === 0) setTreeData(getDepartmentTree(result.data))
   }, [])
   useEffect(() => {
     listData()
@@ -21,7 +17,7 @@ const UpdateForm = Form.create({ name: 'form' })(props => {
   return (
     <Modal {...props}>
       <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
-        <Form.Item label='部门名称' >
+        <Form.Item label='部门名称'>
           {props.form.getFieldDecorator('name', {
             initialValue: props.data.name,
             rules: [{ required: true, message: '请输入部门名称' }]
