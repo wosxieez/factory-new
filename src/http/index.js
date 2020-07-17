@@ -35,6 +35,8 @@ const api = {
     axios.post(SERVER_URL + 'addDepartment', department, { headers: { token: localStorage.getItem('token') } }),
   listDepartment: did =>
     axios.post(SERVER_URL + 'listDepartment', { did }, { headers: { token: localStorage.getItem('token') } }),
+  listAllDepartment: () =>
+    axios.post(SERVER_URL + 'listAllDepartment', {}, { headers: { token: localStorage.getItem('token') } }),
   updateDepartment: params =>
     axios.post(SERVER_URL + 'updateDepartment', params, { headers: { token: localStorage.getItem('token') } }),
   removeDepartment: id =>
@@ -42,6 +44,7 @@ const api = {
   /**************************************************标签*******************************************************/
   addTag: tag => axios.post(SERVER_URL + 'addTag', tag, { headers: { token: localStorage.getItem('token') } }),
   listTag: tid => axios.post(SERVER_URL + 'listTag', { tid }, { headers: { token: localStorage.getItem('token') } }),
+  listAllTag: () => axios.post(SERVER_URL + 'listAllTag', {}, { headers: { token: localStorage.getItem('token') } }),
   updateTag: params =>
     axios.post(SERVER_URL + 'updateTag', params, { headers: { token: localStorage.getItem('token') } }),
   removeTag: id => axios.post(SERVER_URL + 'removeTag', { id }, { headers: { token: localStorage.getItem('token') } }),

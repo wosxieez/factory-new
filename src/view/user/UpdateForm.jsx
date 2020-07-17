@@ -5,25 +5,25 @@ const UpdateForm = Form.create({ name: 'form' })(props => {
     return (
         <Modal {...props} >
             <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
-                <Form.Item label='名称' hasFeedback>
+                <Form.Item label='名称' >
                     {props.form.getFieldDecorator('name', {
                         initialValue: props.data.name,
                         rules: [{ required: true, message: '请输入名称' }]
                     })(<Input placeholder='请输入名称' />)}
                 </Form.Item>
-                <Form.Item label='账号' hasFeedback>
+                <Form.Item label='账号' >
                     {props.form.getFieldDecorator('phone', {
                         initialValue: props.data.phone,
                         rules: [{ required: true, message: '请输入账号' }]
                     })(<Input placeholder='请输入账号' />)}
                 </Form.Item>
-                <Form.Item label='密码' hasFeedback>
+                <Form.Item label='密码' >
                     {props.form.getFieldDecorator('password', {
                         initialValue: props.data.password,
                         rules: [{ required: true, message: '请输入密码' }]
                     })(<Input.Password placeholder='请输入密码' />)}
                 </Form.Item>
-                <Form.Item label='确认密码' hasFeedback>
+                <Form.Item label='确认密码' >
                     {props.form.getFieldDecorator('confirm_password', {
                         initialValue: props.data.password,
                         rules: [{ required: true, message: '请再次输入密码' }, {

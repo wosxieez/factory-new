@@ -1,20 +1,58 @@
-import React from 'react'
-import { Modal, Form, Input } from 'antd'
+import React, { useState, useCallback, useEffect } from 'react'
+import { Modal, Form, Input, TreeSelect } from 'antd'
+import api from '../../http'
+import { getJsonTree } from '../../util/tool'
 
 const UpdateForm = Form.create({ name: 'form' })(props => {
-    return (
-        <Modal {...props} >
-            <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
-                <Form.Item label='名称' hasFeedback>
-                    {props.form.getFieldDecorator('name', {
-                        initialValue: props.data.name,
-                        rules: [{ required: true, message: '请输入名称' }]
-                    })(<Input placeholder='请输入名称' />)}
-                </Form.Item>
-                <Form.Item label='备注'>{props.form.getFieldDecorator('remark', { initialValue: props.data.remark })(<Input.TextArea rows={4} placeholder='选填' />)}</Form.Item>
-            </Form>
-        </Modal>
-    )
+  const [treeData, setTreeData] = useState([])
+  const listData = useCallback(async () => {
+    let result = await api.listAllDepartment()
+    if (result.code === 0) {
+      let treeResult = result.data.map(item => {
+        return { id: item.id, pId: item.dids ? JSON.parse(item.dids)[0] : 0, value: item.id, title: item.name }
+      })
+      setTreeData(getJsonTree(treeResult, 0))
+    }
+  }, [])
+  useEffect(() => {
+    listData()
+  }, [listData])
+
+  return (
+    <Modal {...props}>
+      <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
+        <Form.Item label='部门名称' >
+          {props.form.getFieldDecorator('name', {
+            initialValue: props.data.name,
+            rules: [{ required: true, message: '请输入部门名称' }]
+          })(<Input placeholder='请输入名称' />)}
+        </Form.Item>
+        <Form.Item label='上级部门'>
+          {props.form.getFieldDecorator('dids', {
+            initialValue: props.data.tids || null,
+            rules: [{ required: false, message: '请选择上级部门' }]
+          })(
+            <TreeSelect
+              multiple
+              treeNodeFilterProp='title'
+              showSearch
+              treeData={treeData}
+              style={{ width: '100%' }}
+              dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+              placeholder='请选择标签'
+              treeCheckable={true}
+              showCheckedStrategy={TreeSelect.SHOW_PARENT}
+            />
+          )}
+        </Form.Item>
+        <Form.Item label='备注信息'>
+          {props.form.getFieldDecorator('remark', { initialValue: props.data.remark })(
+            <Input.TextArea rows={4} placeholder='选填' />
+          )}
+        </Form.Item>
+      </Form>
+    </Modal>
+  )
 })
 
 export default UpdateForm

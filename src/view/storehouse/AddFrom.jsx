@@ -19,7 +19,7 @@ const AddForm = Form.create({ name: 'form' })((props) => {
   return (
     <Modal {...props} >
       <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
-        <Form.Item label='名称' hasFeedback>
+        <Form.Item label='名称' >
           {props.form.getFieldDecorator('name', {
             rules: [{ required: true, message: '请输入名称' }]
           })(<Input placeholder='请输入名称' />)}
