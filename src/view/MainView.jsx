@@ -6,11 +6,28 @@ import StoreHouseView from './storehouse/View'
 import ApplyView from './apply/View'
 import ApproveView from './approve/View'
 import { Route, Link, HashRouter, Switch } from 'react-router-dom'
-
 import { useEffect, useState } from 'react'
 import api from '../http'
 
-export default props => {
+const NavigateView = () => {
+  return (
+    <>
+      <Link to='/departmentview'>部门列表</Link>
+      <br />
+      <Link to='/tagview'>标签列表</Link>
+      <br />
+      <Link to='/userview'>用户列表</Link>
+      <br />
+      <Link to='/storeview'>物品列表</Link>
+      <br />
+      <Link to='/applyview'>物品申请</Link>
+      <br />
+      <Link to='/approveview'>申请审批</Link>
+    </>
+  )
+}
+
+export default () => {
   const [ok, setOk] = useState(false)
 
   useEffect(() => {
@@ -25,17 +42,23 @@ export default props => {
 
     login()
   }, [])
-  return <div>{ok ? <>
-    <HashRouter>
-      <Switch>
-        <Route exact path="/ApproveView" component={ApproveView} />
-        <Route exact path="/ApplyView" component={ApplyView} />
-        <Route exact path="/UserView" component={UserView} />
-        <Route exact path="/DepartmentView" component={DepartmentView} />
-        <Route exact path="/TagView" component={TagView} />
-        <Route exact path="/StoreHouseView" component={StoreHouseView} />
-      </Switch>
-    </HashRouter>
-  </> : null}</div>
-
+  return (
+    <div>
+      {ok ? (
+        <>
+          <HashRouter>
+            <Switch>
+              <Route exact path='/' component={NavigateView} />
+              <Route exact path='/approveview' component={ApproveView} />
+              <Route exact path='/applyview' component={ApplyView} />
+              <Route exact path='/userview' component={UserView} />
+              <Route exact path='/departmentview' component={DepartmentView} />
+              <Route exact path='/tagview' component={TagView} />
+              <Route exact path='/storeview' component={StoreHouseView} />
+            </Switch>
+          </HashRouter>
+        </>
+      ) : null}
+    </div>
+  )
 }
