@@ -1,12 +1,10 @@
 import React, { useState, useRef } from 'react'
 import { Breadcrumb, Col, Row, Button, List, Avatar, Icon, Modal, message, Menu, Dropdown } from 'antd'
-
 import api from '../../http'
 import { useEffect, useCallback } from 'react'
 import AddForm from './AddFrom';
 import UpdateForm from './UpdateForm';
 const { confirm } = Modal
-
 
 export default () => {
   const [isAdding, setIsAdding] = useState(false)
@@ -23,6 +21,7 @@ export default () => {
     setListIsLoading(true)
     const response = await api.listTag(Tags.length > 0 ? Tags[Tags.length - 1].id : null)
     if (response.code === 0) {
+      // console.log('response.data:', response.data)
       setDataSource(response.data)
       setListIsLoading(false)
     }

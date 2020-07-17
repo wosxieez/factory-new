@@ -2,41 +2,41 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../../http';
 import { Table, Modal, Button, Icon, Input, message, Row, Col, Alert, Tooltip, DatePicker, Tag, TreeSelect } from 'antd';
 import moment from 'moment'
-import AddForm from './AddFrom';
-import UpdateForm from './UpdateForm';
 import { getJsonTree } from '../../util/tool';
-var originStoreList;
+import OperationView from './OperationView';
+var originOrdersList;
 /**
- * 库品信息表单
+ * 待审批的申请列表
  */
 export default props => {
     const [treeData, setTreeData] = useState([])
     const [isLoading, setIsLoading] = useState(false)
-    const [isAdding, setIsAdding] = useState(false)
+    const [operationVisible, setOperationVisible] = useState(false)
     const [isUpdating, setIsUpdating] = useState(false)
     const addForm = useRef()
     const updateForm = useRef()
-    const [storeList, setStoreList] = useState([])
+    const [storeList, setOrdersList] = useState([])
     const [currentItem, setCurrentItem] = useState({})
     const [selectedRowKeys, setSelectedRowKeys] = useState([])
     const [selectedRows, setSelectedRows] = useState([])
     const [searchName, setSearchName] = useState('')
     const [searchTags, setSearchTags] = useState([])
     const [searchTime, setSearchTime] = useState([])
-    const listStore = useCallback(async () => {
+    const listOrders = useCallback(async () => {
         setIsLoading(true)
         setSelectedRowKeys([])
         setSelectedRows([])
-        let result = await api.listStore()
+        let sql = `select orders.*,order_type.order_name as order_type_name ,major.name as major_name from orders 
+        left join (select * from order_type where isdelete = 0) order_type on orders.type_id = order_type.id
+        left join (select * from major where isdelete = 0) major on orders.major_id = major.id
+        where orders.isdelete = 0
+        `;
+        let result = await api.query(sql)
         if (result.code === 0) {
-            originStoreList = result.data.map((item, index) => { item.key = index; item.icon = 'plus'; return item }).reverse();
-            console.log('originStoreList:', originStoreList)
-            setStoreList(originStoreList)
-        }
-        let result2 = await api.listTag()
-        if (result2.code === 0) {
-            let treeResult = result2.data.map((item) => { return { id: item.id, pId: item.tids ? JSON.parse(item.tids)[0] : 0, value: item.id, title: item.name } })
-            setTreeData(getJsonTree(treeResult, 0))
+            result.data = result.data[0];
+            originOrdersList = result.data.map((item, index) => { item.key = index; return item }).reverse();
+            console.log('originOrdersList:', originOrdersList)
+            setOrdersList(originOrdersList)
         }
         setIsLoading(false)
 
@@ -44,22 +44,12 @@ export default props => {
         // console.log('result3:', result3)
     }, [])
     useEffect(() => {
-        listStore()
-    }, [props.selectNode, listStore])
-    const addData = useCallback(
-        async data => {
-            const response = await api.addStore(data)
-            if (response.code === 0) {
-                setIsAdding(false)
-                listStore()
-            }
-        },
-        [listStore]
-    )
+        listOrders()
+    }, [props.selectNode, listOrders])
     const updateData = useCallback(async (data) => {
-        let result = await api.updateStore({ id: currentItem.id, ...data })
-        if (result.code === 0) { message.success('修改成功', 3); setIsUpdating(false); listStore() }
-    }, [currentItem.id, listStore])
+        let result = await api.updateOrders({ id: currentItem.id, ...data })
+        if (result.code === 0) { message.success('修改成功', 3); setIsUpdating(false); listOrders() }
+    }, [currentItem.id, listOrders])
 
     const batchDelete = useCallback(() => {
         Modal.confirm({
@@ -69,15 +59,17 @@ export default props => {
             okType: 'danger',
             onOk: async function () {
                 let idList = selectedRows.map((item) => item.id)
-                let result = await api.removeStore(idList)
+                // console.log('idList:', idList.join(','))
+                let sql = `update orders set isdelete = 1 where id in (${idList.join(',')})`;
+                let result = await api.query(sql)
                 if (result.code === 0) { message.success('删除成功', 4) }
-                listStore()
+                listOrders()
             },
             onCancel: function () {
                 console.log('onCancel');
             },
         })
-    }, [selectedRows, listStore])
+    }, [selectedRows, listOrders])
 
     const rowSelection = {
         selectedRowKeys,
@@ -87,34 +79,79 @@ export default props => {
         }
     }
     const columns = [
-        { title: '名称', dataIndex: 'name', width: 120, align: 'center', },
         {
-            title: '标签', dataIndex: 'tags',
+            title: '申请时间', dataIndex: 'createdAt', align: 'center', width: 140,
             render: (text, record) => {
-                let tagList = [];
-                if (text && text.length > 0) {
-                    tagList = text.map((item, index) => <Tag key={index} color='#f5222d'>{item.name}</Tag>)
-                }
-                return <div>{tagList}</div>
+                return <div>{text ? moment(text).format('YYYY-MM-DD HH:mm:ss') : ''}</div>
+            }
+        },
+        { title: '单号', dataIndex: 'code', width: 120, align: 'center', },
+        {
+            title: '申请类型', dataIndex: 'order_type_name', width: 120, align: 'center',
+            render: (text, record) => {
+                return <div>{text || '/'}</div>
             }
         },
         {
-            title: '入库时间', dataIndex: 'createdAt', align: 'center', width: 140,
+            title: '所属专业', dataIndex: 'major_name', width: 120, align: 'center',
             render: (text, record) => {
-                return <div>{text ? moment(text).format('YYYY-MM-DD HH:mm:ss') : ''}</div>
+                return <div>{text || '/'}</div>
+            }
+        },
+        {
+            title: '申请人', dataIndex: 'create_user', width: 120, align: 'center',
+            render: (text, record) => {
+                return <div>{text || '/'}</div>
+            }
+        },
+        {
+            title: '申请内容', dataIndex: 'content', align: 'center',
+            render: (text, record) => {
+                let result = JSON.parse(text).map((item, index) => { return <Tag color={'blue'} key={index}>{item.store_name} 数量:{item.count}</Tag> })
+                return <div>{result || '/'}</div>
             }
         },
         {
             title: '备注', dataIndex: 'remark', align: 'center', width: 140,
             render: (text, record) => {
-                return <div>{text || ''}</div>
+                return <div>{text || '/'}</div>
+            }
+        },
+        {
+            title: '当前状态', dataIndex: 'status', width: 140, align: 'center',
+            render: (text, record) => {
+                let result = '/'
+                let color = '#AAAAAA'
+                switch (text) {
+                    case 0:
+                        result = '待审核'
+                        break;
+                    case 1:
+                        result = '审核中'
+                        color = '#2db7f5'
+                        break;
+                    case 2:
+                        result = '通过'
+                        color = '#87d068'
+                        break;
+                    case 3:
+                        result = '拒绝'
+                        color = '#f50'
+                        break;
+                    case 4:
+                        result = '撤销'
+                        break;
+                    default:
+                        break;
+                }
+                return <div>{<Tag color={color}>{result}</Tag> || '/'}</div>
             }
         },
         {
             title: '操作', dataIndex: 'action', width: 80, align: 'center',
             render: (text, record) => {
                 return <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                    <Button type='link' size="small" onClick={() => { setCurrentItem(record); setIsUpdating(true) }}>编辑</Button>
+                    <Button type='link' size="small" onClick={() => { setCurrentItem(record); setOperationVisible(true) }}>处理</Button>
                 </div>
             }
         },
@@ -124,13 +161,13 @@ export default props => {
             <Row gutter={16} {...rowProps}>
                 <Col span={6} >
                     <Row {...rowProps}>
-                        <Col span={4}>名称:</Col>
-                        <Col span={20}><Input allowClear placeholder={'请输入物品名称'} value={searchName} onChange={(e) => { setSearchName(e.target.value) }} /></Col>
+                        <Col span={4}>单号:</Col>
+                        <Col span={20}><Input allowClear placeholder={'请输入单号'} value={searchName} onChange={(e) => { setSearchName(e.target.value) }} /></Col>
                     </Row>
                 </Col>
                 <Col span={6}>
                     <Row {...rowProps}>
-                        <Col span={4}>标签:</Col>
+                        <Col span={4}>专业:</Col>
                         <Col span={20}><TreeSelect
                             allowClear
                             multiple
@@ -139,7 +176,7 @@ export default props => {
                             treeData={treeData}
                             style={{ width: '100%' }}
                             dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                            placeholder="请选择标签-支持搜索"
+                            placeholder="请选择专业"
                             treeCheckable={true}
                             showCheckedStrategy={TreeSelect.SHOW_PARENT}
                             value={searchTags}
@@ -147,9 +184,9 @@ export default props => {
                         /></Col>
                     </Row>
                 </Col>
-                <Col span={8}>
+                <Col span={6}>
                     <Row {...rowProps}>
-                        <Col span={6}>入库时间:</Col>
+                        <Col span={6}>发起时间:</Col>
                         <Col span={18}><DatePicker.RangePicker value={searchTime} ranges={{
                             '今日': [moment(), moment()],
                             '本月': [moment().startOf('month'), moment().endOf('month')],
@@ -166,11 +203,11 @@ export default props => {
         </div>
         <div style={styles.body}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <h3>库品信息</h3>
+                <h3>申请列表</h3>
                 <div>
-                    {selectedRowKeys.length === 0 ? <Button style={styles.button} type="primary" icon={'plus'} onClick={() => { setIsAdding(true) }}>新建</Button> : <Button style={styles.button} type='danger' onClick={batchDelete}>批量删除</Button>}
+                    {selectedRowKeys.length === 0 ? null : <Button style={styles.button} type='danger' onClick={batchDelete}>批量删除</Button>}
                     <Tooltip title='刷新'>
-                        <Icon style={styles.button} type="reload" onClick={() => { listStore() }} />
+                        <Icon style={styles.button} type="reload" onClick={() => { listOrders() }} />
                     </Tooltip>
                 </div>
             </div>
@@ -194,28 +231,7 @@ export default props => {
                     pageSizeOptions: ['10', '50', '100'],
                 }}
             />
-            <AddForm
-                ref={addForm}
-                title='新增物品'
-                visible={isAdding}
-                onCancel={() => { addForm.current.resetFields(); setIsAdding(false) }}
-                onOk={() => {
-                    addForm.current.validateFields(async (error, data) => {
-                        if (!error) { addData(data); addForm.current.resetFields() }
-                    })
-                }} />
-            <UpdateForm
-                data={currentItem}
-                ref={updateForm}
-                title='修改物品'
-                visible={isUpdating}
-                onCancel={() => { updateForm.current.resetFields(); setIsUpdating(false) }}
-                onOk={() => {
-                    updateForm.current.validateFields(async (error, data) => {
-                        if (!error) updateData(data)
-                    })
-                }}
-            />
+            <OperationView visible={operationVisible} record={currentItem} onCancel={() => { setOperationVisible(false) }} onOk={() => { setOperationVisible(false) }} />
         </div>
     </div>)
 }

@@ -1,7 +1,9 @@
 import axios from 'axios'
 import { message } from 'antd'
 // const SERVER_URL = 'http://127.0.0.1:3210/'
-const SERVER_URL = 'http://192.168.1.101:3210/'
+const SERVER_URL = 'http://192.168.1.102:3210/'
+// const SERVER_URL = 'http://chengliankeji.cn:3210/'
+
 let thisToken = ''
 
 // 响应拦截器
@@ -30,6 +32,8 @@ const api = {
   setToken: token => {
     thisToken = token
   },
+  /**************************************************query*******************************************************/
+  query: sql => axios.post(SERVER_URL + 'query', { sql }, { headers: { token: thisToken } }),
   /**************************************************部门*******************************************************/
   addDepartment: department => axios.post(SERVER_URL + 'addDepartment', department, { headers: { token: thisToken } }),
   listDepartment: did => axios.post(SERVER_URL + 'listDepartment', { did }, { headers: { token: thisToken } }),
@@ -47,7 +51,7 @@ const api = {
   removeUser: id => axios.post(SERVER_URL + 'removeUser', { id }, { headers: { token: thisToken } }),
   /**************************************************仓库*******************************************************/
   addStore: store => axios.post(SERVER_URL + 'addStore', store, { headers: { token: thisToken } }),
-  listStore: did => axios.post(SERVER_URL + 'listStore', { did }, { headers: { token: thisToken } }),
+  listStore: tid => axios.post(SERVER_URL + 'listStore', { tid }, { headers: { token: thisToken } }),
   updateStore: params => axios.post(SERVER_URL + 'updateStore', params, { headers: { token: thisToken } }),
   removeStore: id => axios.post(SERVER_URL + 'removeStore', { id }, { headers: { token: thisToken } }),
 }
