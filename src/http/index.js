@@ -54,6 +54,7 @@ const api = {
   listStore: tid => axios.post(SERVER_URL + 'listStore', { tid }, { headers: { token: thisToken } }),
   updateStore: params => axios.post(SERVER_URL + 'updateStore', params, { headers: { token: thisToken } }),
   removeStore: id => axios.post(SERVER_URL + 'removeStore', { id }, { headers: { token: thisToken } }),
+  updateStoreCount: params => axios.post(SERVER_URL + 'updateStoreCount', params, { headers: { token: thisToken } }),
 }
 
 export default api

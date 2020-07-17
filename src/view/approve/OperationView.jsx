@@ -179,8 +179,8 @@ async function updateStoreHandler(record) {
     console.log('目标:', tempList)
     for (let index = 0; index < tempList.length; index++) {
         const element = tempList[index];
-        let result = await api.updateStore({ id: element.store_id, cut: element.count })
-        console.log('修改结果：', result)
+        let result = await api.updateStoreCount({ id: element.store_id, count: -element.cut })
+        console.log('库品数量修改结果：', result)
     }
 }
 const styles = {

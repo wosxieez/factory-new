@@ -85,7 +85,7 @@ export default props => {
             });
         }}>提交</Button>
         <StoreDrawer showDrawer={showDrawer} onClose={() => { setShowDrawer(false) }} isReture={false} selectStore={(store) => {
-            console.log('store:', store)
+            // console.log('store:', store)
             setShowDrawer(false)
             const newData = {
                 key: parseInt(dataSource.length),
@@ -94,7 +94,7 @@ export default props => {
                 max_count: store.count,
                 count: 1
             };
-            console.log('newData:', newData)
+            // console.log('newData:', newData)
             setDataSource([...dataSource, newData])
         }} />
     </div >
