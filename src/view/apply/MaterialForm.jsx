@@ -86,6 +86,13 @@ export default props => {
         }}>提交</Button>
         <StoreDrawer showDrawer={showDrawer} onClose={() => { setShowDrawer(false) }} isReture={false} selectStore={(store) => {
             // console.log('store:', store)
+            let isExisted = false;
+            dataSource.forEach((oldItem) => {
+                if (oldItem.store_id === store.id) {
+                    isExisted = true
+                }
+            })
+            if (isExisted) { message.warning('请勿重复添加相同物料', 3); return }
             setShowDrawer(false)
             const newData = {
                 key: parseInt(dataSource.length),
