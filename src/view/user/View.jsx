@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { Breadcrumb, Col, Row, Button, List, Avatar, Icon, Modal, message, Menu, Dropdown } from 'antd'
+import { Breadcrumb, Col, Row, Button, List, Avatar, Icon, Modal, message, Menu, Dropdown, Tag } from 'antd'
 
 import api from '../../http'
 import { useEffect, useCallback } from 'react'
@@ -30,7 +30,7 @@ export default () => {
       item.type = 'department'
       return item
     })
-    // console.log('response:', response.data)
+    console.log('response:', response.data)
     // console.log('response_dpt:', response_dpt.data)
     if (response.code === 0) {
       setDataSource([...response_dpt.data, ...response.data])
@@ -40,6 +40,8 @@ export default () => {
 
   const addData = useCallback(
     async data => {
+      // console.log('data:', data)
+      // return
       if (Users.length > 0) data.did = Users[Users.length - 1].id
       const response = await api.addUser(data)
       if (response.code === 0) {
@@ -75,6 +77,8 @@ export default () => {
 
   const updateData = useCallback(
     async data => {
+      console.log('data:', data)
+      // return
       let result = await api.updateUser({ id: currentItem.id, ...data })
       if (result.code === 0) {
         message.success('修改成功', 3)
@@ -149,6 +153,7 @@ export default () => {
                 title={item.name}
                 description={item.remark}
               />
+              {item.type === 'user' && item.tags ? <div>{item.tags.map((item, index) => { return <div key={index}><Tag color='blue'>{item.name}</Tag></div> })}</div> : null}
               {item.type === 'user' ? (
                 <div style={styles.icon_more}>
                   <Dropdown
