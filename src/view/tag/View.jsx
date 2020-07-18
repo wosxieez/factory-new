@@ -82,15 +82,6 @@ export default () => {
 
   return (
     <div style={styles.root}>
-      <div style={styles.header}>
-        <div>
-          <Avatar style={styles.avatar} icon={<Icon type='apartment' />} />
-          <span style={styles.title}>中国节能</span>
-        </div>
-        <div>
-          <Button style={styles.button} type='primary' icon={'plus'} onClick={setIsAdding.bind(this, true)}></Button>
-        </div>
-      </div>
       <Row type='flex' align='middle'>
         <Col span={16}>
           <Breadcrumb style={styles.breadcrumb}>
@@ -115,6 +106,14 @@ export default () => {
               </Breadcrumb.Item>
             ))}
           </Breadcrumb>
+        </Col>
+        <Col span={8} style={{ textAlign: 'right' }}>
+          <Button
+            style={styles.button}
+            size='small'
+            type='primary'
+            icon={'plus'}
+            onClick={setIsAdding.bind(this, true)}></Button>
         </Col>
       </Row>
       <List
