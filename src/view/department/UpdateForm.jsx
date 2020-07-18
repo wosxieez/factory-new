@@ -5,15 +5,17 @@ import { getDepartmentTree } from '../../util/tool'
 
 const UpdateForm = Form.create({ name: 'form' })(props => {
   const [treeData, setTreeData] = useState([])
-
   const listData = useCallback(async () => {
     let result = await api.listAllDepartment()
-    if (result.code === 0) setTreeData(getDepartmentTree(result.data))
-  }, [])
+    ///移除当前部门，防止出现父级部门选自己-出现套娃
+    if (result.code === 0) {
+      let afterFilter = result.data.filter((item) => { return item.id !== props.data.id })
+      setTreeData(getDepartmentTree(afterFilter))
+    }
+  }, [props.data])
   useEffect(() => {
     listData()
-  }, [listData])
-
+  }, [props.data, listData])
   return (
     <Modal {...props}>
       <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
@@ -25,18 +27,16 @@ const UpdateForm = Form.create({ name: 'form' })(props => {
         </Form.Item>
         <Form.Item label='上级部门'>
           {props.form.getFieldDecorator('dids', {
-            initialValue: props.data.tids || null,
+            initialValue: props.data.dids ? props.data.dids[0] : null,
             rules: [{ required: false, message: '请选择上级部门' }]
           })(
             <TreeSelect
-              multiple
               treeNodeFilterProp='title'
               showSearch
               treeData={treeData}
               style={{ width: '100%' }}
               dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-              placeholder='请选择标签'
-              treeCheckable={true}
+              placeholder='请选择上级部门'
               showCheckedStrategy={TreeSelect.SHOW_PARENT}
             />
           )}

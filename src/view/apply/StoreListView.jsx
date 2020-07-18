@@ -91,7 +91,6 @@ export default props => {
                     const newStores = [...Stores, item]
                     setStores(newStores)
                   } else if (item.type === 'store') {
-                    console.log('props.isReture:', props.isReture)
                     if (props.isReture) {
                       ///当是 退料表时，不用考虑库存可用是否为0
                       props.selectStore(item)
@@ -108,8 +107,8 @@ export default props => {
                   item.type === 'store' ? (
                     <Avatar src='https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png' />
                   ) : (
-                    <Avatar style={styles.avatar}>{item.name}</Avatar>
-                  )
+                      <Avatar style={styles.avatar}>{item.name}</Avatar>
+                    )
                 }
                 title={item.name}
                 description={item.remark}

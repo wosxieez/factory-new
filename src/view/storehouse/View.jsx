@@ -36,20 +36,14 @@ export default props => {
           return item
         })
         .reverse()
-      console.log('originStoreList:', originStoreList)
       setStoreList(originStoreList)
     }
-    let result2 = await api.listTag()
+    let result2 = await api.listAllTag()
     if (result2.code === 0) {
-      let treeResult = result2.data.map(item => {
-        return { id: item.id, pId: item.tids ? JSON.parse(item.tids)[0] : 0, value: item.id, title: item.name }
-      })
+      let treeResult = result2.data.map((item) => { return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name } })
       setTreeData(getJsonTree(treeResult, 0))
     }
     setIsLoading(false)
-
-    // let result3 = await api.query(`select * from tags`)
-    // console.log('result3:', result3)
   }, [])
   useEffect(() => {
     listStore()
@@ -192,7 +186,6 @@ export default props => {
                   style={{ width: '100%' }}
                   dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                   placeholder='请选择标签-支持搜索'
-                  treeCheckable={true}
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   value={searchTags}
                   onChange={v => {
@@ -257,10 +250,10 @@ export default props => {
                 新建
               </Button>
             ) : (
-              <Button style={styles.button} type='danger' onClick={batchDelete}>
-                批量删除
+                <Button style={styles.button} type='danger' onClick={batchDelete}>
+                  批量删除
               </Button>
-            )}
+              )}
             <Tooltip title='刷新'>
               <Icon
                 style={styles.button}

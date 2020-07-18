@@ -64,6 +64,7 @@ export default () => {
 
   const updateData = useCallback(
     async data => {
+      data.tids = [data.tids]
       let result = await api.updateTag({ id: currentItem.id, ...data })
       if (result.code === 0) {
         message.success('修改成功', 3)

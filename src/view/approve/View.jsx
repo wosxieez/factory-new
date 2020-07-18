@@ -226,7 +226,7 @@ export default props => {
                                     style={{ width: '100%' }}
                                     dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                                     placeholder='请选择专业'
-                                    treeCheckable={true}
+                                    // treeCheckable={true}
                                     showCheckedStrategy={TreeSelect.SHOW_PARENT}
                                     value={searchTags}
                                     onChange={v => {

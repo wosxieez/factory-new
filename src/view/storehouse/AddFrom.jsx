@@ -6,9 +6,11 @@ import { getJsonTree } from '../../util/tool';
 const AddForm = Form.create({ name: 'form' })((props) => {
   const [treeData, setTreeData] = useState([])
   const listData = useCallback(async () => {
-    let result = await api.listTag()
+    let result = await api.listAllTag()
     if (result.code === 0) {
-      let treeResult = result.data.map((item) => { return { id: item.id, pId: item.tids ? JSON.parse(item.tids)[0] : 0, value: item.id, title: item.name } })
+      let treeResult = result.data.map((item) => {
+        return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name }
+      })
       setTreeData(getJsonTree(treeResult, 0))
     }
   }, [])
@@ -37,7 +39,7 @@ const AddForm = Form.create({ name: 'form' })((props) => {
               style={{ width: '100%' }}
               dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
               placeholder="请选择标签-支持搜索"
-              treeCheckable={true}
+              // treeCheckable={true}
               showCheckedStrategy={TreeSelect.SHOW_PARENT}
             />)}
         </Form.Item>
