@@ -64,7 +64,7 @@ export default () => {
 
   const updateData = useCallback(
     async data => {
-      data.tids = [data.tids]
+      data.tids = data.tids ? [data.tids] : data.tids
       let result = await api.updateTag({ id: currentItem.id, ...data })
       if (result.code === 0) {
         message.success('修改成功', 3)
@@ -141,9 +141,7 @@ export default () => {
                           deleteTag(item)
                         } else {
                           setCurrentItem(item)
-                          setTimeout(() => {
-                            setIsUpdating(true)
-                          }, 500);
+                          setIsUpdating(true)
                         }
                       }}>
                       <Menu.Item key='1'>

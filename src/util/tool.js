@@ -56,8 +56,5 @@ export const getDepartmentTree = departments => {
       t.children = getSubDepartmentTree(departments, t)
     })
   }
-
-  console.log(tree)
-
   return tree
 }

@@ -30,8 +30,6 @@ export default () => {
       item.type = 'department'
       return item
     })
-    console.log('response:', response.data)
-    // console.log('response_dpt:', response_dpt.data)
     if (response.code === 0) {
       setDataSource([...response_dpt.data, ...response.data])
       setListIsLoading(false)
@@ -40,8 +38,6 @@ export default () => {
 
   const addData = useCallback(
     async data => {
-      // console.log('data:', data)
-      // return
       if (Users.length > 0) data.did = Users[Users.length - 1].id
       const response = await api.addUser(data)
       if (response.code === 0) {
@@ -77,8 +73,6 @@ export default () => {
 
   const updateData = useCallback(
     async data => {
-      console.log('data:', data)
-      // return
       let result = await api.updateUser({ id: currentItem.id, ...data })
       if (result.code === 0) {
         message.success('修改成功', 3)
@@ -165,9 +159,7 @@ export default () => {
                             deleteUser(item)
                           } else {
                             setCurrentItem(item)
-                            setTimeout(() => {
-                              setIsUpdating(true)
-                            }, 500);
+                            setIsUpdating(true)
                           }
                         }}>
                         <Menu.Item key='1'>

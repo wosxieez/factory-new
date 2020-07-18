@@ -36,7 +36,7 @@ export default props => {
                     return item
                 })
                 .reverse()
-            console.log('originOrdersList:', originOrdersList)
+            // console.log('originOrdersList:', originOrdersList)
             setOrdersList(originOrdersList)
         }
         setIsLoading(false)

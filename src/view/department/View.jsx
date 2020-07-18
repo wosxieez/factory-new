@@ -22,7 +22,6 @@ export default () => {
     setListIsLoading(true)
     const response = await api.listDepartment(departments.length > 0 ? departments[departments.length - 1].id : null)
     if (response.code === 0) {
-      console.log('listDepartment response.data:', response.data)
       setDataSource(response.data)
       setListIsLoading(false)
     }
@@ -65,7 +64,7 @@ export default () => {
 
   const updateData = useCallback(
     async data => {
-      data.dids = [data.dids]
+      data.dids = data.dids ? [data.dids] : data.dids
       let result = await api.updateDepartment({ id: currentItem.id, ...data })
       if (result.code === 0) {
         message.success('修改成功', 3)
@@ -145,9 +144,7 @@ export default () => {
                           deleteDepartment(item)
                         } else {
                           setCurrentItem(item)
-                          setTimeout(() => {
-                            setIsUpdating(true)
-                          }, 500);
+                          setIsUpdating(true)
                         }
                       }}>
                       <Menu.Item key='1'>

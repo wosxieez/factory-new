@@ -20,7 +20,7 @@ const UpdateForm = Form.create({ name: 'form' })(props => {
         listData()
     }, [props.data, listData])
     return (
-        <Modal {...props} >
+        <Modal {...props} destroyOnClose>
             <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
                 <Form.Item label='名称' >
                     {props.form.getFieldDecorator('name', {
