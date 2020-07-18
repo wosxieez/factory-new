@@ -47,9 +47,9 @@ const AddForm = Form.create({ name: 'form' })(props => {
             }]
           })(<Input.Password placeholder='请再次输入密码' />)}
         </Form.Item>
-        <Form.Item label='上级标签'>
+        <Form.Item label='标签'>
           {props.form.getFieldDecorator('tids', {
-            rules: [{ required: false, message: '请选择上级标签' }]
+            rules: [{ required: false, message: '请选择标签' }]
           })(
             <TreeSelect
               treeNodeFilterProp='title'
@@ -58,7 +58,7 @@ const AddForm = Form.create({ name: 'form' })(props => {
               treeData={treeData}
               style={{ width: '100%' }}
               dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-              placeholder='请选择上级标签'
+              placeholder='请选择标签'
               showCheckedStrategy={TreeSelect.SHOW_PARENT}
             />
           )}
