@@ -1,13 +1,14 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Modal, Form, Input, TreeSelect } from 'antd'
 import api from '../../http'
-import { getJsonTree } from '../../util/tool'
+import { getJsonTree, filterTag } from '../../util/tool'
 
 const AddForm = Form.create({ name: 'form' })(props => {
   const [treeData, setTreeData] = useState([])
   const listData = useCallback(async () => {
     let result = await api.listAllTag()
     if (result.code === 0) {
+      result.data = filterTag(result.data, '专业')
       let treeResult = result.data.map((item) => {
         return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name }
       })
@@ -47,9 +48,9 @@ const AddForm = Form.create({ name: 'form' })(props => {
             }]
           })(<Input.Password placeholder='请再次输入密码' />)}
         </Form.Item>
-        <Form.Item label='标签'>
+        <Form.Item label='专业'>
           {props.form.getFieldDecorator('tids', {
-            rules: [{ required: false, message: '请选择标签' }]
+            rules: [{ required: false, message: '请选择专业' }]
           })(
             <TreeSelect
               treeNodeFilterProp='title'
@@ -58,7 +59,7 @@ const AddForm = Form.create({ name: 'form' })(props => {
               treeData={treeData}
               style={{ width: '100%' }}
               dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-              placeholder='请选择标签'
+              placeholder='请选择专业'
               showCheckedStrategy={TreeSelect.SHOW_PARENT}
             />
           )}

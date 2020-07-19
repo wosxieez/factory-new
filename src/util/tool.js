@@ -4,6 +4,7 @@ export const getJsonTree = function (data, pId) {
     let node = data[i]
     if (node.pId === pId) {
       let newNode = {}
+      newNode.selectable = node.pId > 0 ///不让首层treeSelect元素可选
       newNode.key = node.value
       newNode.value = node.value
       newNode.id = node.id
@@ -57,4 +58,22 @@ export const getDepartmentTree = departments => {
     })
   }
   return tree
+}
+
+/**
+ * 过滤Tag
+ * 暂时前端根据名称和tids是否存在过滤
+ * @export
+ * @param {*} tagList 标签数组
+ * @param {String} filterName 需要保留的tag name
+ */
+export function filterTag(tagList, filterName) {
+  if (tagList && tagList.length > 0 && filterName) {
+    return tagList.filter((item) => {
+      if (!item.tids) { return item.name === filterName }
+      else { return true }
+    })
+  } else {
+    return tagList
+  }
 }

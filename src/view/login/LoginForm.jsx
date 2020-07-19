@@ -12,7 +12,7 @@ const LoginForm = Form.create({ name: 'form' })(props => {
                     localStorage.setItem('token', response.token)
                     const response2 = await api.getCompany()
                     if (response2.code === 0 && response2.data) { localStorage.setItem('cname', response2.data.name) }
-                    props.history.push('/main/departmentview')
+                    props.history.push('/main/storeview')
                 } else {
                     message.error(response.data, 3)
                 }

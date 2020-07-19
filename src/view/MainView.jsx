@@ -18,15 +18,20 @@ export default (props) => {
         <span style={{ ...styles.title, visibility: collapsed ? 'hidden' : 'visible' }}>Welcome</span>
       </div>
       <Menu theme="dark" mode="inline" selectedKeys={[props.location.pathname]}>
-        <Menu.Item key="/main/departmentview">
-          <Icon type="apartment" />
-          <span>部门列表</span>
-          <Link to={`${props.match.url}/departmentview`} />
+        <Menu.Item key={'/main/storeview'}>
+          <Icon type="code-sandbox" />
+          <span className="nav-text">物料管理</span>
+          <Link to={`${props.match.url}/storeview`} />
         </Menu.Item>
         <Menu.Item key={'/main/tagview'}>
           <Icon type="tags" />
           <span className="nav-text">标签列表</span>
           <Link to={`${props.match.url}/tagview`} />
+        </Menu.Item>
+        <Menu.Item key="/main/departmentview">
+          <Icon type="apartment" />
+          <span>部门列表</span>
+          <Link to={`${props.match.url}/departmentview`} />
         </Menu.Item>
         <Menu.Item key={'/main/userview'}>
           <Icon type="user" />
@@ -42,11 +47,6 @@ export default (props) => {
           <Icon type="ordered-list" />
           <span className="nav-text">申请审批</span>
           <Link to={`${props.match.url}/approveview`} />
-        </Menu.Item>
-        <Menu.Item key={'/main/storeview'}>
-          <Icon type="code-sandbox" />
-          <span className="nav-text">物料管理</span>
-          <Link to={`${props.match.url}/storeview`} />
         </Menu.Item>
       </Menu>
     </Sider>
