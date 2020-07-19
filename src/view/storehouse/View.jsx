@@ -244,7 +244,6 @@ export default props => {
                 style={styles.button}
                 type='primary'
                 icon={'plus'}
-                size='small'
                 onClick={() => {
                   setIsAdding(true)
                 }}>
