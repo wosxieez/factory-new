@@ -17,7 +17,7 @@ export default (props) => {
         <span style={styles.titleIcon}>{svgs.loginTitle(30, 30, '#FFFFFF')}</span>
         <span style={{ ...styles.title, visibility: collapsed ? 'hidden' : 'visible' }}>Welcome</span>
       </div>
-      <Menu theme="dark" mode="inline">
+      <Menu theme="dark" mode="inline" selectedKeys={[props.location.pathname]}>
         <Menu.Item key="/main/departmentview">
           <Icon type="apartment" />
           <span>部门列表</span>
