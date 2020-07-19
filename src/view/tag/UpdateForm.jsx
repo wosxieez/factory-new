@@ -10,7 +10,7 @@ const UpdateForm = Form.create({ name: 'form' })(props => {
         ///移除当前部门，防止出现父级部门选自己-出现套娃
         if (result.code === 0) {
             let treeResult = result.data.map((item) => {
-                return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name }
+                return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name, allselectable: true }
             })
             let afterFilter = treeResult.filter((item) => { return item.id !== props.data.id })
             setTreeData(getJsonTree(afterFilter, 0))

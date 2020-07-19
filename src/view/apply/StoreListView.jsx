@@ -12,7 +12,6 @@ export default props => {
     setListIsLoading(true)
     const response = await api.listStore(Stores.length > 0 ? Stores[Stores.length - 1].id : null)
     const response_tag = await api.listTag(Stores.length > 0 ? Stores[Stores.length - 1].id : null)
-    console.log("response_tag.data:", response_tag.data);
     response_tag.data = filterTag(response_tag.data, '物品大类')
     response.data = response.data.map(item => {
       item.type = 'store'

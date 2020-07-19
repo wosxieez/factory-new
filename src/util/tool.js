@@ -4,7 +4,7 @@ export const getJsonTree = function (data, pId) {
     let node = data[i]
     if (node.pId === pId) {
       let newNode = {}
-      newNode.selectable = node.pId > 0 ///不让首层treeSelect元素可选
+      newNode.selectable = node.allselectable ? true : node.pId > 0 ///不让首层treeSelect元素可选
       newNode.key = node.value
       newNode.value = node.value
       newNode.id = node.id
