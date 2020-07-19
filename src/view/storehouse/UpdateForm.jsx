@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Modal, Form, Input, TreeSelect } from 'antd'
+import { Modal, Form, Input, TreeSelect, InputNumber } from 'antd'
 import api from '../../http';
 import { getJsonTree } from '../../util/tool';
 
@@ -16,13 +16,19 @@ const AddForm = Form.create({ name: 'form' })((props) => {
         listData();
     }, [listData])
     return (
-        <Modal {...props} >
+        <Modal {...props} destroyOnClose>
             <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
                 <Form.Item label='名称' >
                     {props.form.getFieldDecorator('name', {
                         initialValue: props.data.name,
                         rules: [{ required: true, message: '请输入名称' }]
                     })(<Input placeholder='请输入名称' />)}
+                </Form.Item>
+                <Form.Item label='数量' >
+                    {props.form.getFieldDecorator('count', {
+                        initialValue: props.data.count,
+                        rules: [{ required: true, message: '请输入数量' }]
+                    })(<InputNumber placeholder='请输入数量' min={1} />)}
                 </Form.Item>
                 <Form.Item label='标签'>
                     {props.form.getFieldDecorator('tids', {

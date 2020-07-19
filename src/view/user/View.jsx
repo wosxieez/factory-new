@@ -121,7 +121,7 @@ export default () => {
             size='small'
             type='primary'
             icon={'plus'}
-            onClick={setIsAdding.bind(this, true)}></Button>
+            onClick={setIsAdding.bind(this, true)}>新增</Button>
         </Col>
       </Row>
       <List

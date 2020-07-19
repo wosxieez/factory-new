@@ -43,6 +43,11 @@ export default (props) => {
           <span className="nav-text">申请审批</span>
           <Link to={`${props.match.url}/approveview`} />
         </Menu.Item>
+        <Menu.Item key={'/main/storeview'}>
+          <Icon type="code-sandbox" />
+          <span className="nav-text">物料管理</span>
+          <Link to={`${props.match.url}/storeview`} />
+        </Menu.Item>
       </Menu>
     </Sider>
     <Layout style={{ marginLeft: collapsed ? 80 : 200 }} >
@@ -70,9 +75,10 @@ export default (props) => {
         <Route path={`${props.match.url}/departmentview`} component={DepartmentView} />
         <Route path={`${props.match.url}/tagview`} component={TagView} />
         <Route path={`${props.match.url}/userview`} component={UserView} />
-        <Route path={`${props.match.url}/storeview`} component={StoreHouseView} />
         <Route path={`${props.match.url}/applyview`} component={ApplyView} />
         <Route path={`${props.match.url}/approveview`} component={ApproveView} />
+        <Route path={`${props.match.url}/storeview`} component={StoreHouseView} />
+
       </Content>
     </Layout>
   </Layout>

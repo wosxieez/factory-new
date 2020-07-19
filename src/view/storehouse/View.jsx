@@ -244,10 +244,11 @@ export default props => {
                 style={styles.button}
                 type='primary'
                 icon={'plus'}
+                size='small'
                 onClick={() => {
                   setIsAdding(true)
                 }}>
-                新建
+                新增
               </Button>
             ) : (
                 <Button style={styles.button} type='danger' onClick={batchDelete}>
@@ -274,6 +275,7 @@ export default props => {
               </span>
               <Button
                 type='link'
+                size='small'
                 onClick={() => {
                   setSelectedRowKeys([])
                   setSelectedRows([])
@@ -341,14 +343,14 @@ export default props => {
 }
 const styles = {
   root: {
-    padding: 24,
     backgroundColor: '#F1F2F5',
     width: '100%',
     height: '100vh'
   },
   header: {
     backgroundColor: '#FFFFFF',
-    padding: 24
+    padding: 24,
+    display: 'none'
   },
   marginTop: { marginTop: 10 },
   headerCell: {
@@ -360,7 +362,7 @@ const styles = {
   body: {
     backgroundColor: '#FFFFFF',
     padding: 24,
-    marginTop: 16
+    // marginTop: 16
   },
   button: {
     marginLeft: 10
