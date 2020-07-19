@@ -147,9 +147,9 @@ export default props => {
               })
               let sql = `insert into orders (create_user,major_id,type_id,content,remark,code,createdAt) values (1,1,${
                 props.orderType
-              },'${JSON.stringify(content)}','${remarkText}','TW${moment().toDate().getTime()}','${moment().format(
-                FORMAT
-              )}')`
+                },'${JSON.stringify(content)}','${remarkText}','TW${moment().toDate().getTime()}','${moment().format(
+                  FORMAT
+                )}')`
               let result = await api.query(sql)
               if (result.code === 0) {
                 message.success('提交成功-等待审核', 3)
@@ -167,6 +167,13 @@ export default props => {
         isReture={true}
         selectStore={store => {
           // console.log('store:', store)
+          let isExisted = false;
+          dataSource.forEach((oldItem) => {
+            if (oldItem.store_id === store.id) {
+              isExisted = true
+            }
+          })
+          if (isExisted) { message.warning('请勿重复添加相同物料', 3); return }
           setShowDrawer(false)
           const newData = {
             key: parseInt(dataSource.length),

@@ -1,11 +1,13 @@
 import React, { useReducer } from 'react'
 import MainView from './view/MainView.jsx'
+import { HashRouter, Route } from 'react-router-dom'
+import LoginView from './view/login/LoginView.jsx';
 
 //------------------------------------------------------------------------------------------------------------
 // 全局状态管理
 //------------------------------------------------------------------------------------------------------------
 const appState = {}
-function appReducer(state, action) {}
+function appReducer(state, action) { }
 export const AppContext = React.createContext(null)
 
 export default () => {
@@ -13,7 +15,12 @@ export default () => {
 
   return (
     <AppContext.Provider value={reducer}>
-      <MainView />
+      <HashRouter>
+        <div style={{ width: '100%', height: '100%' }}>
+          <Route path="/" exact component={LoginView} />
+          <Route path="/main" component={MainView} />
+        </div>
+      </HashRouter>
     </AppContext.Provider>
   )
 }

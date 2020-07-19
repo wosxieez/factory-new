@@ -99,7 +99,7 @@ export default () => {
                 onClick={e => {
                   setUsers([])
                 }}>
-                中国节能
+                {localStorage.getItem('cname')}
               </Button>
             </Breadcrumb.Item>
             {Users.map((User, index) => (
@@ -139,7 +139,7 @@ export default () => {
                 }}
                 avatar={
                   item.type === 'user' ? (
-                    <Avatar src='https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png' />
+                    <Avatar icon="user" />
                   ) : (
                       <Avatar style={styles.avatar}>{item.name}</Avatar>
                     )
@@ -153,7 +153,7 @@ export default () => {
                   <Dropdown
                     overlay={
                       <Menu
-                        style={{ padding: 10 }}
+                        style={{ width: 120, textAlign: 'center' }}
                         onClick={e => {
                           if (e.key === '2') {
                             deleteUser(item)
@@ -229,7 +229,10 @@ export default () => {
 
 const styles = {
   root: {
-    padding: '0 24px 0 24px'
+    padding: '12px 24px 12px 24px',
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#FFFFFF',
   },
   title: {
     marginLeft: 10,

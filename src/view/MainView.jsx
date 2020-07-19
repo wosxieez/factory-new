@@ -1,46 +1,112 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { Route, Link } from 'react-router-dom'
+import { Layout, Menu, Icon, Modal } from 'antd';
 import DepartmentView from './department/View'
 import TagView from './tag/View'
 import UserView from './user/View'
 import StoreHouseView from './storehouse/View'
 import ApplyView from './apply/View'
 import ApproveView from './approve/View'
-import { Route, Link, HashRouter, Switch } from 'react-router-dom'
-import LoginView from './login/LoginView'
-
-const NavigateView = () => {
-  return (
-    <div style={{ padding: 24 }}>
-      <Link to='/departmentview'>部门列表</Link>
-      <br />
-      <Link to='/tagview'>标签列表</Link>
-      <br />
-      <Link to='/userview'>用户列表</Link>
-      <br />
-      <Link to='/storeview'>物品列表</Link>
-      <br />
-      <Link to='/applyview'>物品申请</Link>
-      <br />
-      <Link to='/approveview'>申请审批</Link>
-    </div>
-  )
+import svgs from '../assets/svgs';
+const { Header, Content, Sider } = Layout;
+export default (props) => {
+  const [collapsed, setCollapsed] = useState(false)
+  return <Layout>
+    <Sider style={styles.side} width='200' trigger={null} collapsible collapsed={collapsed}>
+      <div style={styles.logo} >
+        <span style={styles.titleIcon}>{svgs.loginTitle(30, 30, '#FFFFFF')}</span>
+        <span style={{ ...styles.title, visibility: collapsed ? 'hidden' : 'visible' }}>Welcome</span>
+      </div>
+      <Menu theme="dark" mode="inline">
+        <Menu.Item key="/main/departmentview">
+          <Icon type="apartment" />
+          <span>部门列表</span>
+          <Link to={`${props.match.url}/departmentview`} />
+        </Menu.Item>
+        <Menu.Item key={'/main/tagview'}>
+          <Icon type="tags" />
+          <span className="nav-text">标签列表</span>
+          <Link to={`${props.match.url}/tagview`} />
+        </Menu.Item>
+        <Menu.Item key={'/main/userview'}>
+          <Icon type="user" />
+          <span className="nav-text">用户列表</span>
+          <Link to={`${props.match.url}/userview`} />
+        </Menu.Item>
+        <Menu.Item key={'/main/applyview'}>
+          <Icon type="form" />
+          <span className="nav-text">物品申请</span>
+          <Link to={`${props.match.url}/applyview`} />
+        </Menu.Item>
+        <Menu.Item key={'/main/approveview'}>
+          <Icon type="ordered-list" />
+          <span className="nav-text">申请审批</span>
+          <Link to={`${props.match.url}/approveview`} />
+        </Menu.Item>
+      </Menu>
+    </Sider>
+    <Layout style={{ marginLeft: collapsed ? 80 : 200 }} >
+      <Header style={{ position: 'fixed', zIndex: 1, width: `calc(100% - ${collapsed ? 80 : 200}px)`, backgroundColor: '#fff', padding: 0, borderBottomStyle: 'solid', borderBottomWidth: 1, borderBottomColor: '#e8e8e8' }}>
+        <div style={{ display: 'flex', alignItems: 'center', width: `100%`, flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Icon
+            style={styles.trigger}
+            type={collapsed ? 'menu-unfold' : 'menu-fold'}
+            onClick={() => { setCollapsed(!collapsed) }}
+          />
+          <Icon style={styles.trigger} type="poweroff" onClick={() => {
+            Modal.confirm({
+              title: `确认要退出吗？`,
+              okText: '确定',
+              okType: 'danger',
+              onOk: async function () {
+                localStorage.removeItem('cname');
+                props.history.push('/')
+              }
+            })
+          }} />
+        </div>
+      </Header>
+      <Content style={{ margin: '80px 16px 0', overflow: 'initial', height: '100vh' }}>
+        <Route path={`${props.match.url}/departmentview`} component={DepartmentView} />
+        <Route path={`${props.match.url}/tagview`} component={TagView} />
+        <Route path={`${props.match.url}/userview`} component={UserView} />
+        <Route path={`${props.match.url}/storeview`} component={StoreHouseView} />
+        <Route path={`${props.match.url}/applyview`} component={ApplyView} />
+        <Route path={`${props.match.url}/approveview`} component={ApproveView} />
+      </Content>
+    </Layout>
+  </Layout>
 }
 
-export default () => {
-  return (
-    <>
-      <HashRouter>
-        <Switch>
-          <Route exact path='/' component={LoginView} />
-          <Route exact path='/main' component={NavigateView} />
-          <Route exact path='/departmentview' component={DepartmentView} />
-          <Route exact path='/approveview' component={ApproveView} />
-          <Route exact path='/applyview' component={ApplyView} />
-          <Route exact path='/userview' component={UserView} />
-          <Route exact path='/tagview' component={TagView} />
-          <Route exact path='/storeview' component={StoreHouseView} />
-        </Switch>
-      </HashRouter>
-    </>
-  )
+
+const styles = {
+  logo: {
+    height: "32px",
+    // background: "rgba(200, 200, 200, 1)",
+    margin: "16px",
+  },
+  side: {
+    overflow: 'auto',
+    height: '100vh',
+    position: 'fixed',
+    left: 0,
+  },
+  trigger: {
+    fontSize: "18px",
+    lineHeight: "64px",
+    padding: "0 24px",
+    cursor: "pointer",
+    transition: "color 0.3s"
+  },
+  titleIcon: {
+    marginLeft: 10
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 800,
+    fontStyle: 'oblique',
+    color: '#F0F0F0',
+    marginLeft: 10,
+    position: 'absolute',
+  },
 }

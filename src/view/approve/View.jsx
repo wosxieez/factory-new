@@ -344,14 +344,14 @@ export default props => {
 }
 const styles = {
     root: {
-        padding: 24,
-        backgroundColor: '#F1F2F5',
+        backgroundColor: '#F1F1F1',
         width: '100%',
-        height: '100vh'
+        height: '100%'
     },
     header: {
         backgroundColor: '#FFFFFF',
-        padding: 24
+        padding: 24,
+        display: 'none'
     },
     marginTop: { marginTop: 10 },
     headerCell: {
@@ -363,7 +363,7 @@ const styles = {
     body: {
         backgroundColor: '#FFFFFF',
         padding: 24,
-        marginTop: 16
+        // marginTop: 16
     },
     button: {
         marginLeft: 10

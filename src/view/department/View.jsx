@@ -84,10 +84,9 @@ export default () => {
     <div style={styles.root}>
       <Row type='flex' align='middle'>
         <Col span={16}>
-          <Breadcrumb>
+          <Breadcrumb style={styles.breadcrumb}>
             <Breadcrumb.Item>
               <Button
-                size='small'
                 type='link'
                 onClick={e => {
                   setDepartments([])
@@ -98,7 +97,6 @@ export default () => {
             {departments.map((department, index) => (
               <Breadcrumb.Item key={index}>
                 <Button
-                  size='small'
                   type='link'
                   onClick={e => {
                     setDepartments(departments.slice(0, index + 1))
@@ -119,7 +117,6 @@ export default () => {
         </Col>
       </Row>
       <List
-        style={{ marginTop: 12 }}
         loading={listIsLoading}
         dataSource={dataSource}
         renderItem={item => {
@@ -148,10 +145,10 @@ export default () => {
                         }
                       }}>
                       <Menu.Item key='1'>
-                        <span style={{ color: '#1890ff' }}>修改</span>
+                        <span style={{ color: '#1890ff' }}><Icon type='edit' />修改</span>
                       </Menu.Item>
                       <Menu.Item key='2'>
-                        <span style={{ color: '#f5222d' }}>删除</span>
+                        <span style={{ color: '#f5222d' }}><Icon type='delete' />删除</span>
                       </Menu.Item>
                     </Menu>
                   }
@@ -202,7 +199,10 @@ export default () => {
 
 const styles = {
   root: {
-    padding: '12px 24px 12px 24px'
+    padding: '12px 24px 12px 24px',
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     borderBottomStyle: 'solid',
@@ -226,6 +226,9 @@ const styles = {
   icon_more2: { fontSize: 18 },
   listItem: {
     cursor: 'pointer'
+  },
+  breadcrumb: {
+    marginTop: 8
   },
   avatar: { backgroundColor: '#1890ff', verticalAlign: 'middle' }
 }

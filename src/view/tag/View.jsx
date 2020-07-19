@@ -91,7 +91,7 @@ export default () => {
                 onClick={e => {
                   setTags([])
                 }}>
-                中国节能
+                {localStorage.getItem('cname')}
               </Button>
             </Breadcrumb.Item>
             {Tags.map((Tag, index) => (
@@ -135,7 +135,7 @@ export default () => {
                 <Dropdown
                   overlay={
                     <Menu
-                      style={{ padding: 10 }}
+                      style={{ width: 120, textAlign: 'center' }}
                       onClick={e => {
                         if (e.key === '2') {
                           deleteTag(item)
@@ -206,11 +206,10 @@ export default () => {
 
 const styles = {
   root: {
-    padding: '0 24px 0 24px'
-  },
-  title: {
-    marginLeft: 10,
-    fontSize: 15
+    padding: '12px 24px 12px 24px',
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     borderBottomStyle: 'solid',
@@ -225,7 +224,6 @@ const styles = {
     marginLeft: 10
   },
   icon_more: {
-    // backgroundColor: 'red',
     width: 70,
     height: 18,
     display: 'flex',

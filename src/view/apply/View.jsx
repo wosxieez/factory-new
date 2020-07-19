@@ -31,8 +31,8 @@ export default props => {
         return <MaterialForm orderType={selectType} />
       case 2:
         return <ReturnForm orderType={selectType} />
-      case 3:
-        return <div>采购申请表</div>
+      // case 3:
+      //   return <div>采购申请表</div>
       default:
         break
     }
@@ -79,10 +79,9 @@ export default props => {
 }
 const styles = {
   root: {
-    padding: 24,
-    backgroundColor: '#F1F2F5',
     width: '100%',
-    height: '100vh'
+    height: '100%',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     backgroundColor: '#FFFFFF',
@@ -98,7 +97,6 @@ const styles = {
   body: {
     backgroundColor: '#FFFFFF',
     padding: 24,
-    marginTop: 16
   },
   main: {
     display: 'flex',

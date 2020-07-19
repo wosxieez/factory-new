@@ -105,7 +105,7 @@ export default props => {
                 }}
                 avatar={
                   item.type === 'store' ? (
-                    <Avatar src='https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png' />
+                    <Avatar icon='code-sandbox' />
                   ) : (
                       <Avatar style={styles.avatar}>{item.name}</Avatar>
                     )
