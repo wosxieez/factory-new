@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Modal, Form, Input, TreeSelect, InputNumber } from 'antd'
 import api from '../../http';
-import { getJsonTree } from '../../util/tool';
+import { getJsonTree, filterTag } from '../../util/tool';
 
 const AddForm = Form.create({ name: 'form' })((props) => {
     const [treeData, setTreeData] = useState([])
     const listData = useCallback(async () => {
         let result = await api.listAllTag()
         if (result.code === 0) {
+            result.data = filterTag(result.data, '物品大类')
             let treeResult = result.data.map((item) => { return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name } })
             setTreeData(getJsonTree(treeResult, 0))
         }
