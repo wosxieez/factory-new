@@ -4,9 +4,11 @@ import api from '../../http'
 import { useEffect, useCallback } from 'react'
 import AddForm from './AddFrom'
 import UpdateForm from './UpdateForm'
+import { filterTag } from '../../util/tool';
 const { confirm } = Modal
 
-export default () => {
+export default (props) => {
+  console.log('props:', props)
   const [isAdding, setIsAdding] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const addForm = useRef()
@@ -21,23 +23,23 @@ export default () => {
     setListIsLoading(true)
     const response = await api.listTag(Tags.length > 0 ? Tags[Tags.length - 1].id : null)
     if (response.code === 0) {
-      // console.log('response.data:', response.data)
+      response.data = filterTag(response.data, props.type)
+      console.log('response.data:', response.data)
       setDataSource(response.data)
       setListIsLoading(false)
     }
-  }, [Tags])
+  }, [Tags, props.type])
 
   const addData = useCallback(
     async data => {
       if (Tags.length > 0) data.tid = Tags[Tags.length - 1].id
-      const response = await api.addTag(data)
+      const response = await api.addTag({ ...data, type: props.type })
       if (response.code === 0) {
         setIsAdding(false)
         listData()
       }
     },
-    [Tags, listData]
-  )
+    [Tags, listData, props.type])
 
   const deleteTag = useCallback(
     item => {
@@ -169,6 +171,7 @@ export default () => {
         }}
       />
       <AddForm
+        data={currentItem}
         ref={addForm}
         title='新增标签'
         visible={isAdding}
@@ -208,7 +211,6 @@ const styles = {
   root: {
     padding: '12px 24px 12px 24px',
     width: '100%',
-    height: '100%',
     backgroundColor: '#FFFFFF',
   },
   header: {

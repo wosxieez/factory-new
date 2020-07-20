@@ -35,7 +35,7 @@ export default props => {
     }
     let result2 = await api.listAllTag()
     if (result2.code === 0) {
-      result2.data = filterTag(result2.data, '物品大类')
+      result2.data = filterTag(result2.data, 0)
       let treeResult = result2.data.map((item) => { return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name } })
       setTreeData(getJsonTree(treeResult, 0))
     }
@@ -144,6 +144,7 @@ export default props => {
         return <div>{text || ''}</div>
       }
     },
+    { title: '编号', dataIndex: 'no', width: 120, align: 'center' },
     {
       title: '操作',
       dataIndex: 'action',

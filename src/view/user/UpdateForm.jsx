@@ -8,7 +8,7 @@ const UpdateForm = Form.create({ name: 'form' })(props => {
     const listData = useCallback(async () => {
         let result = await api.listAllTag()
         if (result.code === 0) {
-            result.data = filterTag(result.data, '专业')
+            result.data = filterTag(result.data, 1)
             let treeResult = result.data.map((item) => {
                 return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name }
             })

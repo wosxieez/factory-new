@@ -3,7 +3,7 @@ import { Drawer } from 'antd';
 import StoreListView from './StoreListView';
 export default props => {
     return <Drawer
-        width={400}
+        width={500}
         destroyOnClose
         title="物料列表"
         placement='left'

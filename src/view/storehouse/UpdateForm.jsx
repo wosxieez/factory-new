@@ -8,7 +8,7 @@ const AddForm = Form.create({ name: 'form' })((props) => {
     const listData = useCallback(async () => {
         let result = await api.listAllTag()
         if (result.code === 0) {
-            result.data = filterTag(result.data, '物品大类')
+            result.data = filterTag(result.data, 0)
             let treeResult = result.data.map((item) => { return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name } })
             setTreeData(getJsonTree(treeResult, 0))
         }
@@ -31,7 +31,7 @@ const AddForm = Form.create({ name: 'form' })((props) => {
                         rules: [{ required: true, message: '请输入数量' }]
                     })(<InputNumber placeholder='请输入数量' min={1} style={{ width: '100%' }} />)}
                 </Form.Item>
-                <Form.Item label='最小单位' >
+                <Form.Item label='单位' >
                     {props.form.getFieldDecorator('unit', {
                         initialValue: props.data.unit || '个',
                         rules: [{ required: true, message: '请输入单位' }]
@@ -42,6 +42,11 @@ const AddForm = Form.create({ name: 'form' })((props) => {
                         initialValue: props.data.oprice,
                         rules: [{ required: false, message: '请输入价格' }]
                     })(<InputNumber placeholder='请输入价格' min={0} style={{ width: '100%' }} />)}
+                </Form.Item>
+                <Form.Item label='编号' >
+                    {props.form.getFieldDecorator('no', {
+                        rules: [{ required: false, message: '请输入编号' }]
+                    })(<Input placeholder='请输入编号' style={{ width: '100%' }} />)}
                 </Form.Item>
                 <Form.Item label='标签'>
                     {props.form.getFieldDecorator('tids', {

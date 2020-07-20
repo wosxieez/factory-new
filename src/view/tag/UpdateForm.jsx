@@ -53,7 +53,7 @@ const UpdateForm = Form.create({ name: 'form' })(props => {
                         {colorList.map((item, index) => {
                             return <Option key={index} value={item.color}>
                                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                                    <div style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: item.color, marginRight: 10 }} />{item.label}
+                                    <div style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: item.color, marginRight: 10 }} />{item.label}
                                 </div>
                             </Option>
                         })}

@@ -8,6 +8,7 @@ import StoreHouseView from './storehouse/View'
 import ApplyView from './apply/View'
 import ApproveView from './approve/View'
 import svgs from '../assets/svgs';
+import { SubMenu } from 'rc-menu';
 const { Header, Content, Sider } = Layout;
 export default (props) => {
   const [collapsed, setCollapsed] = useState(false)
@@ -18,26 +19,35 @@ export default (props) => {
         <span style={{ ...styles.title, visibility: collapsed ? 'hidden' : 'visible' }}>Welcome</span>
       </div>
       <Menu theme="dark" mode="inline" selectedKeys={[props.location.pathname]}>
-        <Menu.Item key={'/main/storeview'}>
-          <Icon type="code-sandbox" />
-          <span className="nav-text">物料管理</span>
-          <Link to={`${props.match.url}/storeview`} />
-        </Menu.Item>
-        <Menu.Item key={'/main/tagview'}>
-          <Icon type="tags" />
-          <span className="nav-text">标签列表</span>
-          <Link to={`${props.match.url}/tagview`} />
-        </Menu.Item>
+        <SubMenu key="物料管理" title={<span><Icon type="code-sandbox" /><span>物料管理</span></span>}>
+          <Menu.Item key={'/main/storeview'}>
+            <Icon type="code-sandbox" />
+            <span className="nav-text">物料列表</span>
+            <Link to={`${props.match.url}/storeview`} />
+          </Menu.Item>
+          <Menu.Item key={'/main/storetag'}>
+            <Icon type="tags" />
+            <span className="nav-text">物料标签</span>
+            <Link to={`${props.match.url}/storetag`} />
+          </Menu.Item>
+        </SubMenu>
         <Menu.Item key="/main/departmentview">
           <Icon type="apartment" />
           <span>部门列表</span>
           <Link to={`${props.match.url}/departmentview`} />
         </Menu.Item>
-        <Menu.Item key={'/main/userview'}>
-          <Icon type="user" />
-          <span className="nav-text">用户列表</span>
-          <Link to={`${props.match.url}/userview`} />
-        </Menu.Item>
+        <SubMenu key="用户管理" title={<span><Icon type="user" /><span>用户管理</span></span>}>
+          <Menu.Item key={'/main/userview'}>
+            <Icon type="user" />
+            <span className="nav-text">用户列表</span>
+            <Link to={`${props.match.url}/userview`} />
+          </Menu.Item>
+          <Menu.Item key={'/main/usertag'}>
+            <Icon type="tags" />
+            <span className="nav-text">用户标签</span>
+            <Link to={`${props.match.url}/usertag`} />
+          </Menu.Item>
+        </SubMenu>
         <Menu.Item key={'/main/applyview'}>
           <Icon type="form" />
           <span className="nav-text">物品申请</span>
@@ -73,12 +83,12 @@ export default (props) => {
       </Header>
       <Content style={{ margin: '80px 16px 0', overflow: 'initial', height: '100vh' }}>
         <Route path={`${props.match.url}/departmentview`} component={DepartmentView} />
-        <Route path={`${props.match.url}/tagview`} component={TagView} />
+        <Route path={`${props.match.url}/storeview`} component={StoreHouseView} />
         <Route path={`${props.match.url}/userview`} component={UserView} />
         <Route path={`${props.match.url}/applyview`} component={ApplyView} />
         <Route path={`${props.match.url}/approveview`} component={ApproveView} />
-        <Route path={`${props.match.url}/storeview`} component={StoreHouseView} />
-
+        <Route path={`${props.match.url}/storetag`} component={() => { return <TagView type={0} /> }} />
+        <Route path={`${props.match.url}/usertag`} component={() => { return <TagView type={1} /> }} />
       </Content>
     </Layout>
   </Layout>

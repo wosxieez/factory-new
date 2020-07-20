@@ -1,19 +1,21 @@
 import React, { useState } from 'react'
-import { Breadcrumb, Col, Row, List, Avatar, Tag, message, Button } from 'antd'
+import { Breadcrumb, List, Avatar, Tag, message, Button, Input } from 'antd'
 import api from '../../http'
 import { useEffect, useCallback } from 'react'
 import { filterTag } from '../../util/tool';
+const { Search } = Input;
 
 export default props => {
   const [dataSource, setDataSource] = useState([])
   const [Stores, setStores] = useState([])
   const [listIsLoading, setListIsLoading] = useState(false)
+  const [searchKey, setSearchKey] = useState('')
   const listData = useCallback(async () => {
     setListIsLoading(true)
-    const response = await api.listStore(Stores.length > 0 ? Stores[Stores.length - 1].id : null)
+    const response_store = await api.listStore({ tid: Stores.length > 0 ? Stores[Stores.length - 1].id : null })
     const response_tag = await api.listTag(Stores.length > 0 ? Stores[Stores.length - 1].id : null)
-    response_tag.data = filterTag(response_tag.data, '物品大类')
-    response.data = response.data.map(item => {
+    response_tag.data = filterTag(response_tag.data, 0)
+    response_store.data = response_store.data.map(item => {
       item.type = 'store'
       return item
     })
@@ -32,7 +34,7 @@ export default props => {
         let contentList = JSON.parse(order.content)
         // console.log('contentList:', contentList)
         contentList.forEach(item => {
-          response.data.forEach(store => {
+          response_store.data.forEach(store => {
             if (item.store_id === store.id) {
               store.count = store.count - item.count
             }
@@ -40,9 +42,9 @@ export default props => {
         })
       })
     }
-    setDataSource([...response_tag.data, ...response.data])
+    setDataSource([...response_tag.data, ...response_store.data])
     setListIsLoading(false)
-    // console.log('store 数据:', response.data)
+    // console.log('store 数据:', response_store.data)
     // console.log('tag 数据:', response_tag.data)
   }, [Stores])
 
@@ -53,32 +55,42 @@ export default props => {
 
   return (
     <div style={styles.root}>
-      <Row type='flex' align='middle'>
-        <Col span={16}>
-          <Breadcrumb style={styles.breadcrumb}>
-            <Breadcrumb.Item>
+      <Search placeholder="物品名称或备注模糊查询" allowClear onSearch={async (value) => {
+        if (value) {
+          let result = await api.listStore({ key: value })
+          if (result.code === 0) {
+            setSearchKey(value)
+            setDataSource(result.data.map((item, index) => { item.type = 'store'; return item }))
+          }
+        } else {
+          setSearchKey('')
+          listData()
+        }
+      }} enterButton />
+      {searchKey ? null :
+        <Breadcrumb style={styles.breadcrumb}>
+          <Breadcrumb.Item>
+            <Button
+              type='link'
+              onClick={e => {
+                setStores([])
+              }}>
+              中国节能
+              </Button>
+          </Breadcrumb.Item>
+          {Stores.map((User, index) => (
+            <Breadcrumb.Item key={index}>
               <Button
                 type='link'
-                onClick={e => {
-                  setStores([])
+                onClick={() => {
+                  setStores(Stores.slice(0, index + 1))
                 }}>
-                中国节能
+                {User.name}
               </Button>
             </Breadcrumb.Item>
-            {Stores.map((User, index) => (
-              <Breadcrumb.Item key={index}>
-                <Button
-                  type='link'
-                  onClick={() => {
-                    setStores(Stores.slice(0, index + 1))
-                  }}>
-                  {User.name}
-                </Button>
-              </Breadcrumb.Item>
-            ))}
-          </Breadcrumb>
-        </Col>
-      </Row>
+          ))}
+        </Breadcrumb>
+      }
       <List
         loading={listIsLoading}
         dataSource={dataSource}

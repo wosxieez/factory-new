@@ -201,7 +201,6 @@ const styles = {
   root: {
     padding: '12px 24px 12px 24px',
     width: '100%',
-    height: '100%',
     backgroundColor: '#FFFFFF',
   },
   header: {

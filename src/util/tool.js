@@ -4,7 +4,7 @@ export const getJsonTree = function (data, pId) {
     let node = data[i]
     if (node.pId === pId) {
       let newNode = {}
-      newNode.selectable = node.allselectable ? true : node.pId > 0 ///不让首层treeSelect元素可选
+      // newNode.selectable = node.allselectable ? true : node.pId > 0 ///不让首层treeSelect元素可选
       newNode.key = node.value
       newNode.value = node.value
       newNode.id = node.id
@@ -62,15 +62,15 @@ export const getDepartmentTree = departments => {
 
 /**
  * 过滤Tag
- * 暂时前端根据名称和tids是否存在过滤
+ * 暂时前端根据type和tids是否存在过滤
  * @export
  * @param {*} tagList 标签数组
- * @param {String} filterName 需要保留的tag name
+ * @param {String} filterType 需要保留的tag type   0 物品  1 人员
  */
-export function filterTag(tagList, filterName) {
-  if (tagList && tagList.length > 0 && filterName) {
+export function filterTag(tagList, filterType) {
+  if (tagList && tagList.length > 0 && filterType >= 0) {
     return tagList.filter((item) => {
-      if (!item.tids) { return item.name === filterName }
+      if (!item.tids) { return item.type === filterType }
       else { return true }
     })
   } else {
@@ -87,3 +87,4 @@ export function filterTag(tagList, filterName) {
 export const colorList = [{ label: '薄暮', color: '#f5222d' }, { label: '火山', color: '#fa541c' }, { label: '日暮', color: '#fa8c16' }, { label: '金盏花', color: '#faad14' },
 { label: '日出', color: '#fadb14' }, { label: '青柠', color: '#a0d911' }, { label: '极光绿', color: '#52c41a' }, { label: '明青', color: '#13c2c2' },
 { label: '拂晓蓝', color: '#1890ff' }, { label: '极客蓝', color: '#2f54eb' }, { label: '酱紫', color: '#722ed1' }, { label: '法式洋红', color: '#eb2f96' }]
+export const tagTypeList = [{ label: '物品', icon: 'code-sandbox', value: 0 }, { label: '人员', icon: 'user', value: 1 }]

@@ -145,9 +145,13 @@ export default () => {
                     )
                 }
                 title={item.name}
-                description={item.remark}
+                description={
+                  <div>
+                    {item.remark}
+                    {item.type === 'user' && item.tags ? <div>{item.tags.map((item, index) => { return <span key={index}><Tag color={item.color || 'blue'}>{item.name}</Tag></span> })}</div> : null}
+                  </div>
+                }
               />
-              {item.type === 'user' && item.tags ? <div>{item.tags.map((item, index) => { return <div key={index}><Tag color={item.color || 'blue'}>{item.name}</Tag></div> })}</div> : null}
               {item.type === 'user' ? (
                 <div style={styles.icon_more}>
                   <Dropdown
@@ -231,7 +235,6 @@ const styles = {
   root: {
     padding: '12px 24px 12px 24px',
     width: '100%',
-    height: '100%',
     backgroundColor: '#FFFFFF',
   },
   title: {
