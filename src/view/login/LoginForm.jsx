@@ -9,6 +9,7 @@ const LoginForm = Form.create({ name: 'form' })(props => {
             if (!err) {
                 const response = await api.login(values.username, values.password)
                 if (response.code === 0) {
+                    localStorage.setItem('user', JSON.stringify(response.data))
                     localStorage.setItem('token', response.token)
                     const response2 = await api.getCompany()
                     if (response2.code === 0 && response2.data) { localStorage.setItem('cname', response2.data.name) }

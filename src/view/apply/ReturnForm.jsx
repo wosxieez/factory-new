@@ -1,35 +1,25 @@
-import React, { useState, useCallback } from 'react'
-import { Descriptions, Select, Table, Input, InputNumber, Popconfirm, Button, Modal, Icon, message } from 'antd'
+import React, { useState, useCallback, useEffect } from 'react'
+import { Descriptions, Table, Input, InputNumber, Popconfirm, Button, Modal, Icon, message, TreeSelect } from 'antd'
 import api from '../../http'
 import moment from 'moment'
 import StoreDrawer from './StoreDrawer'
+import { filterTag, getJsonTree } from '../../util/tool';
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 const { confirm } = Modal
-const Option = Select.Option
-const major_options = [{ id: 1, label: '测试专业1' }].map((item, index) => {
-  return (
-    <Option key={index} value={item.id}>
-      {item.label}
-    </Option>
-  )
-})
+
 /**
  * 退料申请表
  */
 export default props => {
+  const [user] = useState(localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : {})
+  const [treeData, setTreeData] = useState([])
   const [dataSource, setDataSource] = useState([])
-  const [majorId, setMajorId] = useState(null)
+  const [tagId, setTagId] = useState(null)
   const [remarkText, setRemarkText] = useState('')
   const [showDrawer, setShowDrawer] = useState(false)
   const addHandler = useCallback(async () => {
     ///打开抽屉
     setShowDrawer(true)
-    // const newData = {
-    //     key: parseInt(dataSource.length),
-    //     store_id: 1,
-    //     count: 1
-    // };
-    // setDataSource([...dataSource, newData])
   }, [])
 
   const deleteHandle = useCallback(
@@ -58,6 +48,20 @@ export default props => {
     },
     [dataSource]
   )
+
+  useEffect(() => {
+    async function getTagList() {
+      let result = await api.listAllTag()
+      if (result.code === 0) {
+        result.data = filterTag(result.data, 1)
+        let treeResult = result.data.map((item) => {
+          return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name }
+        })
+        setTreeData(getJsonTree(treeResult, 0))
+      }
+    }
+    getTagList()
+  }, [])
 
   const columns = [
     { title: '物料', align: 'center', dataIndex: 'store_name' },
@@ -98,17 +102,24 @@ export default props => {
 
   return (
     <div style={styles.root}>
-      <Descriptions size='small' bordered column={1}>
-        <Descriptions.Item label='申请人'>测试人员</Descriptions.Item>
-        <Descriptions.Item label='所属专业'>
-          <Select
-            style={{ width: '100%' }}
-            value={majorId}
-            onChange={v => {
-              setMajorId(parseInt(v))
-            }}>
-            {major_options}
-          </Select>
+      <Descriptions size='small' bordered column={1} >
+        <Descriptions.Item label='申请人'><div style={styles.descriptionItem}>{user.name || '/'}</div></Descriptions.Item>
+        <Descriptions.Item label='标签' >
+          <div style={styles.descriptionItem}>
+            <TreeSelect
+              value={tagId}
+              treeNodeFilterProp='title'
+              showSearch
+              treeData={treeData}
+              style={{ width: 200 }}
+              dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+              placeholder='请选择标签'
+              showCheckedStrategy={TreeSelect.SHOW_PARENT}
+              onChange={(v) => {
+                setTagId(parseInt(v))
+              }}
+            />
+          </div>
         </Descriptions.Item>
       </Descriptions>
       <Button style={styles.marginTop} type='primary' icon='plus' onClick={addHandler}>
@@ -132,7 +143,7 @@ export default props => {
         }}
       />
       <Button
-        disabled={!(majorId && dataSource.length > 0)}
+        disabled={!(tagId && dataSource.length > 0)}
         style={{ ...styles.marginTop, float: 'right' }}
         type='primary'
         onClick={() => {
@@ -145,14 +156,13 @@ export default props => {
                 delete item.key
                 return item
               })
-              let sql = `insert into orders (create_user,major_id,type_id,content,remark,code,createdAt) values (1,1,${
-                props.orderType
-                },'${JSON.stringify(content)}','${remarkText}','TW${moment().toDate().getTime()}','${moment().format(
-                  FORMAT
-                )}')`
+              let sql = `insert into orders (create_user,tag_id,type_id,content,remark,code,createdAt) values (${user.id},${tagId},${props.orderType},'${JSON.stringify(content)}','${remarkText}','TW${moment().toDate().getTime()}','${moment().format(FORMAT)}')`
               let result = await api.query(sql)
               if (result.code === 0) {
                 message.success('提交成功-等待审核', 3)
+                setDataSource([])
+                setTagId(null)
+                setRemarkText('')
               }
             }
           })
@@ -197,5 +207,8 @@ const styles = {
   },
   marginTop: {
     marginTop: 10
+  },
+  descriptionItem: {
+    justifyContent: 'center', display: 'flex', width: '100%'
   }
 }

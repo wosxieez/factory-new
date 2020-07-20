@@ -61,6 +61,7 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData) {
     return <div>
         <h3>申请物料</h3>
         <Table
+            bordered
             columns={columns}
             dataSource={data}
             pagination={false}

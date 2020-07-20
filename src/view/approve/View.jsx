@@ -22,9 +22,10 @@ export default props => {
         setIsLoading(true)
         setSelectedRowKeys([])
         setSelectedRows([])
-        let sql = `select orders.*,order_type.order_name as order_type_name ,major.name as major_name from orders 
+        let sql = `select orders.*,order_type.order_name as order_type_name ,tags.name as tag_name,users.name as user_name from orders 
         left join (select * from order_type where isdelete = 0) order_type on orders.type_id = order_type.id
-        left join (select * from major where isdelete = 0) major on orders.major_id = major.id
+        left join (select * from tags where isdelete = 0) tags on orders.tag_id = tags.id
+        left join (select * from users where isdelete = 0) users on orders.create_user = users.id
         where orders.isdelete = 0
         `
         let result = await api.query(sql)
@@ -98,8 +99,8 @@ export default props => {
             }
         },
         {
-            title: '所属专业',
-            dataIndex: 'major_name',
+            title: '标签',
+            dataIndex: 'tag_name',
             width: 120,
             align: 'center',
             render: (text, record) => {
@@ -108,7 +109,7 @@ export default props => {
         },
         {
             title: '申请人',
-            dataIndex: 'create_user',
+            dataIndex: 'user_name',
             width: 120,
             align: 'center',
             render: (text, record) => {
