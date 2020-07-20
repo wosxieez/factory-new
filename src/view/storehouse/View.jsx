@@ -4,7 +4,8 @@ import { Table, Modal, Button, Icon, Input, message, Row, Col, Alert, Tooltip, D
 import moment from 'moment'
 import AddForm from './AddFrom'
 import UpdateForm from './UpdateForm'
-import { getJsonTree } from '../../util/tool'
+import { getJsonTree, filterTag } from '../../util/tool'
+const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 var originStoreList
 /**
  * 库品信息表单
@@ -29,17 +30,12 @@ export default props => {
     setSelectedRows([])
     let result = await api.listAllStore()
     if (result.code === 0) {
-      originStoreList = result.data
-        .map((item, index) => {
-          item.key = index
-          item.icon = 'plus'
-          return item
-        })
-        .reverse()
+      originStoreList = result.data.map((item, index) => { item.key = index; return item }).reverse()
       setStoreList(originStoreList)
     }
     let result2 = await api.listAllTag()
     if (result2.code === 0) {
+      result2.data = filterTag(result2.data, '物品大类')
       let treeResult = result2.data.map((item) => { return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name } })
       setTreeData(getJsonTree(treeResult, 0))
     }
@@ -84,9 +80,6 @@ export default props => {
         }
         listAllStore()
       },
-      onCancel: function () {
-        console.log('onCancel')
-      }
     })
   }, [selectedRows, listAllStore])
 
@@ -120,7 +113,7 @@ export default props => {
       align: 'center',
       width: 140,
       render: (text, record) => {
-        return <div>{text ? moment(text).format('YYYY-MM-DD HH:mm:ss') : ''}</div>
+        return <div>{text ? moment(text).format(FORMAT) : ''}</div>
       }
     },
     {
@@ -160,11 +153,11 @@ export default props => {
         <Row gutter={16} {...rowProps}>
           <Col span={6}>
             <Row {...rowProps}>
-              <Col span={4}>名称:</Col>
-              <Col span={20}>
+              <Col span={5}>关键字:</Col>
+              <Col span={19}>
                 <Input
                   allowClear
-                  placeholder={'请输入物品名称'}
+                  placeholder={'请输入名称或备注'}
                   value={searchName}
                   onChange={e => {
                     setSearchName(e.target.value)
@@ -197,8 +190,8 @@ export default props => {
           </Col>
           <Col span={8}>
             <Row {...rowProps}>
-              <Col span={6}>入库时间:</Col>
-              <Col span={18}>
+              <Col span={5}>入库时间:</Col>
+              <Col span={19}>
                 <DatePicker.RangePicker
                   value={searchTime}
                   ranges={{
@@ -217,8 +210,17 @@ export default props => {
               <Button
                 type='primary'
                 style={styles.button}
-                onClick={() => {
-                  console.log(searchTime, searchTags, searchName)
+                onClick={async () => {
+                  let param = {};
+                  if (searchTime.length === 2) { param.date = [moment(searchTime[0]).startOf('day').format(FORMAT), moment(searchTime[1]).endOf('day').format(FORMAT)] }
+                  if (searchTags.length > 0) { param.tids = searchTags }
+                  if (searchName) { param.key = searchName }
+                  let result = await api.listStore(param)
+                  console.log('result:', result)
+                  if (result.code === 0) {
+                    let tempList = result.data.map((item, index) => { item.key = index; return item }).reverse()
+                    setStoreList(tempList)
+                  }
                 }}>
                 查询
               </Button>
@@ -349,7 +351,6 @@ const styles = {
   header: {
     backgroundColor: '#FFFFFF',
     padding: 24,
-    display: 'none'
   },
   marginTop: { marginTop: 10 },
   headerCell: {
@@ -361,7 +362,7 @@ const styles = {
   body: {
     backgroundColor: '#FFFFFF',
     padding: 24,
-    // marginTop: 16
+    marginTop: 16
   },
   button: {
     marginLeft: 10

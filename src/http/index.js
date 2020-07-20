@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { message } from 'antd'
 // const SERVER_URL = 'http://127.0.0.1:3210/'
-// const SERVER_URL = 'http://192.168.1.102:3210/'
+// const SERVER_URL = 'http://192.168.1.100:3210/'
 const SERVER_URL = 'http://chengliankeji.cn:3210/'
 
 // 响应拦截器
@@ -57,8 +57,8 @@ const api = {
     axios.post(SERVER_URL + 'removeUser', { id }, { headers: { token: localStorage.getItem('token') } }),
   /**************************************************仓库*******************************************************/
   addStore: store => axios.post(SERVER_URL + 'addStore', store, { headers: { token: localStorage.getItem('token') } }),
-  listStore: tid =>
-    axios.post(SERVER_URL + 'listStore', { tid }, { headers: { token: localStorage.getItem('token') } }),
+  listStore: params =>
+    axios.post(SERVER_URL + 'listStore', params, { headers: { token: localStorage.getItem('token') } }),
   listAllStore: tid =>
     axios.post(SERVER_URL + 'listAllStore', { tid }, { headers: { token: localStorage.getItem('token') } }),
   updateStore: params =>
