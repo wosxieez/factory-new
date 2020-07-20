@@ -108,6 +108,25 @@ export default props => {
       }
     },
     {
+      title: '数量',
+      dataIndex: 'count',
+      align: 'center',
+      width: 140,
+      render: (text, record) => {
+        let unit = record.unit ? record.unit : '个'
+        return <div>{text + ' ' + unit || ''}</div>
+      }
+    },
+    {
+      title: '价格【元】',
+      dataIndex: 'oprice',
+      align: 'center',
+      width: 140,
+      render: (text, record) => {
+        return <div>{text}</div>
+      }
+    },
+    {
       title: '入库时间',
       dataIndex: 'createdAt',
       align: 'center',
