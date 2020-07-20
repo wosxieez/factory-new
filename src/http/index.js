@@ -59,6 +59,8 @@ const api = {
   addStore: store => axios.post(SERVER_URL + 'addStore', store, { headers: { token: localStorage.getItem('token') } }),
   listStore: tid =>
     axios.post(SERVER_URL + 'listStore', { tid }, { headers: { token: localStorage.getItem('token') } }),
+  listAllStore: tid =>
+    axios.post(SERVER_URL + 'listAllStore', { tid }, { headers: { token: localStorage.getItem('token') } }),
   updateStore: params =>
     axios.post(SERVER_URL + 'updateStore', params, { headers: { token: localStorage.getItem('token') } }),
   removeStore: id =>

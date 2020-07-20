@@ -23,11 +23,11 @@ export default props => {
   const [searchName, setSearchName] = useState('')
   const [searchTags, setSearchTags] = useState([])
   const [searchTime, setSearchTime] = useState([])
-  const listStore = useCallback(async () => {
+  const listAllStore = useCallback(async () => {
     setIsLoading(true)
     setSelectedRowKeys([])
     setSelectedRows([])
-    let result = await api.listStore()
+    let result = await api.listAllStore()
     if (result.code === 0) {
       originStoreList = result.data
         .map((item, index) => {
@@ -46,17 +46,17 @@ export default props => {
     setIsLoading(false)
   }, [])
   useEffect(() => {
-    listStore()
-  }, [props.selectNode, listStore])
+    listAllStore()
+  }, [props.selectNode, listAllStore])
   const addData = useCallback(
     async data => {
       const response = await api.addStore(data)
       if (response.code === 0) {
         setIsAdding(false)
-        listStore()
+        listAllStore()
       }
     },
-    [listStore]
+    [listAllStore]
   )
   const updateData = useCallback(
     async data => {
@@ -64,10 +64,10 @@ export default props => {
       if (result.code === 0) {
         message.success('修改成功', 3)
         setIsUpdating(false)
-        listStore()
+        listAllStore()
       }
     },
-    [currentItem.id, listStore]
+    [currentItem.id, listAllStore]
   )
 
   const batchDelete = useCallback(() => {
@@ -82,13 +82,13 @@ export default props => {
         if (result.code === 0) {
           message.success('删除成功', 4)
         }
-        listStore()
+        listAllStore()
       },
       onCancel: function () {
         console.log('onCancel')
       }
     })
-  }, [selectedRows, listStore])
+  }, [selectedRows, listAllStore])
 
   const rowSelection = {
     selectedRowKeys,
@@ -259,7 +259,7 @@ export default props => {
                 style={styles.button}
                 type='reload'
                 onClick={() => {
-                  listStore()
+                  listAllStore()
                 }}
               />
             </Tooltip>
