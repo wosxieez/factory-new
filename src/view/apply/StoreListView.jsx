@@ -71,6 +71,7 @@ export default props => {
         <Breadcrumb style={styles.breadcrumb}>
           <Breadcrumb.Item>
             <Button
+              style={{ padding: 0 }}
               type='link'
               onClick={e => {
                 setStores([])
@@ -81,6 +82,7 @@ export default props => {
           {Stores.map((User, index) => (
             <Breadcrumb.Item key={index}>
               <Button
+                style={{ padding: 0 }}
                 type='link'
                 onClick={() => {
                   setStores(Stores.slice(0, index + 1))

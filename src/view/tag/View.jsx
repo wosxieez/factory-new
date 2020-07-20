@@ -85,10 +85,11 @@ export default (props) => {
   return (
     <div style={styles.root}>
       <Row type='flex' align='middle'>
-        <Col span={16}>
+        <Col span={22}>
           <Breadcrumb style={styles.breadcrumb}>
             <Breadcrumb.Item>
               <Button
+                style={{ padding: 0 }}
                 type='link'
                 onClick={e => {
                   setTags([])
@@ -99,6 +100,7 @@ export default (props) => {
             {Tags.map((Tag, index) => (
               <Breadcrumb.Item key={index}>
                 <Button
+                  style={{ padding: 0 }}
                   type='link'
                   onClick={e => {
                     setTags(Tags.slice(0, index + 1))
@@ -109,7 +111,7 @@ export default (props) => {
             ))}
           </Breadcrumb>
         </Col>
-        <Col span={8} style={{ textAlign: 'right' }}>
+        <Col span={2} style={{ textAlign: 'right' }}>
           <Button
             style={styles.button}
             size='small'

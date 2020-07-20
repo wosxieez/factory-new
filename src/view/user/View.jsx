@@ -91,10 +91,11 @@ export default () => {
   return (
     <div style={styles.root}>
       <Row type='flex' align='middle'>
-        <Col span={16}>
+        <Col span={22}>
           <Breadcrumb style={styles.breadcrumb}>
             <Breadcrumb.Item>
               <Button
+                style={{ padding: 0 }}
                 type='link'
                 onClick={e => {
                   setUsers([])
@@ -105,6 +106,7 @@ export default () => {
             {Users.map((User, index) => (
               <Breadcrumb.Item key={index}>
                 <Button
+                  style={{ padding: 0 }}
                   type='link'
                   onClick={e => {
                     setUsers(Users.slice(0, index + 1))
@@ -115,7 +117,7 @@ export default () => {
             ))}
           </Breadcrumb>
         </Col>
-        <Col span={8} style={{ textAlign: 'right' }}>
+        <Col span={2} style={{ textAlign: 'right' }}>
           <Button
             style={styles.button}
             size='small'
