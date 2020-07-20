@@ -91,6 +91,7 @@ export default props => {
     }
   }
   const columns = [
+    { title: '编号', dataIndex: 'no', width: 120, align: 'center' },
     { title: '名称', dataIndex: 'name', width: 120, align: 'center' },
     {
       title: '标签',
@@ -118,7 +119,7 @@ export default props => {
       }
     },
     {
-      title: '价格【元】',
+      title: '单价【元】',
       dataIndex: 'oprice',
       align: 'center',
       width: 140,
@@ -144,7 +145,6 @@ export default props => {
         return <div>{text || ''}</div>
       }
     },
-    { title: '编号', dataIndex: 'no', width: 120, align: 'center' },
     {
       title: '操作',
       dataIndex: 'action',

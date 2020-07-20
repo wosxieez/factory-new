@@ -8,7 +8,6 @@ import { filterTag } from '../../util/tool';
 const { confirm } = Modal
 
 export default (props) => {
-  console.log('props:', props)
   const [isAdding, setIsAdding] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const addForm = useRef()
@@ -24,7 +23,6 @@ export default (props) => {
     const response = await api.listTag(Tags.length > 0 ? Tags[Tags.length - 1].id : null)
     if (response.code === 0) {
       response.data = filterTag(response.data, props.type)
-      console.log('response.data:', response.data)
       setDataSource(response.data)
       setListIsLoading(false)
     }

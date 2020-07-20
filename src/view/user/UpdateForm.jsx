@@ -1,18 +1,23 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Modal, Form, Input, TreeSelect } from 'antd'
 import api from '../../http'
-import { getJsonTree, filterTag } from '../../util/tool'
+import { getJsonTree, filterTag, getDepartmentTree } from '../../util/tool'
 
 const UpdateForm = Form.create({ name: 'form' })(props => {
-    const [treeData, setTreeData] = useState([])
+    const [tagTreeData, setTagTreeData] = useState([])
+    const [dptTreeData, setDptTreeData] = useState([])
     const listData = useCallback(async () => {
-        let result = await api.listAllTag()
-        if (result.code === 0) {
-            result.data = filterTag(result.data, 1)
-            let treeResult = result.data.map((item) => {
+        let result_tag = await api.listAllTag()
+        if (result_tag.code === 0) {
+            result_tag.data = filterTag(result_tag.data, 1)
+            let treeResult = result_tag.data.map((item) => {
                 return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name }
             })
-            setTreeData(getJsonTree(treeResult, 0))
+            setTagTreeData(getJsonTree(treeResult, 0))
+        }
+        let result_dpt = await api.listAllDepartment()
+        if (result_dpt.code === 0) {
+            setDptTreeData(getDepartmentTree(result_dpt.data))
         }
     }, [])
     useEffect(() => {
@@ -52,19 +57,36 @@ const UpdateForm = Form.create({ name: 'form' })(props => {
                         }]
                     })(<Input.Password placeholder='请再次输入密码' />)}
                 </Form.Item>
-                <Form.Item label='专业'>
-                    {props.form.getFieldDecorator('tids', {
-                        initialValue: props.data.tids || null,
-                        rules: [{ required: false, message: '请选择专业' }]
+                <Form.Item label='部门'>
+                    {props.form.getFieldDecorator('dids', {
+                        initialValue: props.data.dids || null,
+                        rules: [{ required: false, message: '请选择部门' }]
                     })(
                         <TreeSelect
                             treeNodeFilterProp='title'
                             showSearch
                             multiple
-                            treeData={treeData}
+                            treeData={dptTreeData}
                             style={{ width: '100%' }}
                             dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                            placeholder='请选择专业'
+                            placeholder='请选择部门'
+                            showCheckedStrategy={TreeSelect.SHOW_PARENT}
+                        />
+                    )}
+                </Form.Item>
+                <Form.Item label='标签'>
+                    {props.form.getFieldDecorator('tids', {
+                        initialValue: props.data.tids || null,
+                        rules: [{ required: false, message: '请选择标签' }]
+                    })(
+                        <TreeSelect
+                            treeNodeFilterProp='title'
+                            showSearch
+                            multiple
+                            treeData={tagTreeData}
+                            style={{ width: '100%' }}
+                            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                            placeholder='请选择标签'
                             showCheckedStrategy={TreeSelect.SHOW_PARENT}
                         />
                     )}

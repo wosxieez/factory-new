@@ -39,10 +39,10 @@ const AddForm = Form.create({ name: 'form' })((props) => {
             rules: [{ required: true, message: '请输入单位' }]
           })(<Input placeholder='请输入单位' style={{ width: '100%' }} />)}
         </Form.Item>
-        <Form.Item label='价格' >
+        <Form.Item label='单价[元]' >
           {props.form.getFieldDecorator('oprice', {
-            rules: [{ required: false, message: '请输入价格' }]
-          })(<InputNumber placeholder='请输入价格' min={0} style={{ width: '100%' }} />)}
+            rules: [{ required: false, message: '请输入单价' }]
+          })(<InputNumber placeholder='请输入单价' min={0} style={{ width: '100%' }} />)}
         </Form.Item>
         <Form.Item label='编号' >
           {props.form.getFieldDecorator('no', {

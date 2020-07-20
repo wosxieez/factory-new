@@ -19,35 +19,21 @@ export default (props) => {
         <span style={{ ...styles.title, visibility: collapsed ? 'hidden' : 'visible' }}>Welcome</span>
       </div>
       <Menu theme="dark" mode="inline" selectedKeys={[props.location.pathname]}>
-        <SubMenu key="物料管理" title={<span><Icon type="code-sandbox" /><span>物料管理</span></span>}>
-          <Menu.Item key={'/main/storeview'}>
-            <Icon type="code-sandbox" />
-            <span className="nav-text">物料列表</span>
-            <Link to={`${props.match.url}/storeview`} />
-          </Menu.Item>
-          <Menu.Item key={'/main/storetag'}>
-            <Icon type="tags" />
-            <span className="nav-text">物料标签</span>
-            <Link to={`${props.match.url}/storetag`} />
-          </Menu.Item>
-        </SubMenu>
+        <Menu.Item key={'/main/storeview'}>
+          <Icon type="code-sandbox" />
+          <span className="nav-text">物料列表</span>
+          <Link to={`${props.match.url}/storeview`} />
+        </Menu.Item>
         <Menu.Item key="/main/departmentview">
           <Icon type="apartment" />
           <span>部门列表</span>
           <Link to={`${props.match.url}/departmentview`} />
         </Menu.Item>
-        <SubMenu key="用户管理" title={<span><Icon type="user" /><span>用户管理</span></span>}>
-          <Menu.Item key={'/main/userview'}>
-            <Icon type="user" />
-            <span className="nav-text">用户列表</span>
-            <Link to={`${props.match.url}/userview`} />
-          </Menu.Item>
-          <Menu.Item key={'/main/usertag'}>
-            <Icon type="tags" />
-            <span className="nav-text">用户标签</span>
-            <Link to={`${props.match.url}/usertag`} />
-          </Menu.Item>
-        </SubMenu>
+        <Menu.Item key={'/main/userview'}>
+          <Icon type="user" />
+          <span className="nav-text">用户列表</span>
+          <Link to={`${props.match.url}/userview`} />
+        </Menu.Item>
         <Menu.Item key={'/main/applyview'}>
           <Icon type="form" />
           <span className="nav-text">物品申请</span>
@@ -58,10 +44,22 @@ export default (props) => {
           <span className="nav-text">申请审批</span>
           <Link to={`${props.match.url}/approveview`} />
         </Menu.Item>
+        <SubMenu key="设置" title={<span><Icon type="setting" /><span>设置</span></span>}>
+          <Menu.Item key={'/main/usertag'}>
+            <Icon type="tags" />
+            <span className="nav-text">用户标签</span>
+            <Link to={`${props.match.url}/usertag`} />
+          </Menu.Item>
+          <Menu.Item key={'/main/storetag'}>
+            <Icon type="tags" />
+            <span className="nav-text">物料标签</span>
+            <Link to={`${props.match.url}/storetag`} />
+          </Menu.Item>
+        </SubMenu>
       </Menu>
     </Sider>
     <Layout style={{ marginLeft: collapsed ? 80 : 200 }} >
-      <Header style={{ position: 'fixed', zIndex: 1, width: `calc(100% - ${collapsed ? 80 : 200}px)`, backgroundColor: '#fff', padding: 0, borderBottomStyle: 'solid', borderBottomWidth: 1, borderBottomColor: '#e8e8e8' }}>
+      <Header style={{ position: 'fixed', zIndex: 10, width: `calc(100% - ${collapsed ? 80 : 200}px)`, backgroundColor: '#fff', padding: 0, borderBottomStyle: 'solid', borderBottomWidth: 1, borderBottomColor: '#e8e8e8' }}>
         <div style={{ display: 'flex', alignItems: 'center', width: `100%`, flexDirection: 'row', justifyContent: 'space-between' }}>
           <Icon
             style={styles.trigger}
