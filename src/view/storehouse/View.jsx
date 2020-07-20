@@ -106,7 +106,7 @@ export default props => {
         let tagList = []
         if (text && text.length > 0) {
           tagList = text.map((item, index) => (
-            <Tag key={index} color='#f5222d'>
+            <Tag key={index} color={item.color}>
               {item.name}
             </Tag>
           ))
@@ -237,7 +237,7 @@ export default props => {
       </div>
       <div style={styles.body}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <h3>库品信息</h3>
+          <h3>物料管理</h3>
           <div>
             {selectedRowKeys.length === 0 ? (
               <Button

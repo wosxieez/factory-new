@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import { Modal, Form, Input, TreeSelect } from 'antd'
+import { Modal, Form, Input, TreeSelect, Select } from 'antd'
 import api from '../../http'
-import { getJsonTree } from '../../util/tool'
+import { getJsonTree, colorList } from '../../util/tool'
+const { Option } = Select;
 
 const UpdateForm = Form.create({ name: 'form' })(props => {
     const [treeData, setTreeData] = useState([])
@@ -43,6 +44,20 @@ const UpdateForm = Form.create({ name: 'form' })(props => {
                             showCheckedStrategy={TreeSelect.SHOW_PARENT}
                         />
                     )}
+                </Form.Item>
+                <Form.Item label='颜色' >
+                    {props.form.getFieldDecorator('color', {
+                        initialValue: props.data.color || '#f5222d',
+                        rules: [{ required: true, message: '请选择颜色' }]
+                    })(<Select placeholder='请选择颜色'>
+                        {colorList.map((item, index) => {
+                            return <Option key={index} value={item.color}>
+                                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                                    <div style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: item.color, marginRight: 10 }} />{item.label}
+                                </div>
+                            </Option>
+                        })}
+                    </Select>)}
                 </Form.Item>
                 <Form.Item label='备注'>{props.form.getFieldDecorator('remark', { initialValue: props.data.remark })(<Input.TextArea rows={4} placeholder='选填' />)}</Form.Item>
             </Form>

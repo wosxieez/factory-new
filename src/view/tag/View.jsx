@@ -127,7 +127,7 @@ export default () => {
                   const newTags = [...Tags, item]
                   setTags(newTags)
                 }}
-                avatar={<Avatar style={styles.avatar}>{item.name}</Avatar>}
+                avatar={<Avatar style={{ ...styles.avatar, backgroundColor: item.color }}>{item.name}</Avatar>}
                 title={item.name}
                 description={item.remark}
               />
@@ -237,5 +237,5 @@ const styles = {
   listItem: {
     cursor: 'pointer'
   },
-  avatar: { backgroundColor: '#f56a00', verticalAlign: 'middle' }
+  avatar: { verticalAlign: 'middle' }
 }
