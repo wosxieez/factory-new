@@ -147,7 +147,7 @@ export default () => {
                 title={item.name}
                 description={item.remark}
               />
-              {item.type === 'user' && item.tags ? <div>{item.tags.map((item, index) => { return <div key={index}><Tag color='blue'>{item.name}</Tag></div> })}</div> : null}
+              {item.type === 'user' && item.tags ? <div>{item.tags.map((item, index) => { return <div key={index}><Tag color={item.color || 'blue'}>{item.name}</Tag></div> })}</div> : null}
               {item.type === 'user' ? (
                 <div style={styles.icon_more}>
                   <Dropdown
