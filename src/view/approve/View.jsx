@@ -330,6 +330,7 @@ export default props => {
                     }}
                 />
                 <OperationView
+                    refreshTableData={() => { listOrders() }}
                     visible={operationVisible}
                     record={currentItem}
                     onCancel={() => {

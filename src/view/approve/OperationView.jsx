@@ -12,14 +12,20 @@ export default props => {
     const [orderStepLog, setOrderStepLog] = useState([])
     const getOrderData = useCallback(async () => {
         if (!props.record.id) { return }
-        let result = await api.query(`select * from orders where id = ${props.record.id} `)
+        let result = await api.query(`select orders.*,order_type.order_name as order_type_name ,tags.name as tag_name,users.name as user_name from orders 
+        left join (select * from order_type where isdelete = 0) order_type on orders.type_id = order_type.id
+        left join (select * from tags where isdelete = 0) tags on orders.tag_id = tags.id
+        left join (select * from users where isdelete = 0) users on orders.create_user = users.id
+        where orders.isdelete = 0 and orders.id = ${props.record.id} `)
         if (result.code === 0) {
             // console.log('getOrderData 结果:', result.data[0][0])
             setRecord(result.data[0][0]);
         }
-        let result2 = await api.query(`select * from order_step_log where order_id = ${props.record.id} `)
+        let result2 = await api.query(`select order_step_log.*,users.name as user_name from order_step_log 
+        left join (select * from users where isdelete = 0) users on order_step_log.assignee_id = users.id
+        where order_id = ${props.record.id} `)
         if (result2.code === 0) {
-            // console.log('getorderSteplog 结果:', result2.data[0])
+            console.log('getorderSteplog 结果:', result2.data[0])
             setOrderStepLog(result2.data[0])
         }
         let result3 = await api.query(`select * from order_workflok where order_type_id = ${props.record.type_id} order by step_number`)
@@ -41,12 +47,13 @@ export default props => {
             onCancel={props.onCancel}
             footer={null}
         >
-            {RenderDetail(record, workflok, orderStepLog, getOrderData)}
+            {RenderDetail(record, workflok, orderStepLog, getOrderData, props)}
         </Modal>)
 }
 
-function RenderDetail(record, workflok, orderStepLog, getOrderData) {
+function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
     // console.log('RenderDetail')
+    const [user] = useState(localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : {})
     const [remark, setRemark] = useState('')
     const [status, setStatus] = useState(1)
     // const [stepNumber, setStepNumber] = useState(record.step_number)
@@ -59,8 +66,8 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData) {
     let data = JSON.parse(record.content).map((item, index) => { item.key = index; return item })
     const columns = [{ title: '物料', dataIndex: 'store_name' }, { title: '数量', dataIndex: 'count' }]
     return <div>
-        <h3>申请物料</h3>
         <Table
+            size={'small'}
             bordered
             columns={columns}
             dataSource={data}
@@ -69,16 +76,16 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData) {
         <h3 style={styles.marginTop}>当前进度</h3>
         <Steps style={styles.marginTop} current={record.status === 2 ? record.step_number + 1 : record.step_number}>
             <Step key='0' title="提交申请" description={<div>
-                <div>申请人:{record.create_user}</div>
+                <div>申请人:{record.user_name || ''}</div>
                 <div>{moment(record.createdAt).format(FORMAT)}</div>
                 <div>{record.remark}</div>
             </div>} />
             {renderApproveSteps(record, workflok, orderStepLog)}
             <Step key='10' title="完成" />
         </Steps>
-        <Divider />
         {record.status === 0 || record.status === 1 ?
             <>
+                <Divider />
                 <h3>{getCurrentStepName(record, workflok)}操作</h3>
                 <Row style={styles.marginTop} >
                     <Col span={3}>
@@ -111,7 +118,7 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData) {
                                     let currentWirteStep = record.step_number + 1;
                                     let step_number_next = status === 1 ? currentWirteStep + 1 : currentWirteStep
                                     ///插入order_step_log 表中一条记录
-                                    let sql = `insert into order_step_log (order_id,assignee_id,status,remark,createdAt,step_number,step_number_next) values (${record.id},1,${status},'${remark}','${moment().format(FORMAT)}',${currentWirteStep},${step_number_next})`
+                                    let sql = `insert into order_step_log (order_id,assignee_id,status,remark,createdAt,step_number,step_number_next) values (${record.id},${user.id},${status},'${remark}','${moment().format(FORMAT)}',${currentWirteStep},${step_number_next})`
                                     let result = await api.query(sql)
                                     if (result.code !== 0) { return }
                                     let order_status;
@@ -125,13 +132,13 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData) {
                                     // console.log('step_number_next:', step_number_next)
                                     let sql2 = `update orders set status=${order_status},step_number=${currentWirteStep} where id = ${record.id}`
                                     let result2 = await api.query(sql2)
-                                    if (result2.code === 0) { message.success('审批成功', 3); getOrderData() }
+                                    if (result2.code === 0) { message.success('审批成功', 3); getOrderData(); props.refreshTableData() }
                                     workflok.forEach((item) => {
                                         // console.log('item.step_number:', item.step_number, 'record.step_number:', record.step_number, 'item.is_over:', item.is_over, 'status:', status)
                                         if (item.step_number === currentWirteStep && item.is_over === 1 && status === 1) {
                                             console.log('库管确认---仓库变动')
                                             console.log('record:', record)
-                                            api.updateStore()
+                                            // api.updateStore()
                                             updateStoreHandler(record)
                                         }
                                     })
@@ -155,7 +162,7 @@ function renderApproveSteps(record, workflok, orderStepLog) {
         return <Step key={index + 1} title={item.name}
             description={item.stepLog ? <div>
                 {item.stepLog.status === 1 ? <Tag color='green'>通过</Tag> : <Tag color='red'>拒绝</Tag>}
-                <div>处理人:{item.stepLog.assignee_id}</div>
+                <div>处理人:{item.stepLog.user_name || ''}</div>
                 <div>{moment(item.stepLog.createdAt).format(FORMAT)}</div>
                 <div>{item.stepLog.remark}</div>
             </div> : null}
@@ -180,8 +187,8 @@ async function updateStoreHandler(record) {
     console.log('目标:', tempList)
     for (let index = 0; index < tempList.length; index++) {
         const element = tempList[index];
-        if (record.type === 1) {
-            element.count = -element.count
+        if (record.type_id === 1) {
+            element.count = - element.count
         }
         let result = await api.updateStoreCount({ id: element.store_id, count: element.count })
         console.log('库品数量修改结果：', result)
