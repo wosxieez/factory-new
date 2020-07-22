@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, message, Tag } from 'antd';
 import api from '../../http';
 import moment from 'moment'
+import { xiaomeiParseFloat } from '../../util/tool';
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 const { Step } = Steps;
 
@@ -25,7 +26,7 @@ export default props => {
         left join (select * from users where isdelete = 0) users on order_step_log.assignee_id = users.id
         where order_id = ${props.record.id} `)
         if (result2.code === 0) {
-            console.log('getorderSteplog 结果:', result2.data[0])
+            // console.log('getorderSteplog 结果:', result2.data[0])
             setOrderStepLog(result2.data[0])
         }
         let result3 = await api.query(`select * from order_workflok where order_type_id = ${props.record.type_id} order by step_number`)
@@ -63,8 +64,40 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
     // console.log('stepNumber:', stepNumber)
 
     if (!record.content) { return }
-    let data = JSON.parse(record.content).map((item, index) => { item.key = index; return item })
-    const columns = [{ title: '物料', dataIndex: 'store_name' }, { title: '数量', dataIndex: 'count' }]
+    let sum_price = 0;///总价
+    let sum_count = 0;///总件数
+    JSON.parse(record.content).forEach((item) => {
+        sum_price = sum_price + item.count * item.oprice;
+        sum_count = sum_count + item.count;
+    })
+    let tempList = JSON.parse(record.content);
+    tempList.push({ store_name: '总计', count: sum_count, oprice: sum_price, isSum: true })
+    let data = tempList.map((item, index) => { item.key = index; return item })
+    const columns = [{
+        title: '物料', dataIndex: 'store_name',
+        render: (text, record) => {
+            if (record.isSum) {
+                return <Tag color={'#f5222d'}>{text}</Tag>
+            }
+            return text
+        }
+    }, {
+        title: '数量', dataIndex: 'count',
+        render: (text, record) => {
+            if (record.isSum) {
+                return <Tag color={'red'}>{text}</Tag>
+            }
+            return text
+        }
+    }, {
+        title: '单价【元】', dataIndex: 'oprice',
+        render: (text, record) => {
+            if (record.isSum) {
+                return <Tag color={'red'}>{xiaomeiParseFloat(text)}</Tag>
+            }
+            return text
+        }
+    }]
     return <div>
         <Table
             size={'small'}
@@ -74,16 +107,17 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
             pagination={false}
         />
         <h3 style={styles.marginTop}>当前进度</h3>
-        <Steps style={styles.marginTop} current={record.status === 2 ? record.step_number + 1 : record.step_number}>
+        <Steps style={styles.marginTop} current={record.status === 3 ? record.step_number + 1 : record.step_number}>
             <Step key='0' title="提交申请" description={<div>
+                <Tag color='green'>已申请</Tag>
                 <div>申请人:{record.user_name || ''}</div>
                 <div>{moment(record.createdAt).format(FORMAT)}</div>
                 <div>{record.remark}</div>
             </div>} />
             {renderApproveSteps(record, workflok, orderStepLog)}
-            <Step key='10' title="完成" />
+            <Step key='10' title="完毕" />
         </Steps>
-        {record.status === 0 || record.status === 1 ?
+        {record.status < 3 ?
             <>
                 <Divider />
                 <h3>{getCurrentStepName(record, workflok)}操作</h3>
@@ -94,7 +128,7 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                     <Col span={18}>
                         <Radio.Group value={status} buttonStyle="solid" onChange={(e) => { setStatus(e.target.value) }}>
                             <Radio.Button value={1}>通过</Radio.Button>
-                            <Radio.Button value={0}>拒绝</Radio.Button>
+                            <Radio.Button disabled={record.status === 2} value={0}>拒绝</Radio.Button>
                         </Radio.Group>
                     </Col>
                 </Row>
@@ -114,20 +148,29 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                                 icon: <Icon type="info-circle" />,
                                 content: '请自行确保提交信息的准确性--审批操作不可撤销',
                                 onOk: async () => {
+                                    console.log('1workflok:', workflok)
+                                    console.log('record:', record)
+                                    // return;
                                     /// step_number +1 用于表示当前写的审批出现在 step 中的位置
                                     let currentWirteStep = record.step_number + 1;
-                                    let step_number_next = status === 1 ? currentWirteStep + 1 : currentWirteStep
+                                    let step_number_next = status === 1 ? currentWirteStep + 1 : currentWirteStep ///如果选择通过 step+1
                                     ///插入order_step_log 表中一条记录
                                     let sql = `insert into order_step_log (order_id,assignee_id,status,remark,createdAt,step_number,step_number_next) values (${record.id},${user.id},${status},'${remark}','${moment().format(FORMAT)}',${currentWirteStep},${step_number_next})`
                                     let result = await api.query(sql)
                                     if (result.code !== 0) { return }
                                     let order_status;
-                                    if (status === 1 && step_number_next > workflok.length) {///如果下一步大于 该类表的审核流程数量 那么就说明流程全部走完 该条申请完成 order 的状态要改成 2 完成
-                                        order_status = 2
+                                    if (status === 1 && step_number_next > workflok.length) {///如果下一步大于 该类表的审核流程数量 那么就说明流程全部走完 该条申请完成 order 的状态要改成 3 完成
+                                        order_status = 3
                                     } else if (status === 1 && step_number_next <= workflok.length) {///如果下一步小于等于 该类表的审核流程数量 那么就说明还在审批流程中 该条申请完成 order 的状态要改成 1 审核过程中
                                         order_status = 1
+                                        ///还要判断是不是出库的审批
+                                        workflok.forEach((item) => {
+                                            if (item.step_number === currentWirteStep && item.is_change === 1 && status === 1) {
+                                                order_status = 2
+                                            }
+                                        })
                                     } else if (status === 0) {///如果选择了 拒绝 那么 该条申请完成 order 的状态要改成 3 终止
-                                        order_status = 3
+                                        order_status = 4
                                     }
                                     // console.log('step_number_next:', step_number_next)
                                     let sql2 = `update orders set status=${order_status},step_number=${currentWirteStep} where id = ${record.id}`
@@ -135,7 +178,7 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                                     if (result2.code === 0) { message.success('审批成功', 3); getOrderData(); props.refreshTableData() }
                                     workflok.forEach((item) => {
                                         // console.log('item.step_number:', item.step_number, 'record.step_number:', record.step_number, 'item.is_over:', item.is_over, 'status:', status)
-                                        if (item.step_number === currentWirteStep && item.is_over === 1 && status === 1) {
+                                        if (item.step_number === currentWirteStep && item.is_change === 1 && status === 1) {
                                             console.log('库管确认---仓库变动')
                                             console.log('record:', record)
                                             // api.updateStore()
@@ -161,7 +204,7 @@ function renderApproveSteps(record, workflok, orderStepLog) {
     return workflok.map((item, index) => {
         return <Step key={index + 1} title={item.name}
             description={item.stepLog ? <div>
-                {item.stepLog.status === 1 ? <Tag color='green'>通过</Tag> : <Tag color='red'>拒绝</Tag>}
+                {item.stepLog.status === 1 ? <Tag color='green'>已通过</Tag> : <Tag color='red'>已拒绝</Tag>}
                 <div>处理人:{item.stepLog.user_name || ''}</div>
                 <div>{moment(item.stepLog.createdAt).format(FORMAT)}</div>
                 <div>{item.stepLog.remark}</div>
@@ -190,7 +233,11 @@ async function updateStoreHandler(record) {
         if (record.type_id === 1) {
             element.count = - element.count
         }
+        ///这里-用的是循环调用单次修改接口一次修改一个物品，所以会出现多次返回修改结果；后期接口需要升级。支持批量修改
         let result = await api.updateStoreCount({ id: element.store_id, count: element.count })
+        if (result.code === 0) {
+            message.success(record.type_id === 1 ? '出库成功' : '入库成功', 3);
+        }
         console.log('库品数量修改结果：', result)
     }
 }

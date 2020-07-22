@@ -75,7 +75,7 @@ export default props => {
           <InputNumber
             value={parseInt(text)}
             min={0}
-            max={1000}
+            max={10000}
             onChange={v => {
               changeHandler(record, v, 'count')
             }}
@@ -83,6 +83,7 @@ export default props => {
         )
       }
     },
+    { title: '单价【元】', align: 'center', dataIndex: 'oprice' },
     {
       title: '操作',
       align: 'center',
@@ -189,6 +190,7 @@ export default props => {
             key: parseInt(dataSource.length),
             store_id: store.id,
             store_name: store.name,
+            oprice: store.oprice || 0,
             max_count: store.count,
             count: 1
           }

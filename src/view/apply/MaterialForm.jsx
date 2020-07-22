@@ -54,6 +54,7 @@ export default props => {
                 return <InputNumber value={parseInt(text)} min={0} max={record.max_count || 0} onChange={(v) => { changeHandler(record, v, 'count') }} />
             }
         },
+        { title: '单价【元】', align: 'center', dataIndex: 'oprice' },
         {
             title: '操作', align: 'center', dataIndex: 'actions', width: 70, render: (_, record) => {
                 return <Popconfirm title="确认删除吗?" onConfirm={() => deleteHandle(record.key)}>
@@ -114,6 +115,7 @@ export default props => {
         }}>提交</Button>
         <StoreDrawer showDrawer={showDrawer} onClose={() => { setShowDrawer(false) }} isReture={false} selectStore={(store) => {
             // console.log('store:', store)
+            // return;
             let isExisted = false;
             dataSource.forEach((oldItem) => {
                 if (oldItem.store_id === store.id) {
@@ -126,6 +128,7 @@ export default props => {
                 key: parseInt(dataSource.length),
                 store_id: store.id,
                 store_name: store.name,
+                oprice: store.oprice || 0,
                 max_count: store.count,
                 count: 1
             };

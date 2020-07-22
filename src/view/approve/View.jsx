@@ -157,14 +157,18 @@ export default props => {
                         color = '#2db7f5'
                         break
                     case 2:
-                        result = '通过'
-                        color = '#87d068'
+                        result = record.type_id === 1 ? '已出库' : '已入库'
+                        color = '#722ed1'
                         break
                     case 3:
+                        result = '完毕'
+                        color = '#87d068'
+                        break
+                    case 4:
                         result = '拒绝'
                         color = '#f50'
                         break
-                    case 4:
+                    case 5:
                         result = '撤销'
                         break
                     default:
