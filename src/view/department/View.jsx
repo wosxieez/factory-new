@@ -7,7 +7,7 @@ import api from '../../http'
 import { useEffect, useCallback } from 'react'
 const { confirm } = Modal
 
-export default () => {
+export default (props) => {
   const [isAdding, setIsAdding] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const addForm = useRef()
@@ -83,14 +83,16 @@ export default () => {
   return (
     <div style={styles.root}>
       <Row type='flex' align='middle'>
-        <Col span={22}>
+        <Col span={18}>
           <Breadcrumb style={styles.breadcrumb}>
             <Breadcrumb.Item>
               <Button
+                size='small'
                 style={{ padding: 0 }}
                 type='link'
                 onClick={e => {
                   setDepartments([])
+                  props.selectDpt(null);
                 }}>
                 {localStorage.getItem('cname')}
               </Button>
@@ -99,9 +101,12 @@ export default () => {
               <Breadcrumb.Item key={index}>
                 <Button
                   style={{ padding: 0 }}
+                  size='small'
                   type='link'
                   onClick={e => {
-                    setDepartments(departments.slice(0, index + 1))
+                    let selectBreadcrumb = departments.slice(0, index + 1);
+                    setDepartments(selectBreadcrumb)
+                    props.selectDpt(selectBreadcrumb[selectBreadcrumb.length - 1])
                   }}>
                   {department.name}
                 </Button>
@@ -109,13 +114,13 @@ export default () => {
             ))}
           </Breadcrumb>
         </Col>
-        <Col span={2} style={{ textAlign: 'right' }}>
+        <Col span={4}>
           <Button
             style={styles.button}
             size='small'
             type='primary'
             icon={'plus'}
-            onClick={setIsAdding.bind(this, true)}>新增</Button>
+            onClick={setIsAdding.bind(this, true)} />
         </Col>
       </Row>
       <List
@@ -128,6 +133,7 @@ export default () => {
                 onClick={() => {
                   const newDepartments = [...departments, item]
                   setDepartments(newDepartments)
+                  props.selectDpt(item);
                 }}
                 avatar={<Avatar style={styles.avatar}>{item.name}</Avatar>}
                 title={item.name}
@@ -203,6 +209,7 @@ const styles = {
   root: {
     padding: '12px 24px 12px 24px',
     width: '100%',
+    height: '100vh',
     backgroundColor: '#FFFFFF',
   },
   header: {
@@ -215,7 +222,7 @@ const styles = {
     justifyContent: 'space-between'
   },
   button: {
-    marginLeft: 10
+    marginLeft: 38
   },
   icon_more: {
     width: 70,

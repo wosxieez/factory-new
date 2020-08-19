@@ -51,6 +51,7 @@ const api = {
   /**************************************************员工*******************************************************/
   addUser: user => axios.post(SERVER_URL + 'addUser', user, { headers: { token: localStorage.getItem('token') } }),
   listUser: did => axios.post(SERVER_URL + 'listUser', { did }, { headers: { token: localStorage.getItem('token') } }),
+  listAllUser: _ => axios.post(SERVER_URL + 'listAllUser', {}, { headers: { token: localStorage.getItem('token') } }),
   updateUser: params =>
     axios.post(SERVER_URL + 'updateUser', params, { headers: { token: localStorage.getItem('token') } }),
   removeUser: id =>

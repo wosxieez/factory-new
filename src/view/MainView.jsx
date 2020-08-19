@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { Route, Link } from 'react-router-dom'
 import { Layout, Menu, Icon, Modal } from 'antd';
-import DepartmentView from './department/View'
+// import DepartmentView from './department/View'
+// import UserView from './user/View'
+import DptAndUser from './dptAndUser/View'
 import TagView from './tag/View'
-import UserView from './user/View'
 import StoreHouseView from './storehouse/View'
 import ApplyView from './apply/View'
 import ApproveView from './approve/View'
@@ -29,11 +30,11 @@ export default (props) => {
           <span>部门列表</span>
           <Link to={`${props.match.url}/departmentview`} />
         </Menu.Item>
-        <Menu.Item key={'/main/userview'}>
+        {/* <Menu.Item key={'/main/userview'}>
           <Icon type="user" />
           <span className="nav-text">用户列表</span>
           <Link to={`${props.match.url}/userview`} />
-        </Menu.Item>
+        </Menu.Item> */}
         <Menu.Item key={'/main/applyview'}>
           <Icon type="form" />
           <span className="nav-text">物品申请</span>
@@ -80,9 +81,9 @@ export default (props) => {
         </div>
       </Header>
       <Content style={{ margin: '80px 16px 0', overflow: 'initial', height: '100vh' }}>
-        <Route path={`${props.match.url}/departmentview`} component={DepartmentView} />
+        <Route path={`${props.match.url}/departmentview`} component={DptAndUser} />
         <Route path={`${props.match.url}/storeview`} component={StoreHouseView} />
-        <Route path={`${props.match.url}/userview`} component={UserView} />
+        {/* <Route path={`${props.match.url}/userview`} component={UserView} /> */}
         <Route path={`${props.match.url}/applyview`} component={ApplyView} />
         <Route path={`${props.match.url}/approveview`} component={ApproveView} />
         <Route path={`${props.match.url}/storetag`} component={() => { return <TagView type={0} /> }} />

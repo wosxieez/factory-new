@@ -1,199 +1,148 @@
 import React, { useState, useRef } from 'react'
-import { Breadcrumb, Col, Row, Button, List, Avatar, Icon, Modal, message, Menu, Dropdown, Tag } from 'antd'
+import { Button, Icon, Modal, message, Tag, Table, Tooltip } from 'antd'
 
 import api from '../../http'
 import { useEffect, useCallback } from 'react'
 import AddForm from './AddFrom'
 import UpdateForm from './UpdateForm'
-const { confirm } = Modal
 
-export default () => {
+export default (props) => {
   const [isAdding, setIsAdding] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const addForm = useRef()
   const updateForm = useRef()
-
   const [dataSource, setDataSource] = useState([])
-  const [Users, setUsers] = useState([])
   const [listIsLoading, setListIsLoading] = useState(false)
-  const [currentItem, setCurrentItem] = useState({})
+  const [currentItem, setCurrentItem] = useState({})///当前选中的人员
+  const [selectedRowKeys, setSelectedRowKeys] = useState([])
+  const [selectedRows, setSelectedRows] = useState([])
 
   const listData = useCallback(async () => {
     setListIsLoading(true)
-    const response = await api.listUser(Users.length > 0 ? Users[Users.length - 1].id : null)
-    const response_dpt = await api.listDepartment(Users.length > 0 ? Users[Users.length - 1].id : null)
-    response.data = response.data.map(item => {
-      item.type = 'user'
-      return item
-    })
-    response_dpt.data = response_dpt.data.map(item => {
-      item.type = 'department'
-      return item
-    })
+    let dptid = null
+    if (props.selectdpt) {
+      dptid = props.selectdpt.id
+    }
+    let response;
+    if (dptid) {
+      response = await api.listUser(dptid)
+    } else {
+      response = await api.listAllUser()
+    }
     if (response.code === 0) {
-      setDataSource([...response_dpt.data, ...response.data])
+      let temp = response.data.map((item, index) => { item.key = index; return item });
+      setDataSource(temp)
       setListIsLoading(false)
     }
-  }, [Users])
+  }, [props.selectdpt])
 
   const addData = useCallback(
     async data => {
-      if (Users.length > 0) data.did = Users[Users.length - 1].id
       const response = await api.addUser(data)
       if (response.code === 0) {
+        message.success('添加成功', 3)
         setIsAdding(false)
         listData()
       }
     },
-    [Users, listData]
+    [listData]
   )
-
-  const deleteUser = useCallback(
-    item => {
-      confirm({
-        title: `确定删除【${item.name}】吗？`,
-        content: '请慎重选择',
-        okText: '删除',
-        okType: 'danger',
-        cancelText: '取消',
-        onOk: async () => {
-          let result = await api.removeUser(item.id)
-          if (result.code === 0) {
-            message.success('删除成功', 3)
-            listData(Users)
-          }
-        },
-        onCancel() {
-          console.log('Cancel')
-        }
-      })
-    },
-    [Users, listData]
-  )
-
   const updateData = useCallback(
     async data => {
       let result = await api.updateUser({ id: currentItem.id, ...data })
       if (result.code === 0) {
         message.success('修改成功', 3)
         setIsUpdating(false)
-        listData(Users)
+        listData()
       }
     },
-    [currentItem.id, Users, listData]
+    [currentItem.id, listData]
   )
+
+  const batchDelete = useCallback(() => {
+    Modal.confirm({
+      title: `确认要批量删除这${selectedRows.length}条记录吗？`,
+      content: '请自行确保所选的信息的准确性',
+      okText: '删除',
+      okType: 'danger',
+      onOk: async function () {
+        let idList = selectedRows.map(item => item.id)
+        let result = await api.removeUser(idList)
+        if (result.code === 0) {
+          message.success('删除成功', 4)
+        }
+        listData();
+      },
+    })
+  }, [selectedRows, listData])
 
   useEffect(() => {
     listData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Users])
+  }, [props.selectdpt, listData])
 
+  const columns = [
+    { title: '名称', dataIndex: 'name', width: 120 },
+    {
+      title: '部门', dataIndex: 'departments', render: (text) => {
+        return <div>{(text || []).map((item, index) => { return <Tag key={index}>{item.name}</Tag> })}</div>
+      }
+    },
+    {
+      title: '标签', dataIndex: 'tags', render: (text) => {
+        return <div>{(text || []).map((item, index) => { return <Tag key={index} color={item.color}>{item.name}</Tag> })}</div>
+      }
+    },
+    {
+      title: '操作', dataIndex: 'action', width: 100, align: 'center', render: (_, record) => {
+        return <Button size='small' type='primary' onClick={() => {
+          setCurrentItem(record);
+          setIsUpdating(true);
+        }}>修改</Button>
+      }
+    },
+  ]
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedRowKeys, selectedRows) => {
+      setSelectedRowKeys(selectedRowKeys)
+      setSelectedRows(selectedRows)
+    }
+  }
   return (
     <div style={styles.root}>
-      <Row type='flex' align='middle'>
-        <Col span={22}>
-          <Breadcrumb style={styles.breadcrumb}>
-            <Breadcrumb.Item>
-              <Button
-                style={{ padding: 0 }}
-                type='link'
-                onClick={e => {
-                  setUsers([])
-                }}>
-                {localStorage.getItem('cname')}
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <h3 style={{ marginTop: 2 }}>员工列表</h3>
+        <div>
+          {selectedRowKeys.length === 0 ? (
+            <Button
+              size='small'
+              style={styles.button}
+              type='primary'
+              icon={'plus'}
+              onClick={() => {
+                setIsAdding(true)
+              }}>
+              新增
               </Button>
-            </Breadcrumb.Item>
-            {Users.map((User, index) => (
-              <Breadcrumb.Item key={index}>
-                <Button
-                  style={{ padding: 0 }}
-                  type='link'
-                  onClick={e => {
-                    setUsers(Users.slice(0, index + 1))
-                  }}>
-                  {User.name}
-                </Button>
-              </Breadcrumb.Item>
-            ))}
-          </Breadcrumb>
-        </Col>
-        <Col span={2} style={{ textAlign: 'right' }}>
-          <Button
-            style={styles.button}
-            size='small'
-            type='primary'
-            icon={'plus'}
-            onClick={setIsAdding.bind(this, true)}>新增</Button>
-        </Col>
-      </Row>
-      <List
-        loading={listIsLoading}
-        dataSource={dataSource}
-        renderItem={item => {
-          return (
-            <List.Item style={styles.listItem}>
-              <List.Item.Meta
-                onClick={() => {
-                  if (item.type === 'department') {
-                    const newUsers = [...Users, item]
-                    setUsers(newUsers)
-                  }
-                }}
-                avatar={
-                  item.type === 'user' ? (
-                    <Avatar src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=1483445077,3893022741&fm=26&gp=0.jpg" />
-                  ) : (
-                      <Avatar style={styles.avatar}>{item.name}</Avatar>
-                    )
-                }
-                title={item.name}
-                description={
-                  <div>
-                    {item.remark}
-                    {item.type === 'user' && item.tags ? <div>{item.tags.map((item, index) => { return <span key={index}><Tag color={item.color || 'blue'}>{item.name}</Tag></span> })}</div> : null}
-                  </div>
-                }
-              />
-              {item.type === 'user' ? (
-                <div style={styles.icon_more}>
-                  <Dropdown
-                    overlay={
-                      <Menu
-                        style={{ width: 120, textAlign: 'center' }}
-                        onClick={e => {
-                          if (e.key === '2') {
-                            deleteUser(item)
-                          } else {
-                            setCurrentItem(item)
-                            setIsUpdating(true)
-                          }
-                        }}>
-                        <Menu.Item key='1'>
-                          <span style={{ color: '#1890ff' }}>
-                            <Icon type='edit' />
-                            修改
-                          </span>
-                        </Menu.Item>
-                        <Menu.Divider />
-                        <Menu.Item key='2'>
-                          <span style={{ color: '#f5222d' }}>
-                            <Icon type='delete' />
-                            删除
-                          </span>
-                        </Menu.Item>
-                      </Menu>
-                    }
-                    placement='bottomRight'
-                    trigger={['click']}>
-                    <Icon type='more' style={styles.icon_more2} />
-                  </Dropdown>
-                </div>
-              ) : null}
-            </List.Item>
-          )
-        }}
-      />
+          ) : (
+              <Button size='small' style={styles.button} type='danger' onClick={batchDelete}>
+                批量删除
+              </Button>
+            )}
+          <Tooltip title='刷新'>
+            <Icon
+              style={styles.button}
+              type='reload'
+              onClick={() => {
+                listData();
+              }}
+            />
+          </Tooltip>
+        </div>
+      </div>
+      <Table loading={listIsLoading} style={styles.marginTop} columns={columns} bordered dataSource={dataSource} rowSelection={rowSelection} />
       <AddForm
+        currentDpt={props.selectdpt}
         ref={addForm}
         title='新增员工'
         visible={isAdding}
@@ -237,6 +186,7 @@ const styles = {
   root: {
     padding: '12px 24px 12px 24px',
     width: '100%',
+    height: '100vh',
     backgroundColor: '#FFFFFF',
   },
   title: {
@@ -253,7 +203,7 @@ const styles = {
     justifyContent: 'space-between'
   },
   button: {
-    marginLeft: 10
+    marginLeft: 10, marginTop: 4
   },
   icon_more: {
     // backgroundColor: 'red',
@@ -270,5 +220,8 @@ const styles = {
   listItem: {
     cursor: 'pointer'
   },
-  avatar: { backgroundColor: '#1890ff', verticalAlign: 'middle' }
+  avatar: { backgroundColor: '#1890ff', verticalAlign: 'middle' },
+  marginTop: {
+    marginTop: 10
+  }
 }

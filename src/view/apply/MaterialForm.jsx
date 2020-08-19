@@ -51,7 +51,7 @@ export default props => {
         { title: '物料', align: 'center', dataIndex: 'store_name' },
         {
             title: '数量', align: 'center', dataIndex: 'count', width: 120, render: (text, record) => {
-                return <InputNumber value={parseInt(text)} min={0} max={record.max_count || 0} onChange={(v) => { changeHandler(record, v, 'count') }} />
+                return <InputNumber value={parseInt(text)} min={1} max={record.max_count || 1} onChange={(v) => { changeHandler(record, v, 'count') }} />
             }
         },
         { title: '单价【元】', align: 'center', dataIndex: 'oprice' },

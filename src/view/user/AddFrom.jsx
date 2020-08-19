@@ -1,10 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Modal, Form, Input, TreeSelect } from 'antd'
 import api from '../../http'
-import { getJsonTree, filterTag } from '../../util/tool'
+import { getJsonTree, filterTag, getDepartmentTree } from '../../util/tool'
 
 const AddForm = Form.create({ name: 'form' })(props => {
   const [treeData, setTreeData] = useState([])
+  const [dptTreeData, setDptTreeData] = useState([])
+
   const listData = useCallback(async () => {
     let result = await api.listAllTag()
     if (result.code === 0) {
@@ -14,10 +16,14 @@ const AddForm = Form.create({ name: 'form' })(props => {
       })
       setTreeData(getJsonTree(treeResult, 0))
     }
+    let result_dpt = await api.listAllDepartment()
+    if (result_dpt.code === 0) {
+      setDptTreeData(getDepartmentTree(result_dpt.data))
+    }
   }, [])
   useEffect(() => {
     listData()
-  }, [listData])
+  }, [listData, props.currentDpt])
   return (
     <Modal {...props} >
       <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
@@ -47,6 +53,23 @@ const AddForm = Form.create({ name: 'form' })(props => {
               }
             }]
           })(<Input.Password placeholder='请再次输入密码' />)}
+        </Form.Item>
+        <Form.Item label='部门'>
+          {props.form.getFieldDecorator('dids', {
+            initialValue: props.currentDpt ? [props.currentDpt.id] : null,
+            rules: [{ required: true, message: '请选择部门' }]
+          })(
+            <TreeSelect
+              treeNodeFilterProp='title'
+              showSearch
+              multiple
+              treeData={dptTreeData}
+              style={{ width: '100%' }}
+              dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+              placeholder='请选择部门'
+              showCheckedStrategy={TreeSelect.SHOW_PARENT}
+            />
+          )}
         </Form.Item>
         <Form.Item label='标签'>
           {props.form.getFieldDecorator('tids', {
