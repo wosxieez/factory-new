@@ -94,7 +94,7 @@ export default (props) => {
     },
     {
       title: '操作', dataIndex: 'action', width: 100, align: 'center', render: (_, record) => {
-        return <Button size='small' type='primary' onClick={() => {
+        return <Button size='small' type='link' icon='edit' onClick={() => {
           setCurrentItem(record);
           setIsUpdating(true);
         }}>修改</Button>
