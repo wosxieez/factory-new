@@ -107,7 +107,10 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
             pagination={false}
         />
         <h3 style={styles.marginTop}>当前进度</h3>
-        <Steps style={styles.marginTop} current={record.status === 3 ? record.step_number + 1 : record.step_number}>
+        <Steps style={styles.marginTop}
+            current={record.step_number}
+        // current={record.status === 0 ? record.step_number + 1 : record.step_number}
+        >
             <Step key='0' title="提交申请" description={<div>
                 <Tag color='green'>已申请</Tag>
                 <div>申请人:{record.user_name || ''}</div>
@@ -129,6 +132,7 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                         <Radio.Group value={status} buttonStyle="solid" onChange={(e) => { setStatus(e.target.value) }}>
                             <Radio.Button value={1}>通过</Radio.Button>
                             <Radio.Button disabled={record.status === 2} value={0}>拒绝</Radio.Button>
+                            <Radio.Button value={2}>正在处理</Radio.Button>
                         </Radio.Group>
                     </Col>
                 </Row>
@@ -152,8 +156,9 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                                     console.log('record:', record)
                                     // return;
                                     /// step_number +1 用于表示当前写的审批出现在 step 中的位置
-                                    let currentWirteStep = record.step_number + 1;
+                                    let currentWirteStep = record.step_number;
                                     let step_number_next = status === 1 ? currentWirteStep + 1 : currentWirteStep ///如果选择通过 step+1
+                                    // return
                                     ///插入order_step_log 表中一条记录
                                     let sql = `insert into order_step_log (order_id,assignee_id,status,remark,createdAt,step_number,step_number_next) values (${record.id},${user.id},${status},'${remark}','${moment().format(FORMAT)}',${currentWirteStep},${step_number_next})`
                                     let result = await api.query(sql)
@@ -171,9 +176,13 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                                         })
                                     } else if (status === 0) {///如果选择了 拒绝 那么 该条申请完成 order 的状态要改成 3 终止
                                         order_status = 4
+                                    } else if (status === 2) {///选择了 正在处理
+                                        order_status = 1
                                     }
                                     // console.log('step_number_next:', step_number_next)
-                                    let sql2 = `update orders set status=${order_status},step_number=${currentWirteStep} where id = ${record.id}`
+                                    let sql2 = `update orders set status=${order_status},step_number=${step_number_next} where id = ${record.id}`
+                                    console.log('sql2:', sql2)
+                                    // return;
                                     let result2 = await api.query(sql2)
                                     if (result2.code === 0) { message.success('审批成功', 3); getOrderData(); props.refreshTableData() }
                                     workflok.forEach((item) => {
@@ -194,28 +203,29 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
     </div >
 }
 function renderApproveSteps(record, workflok, orderStepLog) {
-    // console.log('orderStepLog:', orderStepLog)
+    // console.log('哈哈哈 orderStepLog:', orderStepLog)
     workflok.forEach((item) => {
+        item.stepLog = [];
         orderStepLog.forEach((element) => {
-            if (item.step_number === element.step_number) { item.stepLog = element } ///每一步中理论上只会有一个记录
+            if (item.step_number === element.step_number) { item.stepLog.push(element) } ///每一步中理论上只会有一个记录
         })
     })
-    // console.log('workflok:', workflok)
+    // console.log('哈哈哈 workflok:', workflok)
     return workflok.map((item, index) => {
         return <Step key={index + 1} title={item.name}
-            description={item.stepLog ? <div>
-                {item.stepLog.status === 1 ? <Tag color='green'>已通过</Tag> : <Tag color='red'>已拒绝</Tag>}
-                <div>处理人:{item.stepLog.user_name || ''}</div>
-                <div>{moment(item.stepLog.createdAt).format(FORMAT)}</div>
-                <div>{item.stepLog.remark}</div>
-            </div> : null}
+            description={item.stepLog && item.stepLog.length > 0 ? item.stepLog.map((element, index) => <div key={index}>
+                {element.status === 1 ? <Tag color='green'>已通过</Tag> : (element.status === 0 ? <Tag color='red'>已拒绝</Tag> : <Tag color='blue'>正在处理</Tag>)}
+                <div>处理人:{element.user_name || ''}</div>
+                <div>{moment(element.createdAt).format(FORMAT)}</div>
+                <div>{element.remark}</div>
+            </div>) : null}
         />
     })
 }
 function getCurrentStepName(record, workflok) {
     let result = ''
     workflok.forEach((item) => {
-        if (item.step_number === record.step_number + 1) {
+        if (item.step_number === record.step_number) {
             result = item.name
         }
     })

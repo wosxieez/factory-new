@@ -1,3 +1,8 @@
+export const colorList = [{ label: '薄暮', color: '#f5222d' }, { label: '火山', color: '#fa541c' }, { label: '日暮', color: '#fa8c16' }, { label: '金盏花', color: '#faad14' },
+{ label: '日出', color: '#fadb14' }, { label: '青柠', color: '#a0d911' }, { label: '极光绿', color: '#52c41a' }, { label: '明青', color: '#13c2c2' },
+{ label: '拂晓蓝', color: '#1890ff' }, { label: '极客蓝', color: '#2f54eb' }, { label: '酱紫', color: '#722ed1' }, { label: '法式洋红', color: '#eb2f96' }]
+export const tagTypeList = [{ label: '物品', icon: 'code-sandbox', value: 0 }, { label: '人员', icon: 'user', value: 1 }]
+
 export const getJsonTree = function (data, pId) {
   let itemArr = []
   for (let i = 0; i < data.length; i++) {
@@ -85,13 +90,60 @@ export function xiaomeiParseFloat(value) {
   return newValue
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ * 将申请单格式转换成已物品为单位的格式
+ * 还要根据查询的物品条件 进行过滤
+ * @param {*} orderList 
+ */
+export function translateOrderList(orderList, store_id_list = []) {
+  let allStoreList = [];
+  let sum_count = 0;///总件数
+  let sum_price = 0;///总价
+  orderList.forEach((order) => {
+    const contentStr = order.content;
+    if (contentStr) {
+      try {
+        const contentJSON = JSON.parse(contentStr);
+        if (store_id_list && store_id_list.length > 0) {
+          store_id_list.forEach((store_id) => {
+            contentJSON.forEach((store) => {
+              if (parseInt(store_id) === store.store_id) {
+                sum_count = sum_count + store.count
+                sum_price = sum_price + store.oprice
+                allStoreList.push({ store, order })
+              }
+            })
+          })
+        } else {
+          contentJSON.forEach((store) => {
+            sum_count = sum_count + store.count
+            sum_price = sum_price + store.oprice * store.count
+            allStoreList.push({ store, order })
+          })
+        }
+      } catch (error) {
+        console.log('解析content出错')
+      }
+    }
+  })
+  return { allStoreList, sum_count, sum_price: xiaomeiParseFloat(sum_price) };
+}
 
-export const colorList = [{ label: '薄暮', color: '#f5222d' }, { label: '火山', color: '#fa541c' }, { label: '日暮', color: '#fa8c16' }, { label: '金盏花', color: '#faad14' },
-{ label: '日出', color: '#fadb14' }, { label: '青柠', color: '#a0d911' }, { label: '极光绿', color: '#52c41a' }, { label: '明青', color: '#13c2c2' },
-{ label: '拂晓蓝', color: '#1890ff' }, { label: '极客蓝', color: '#2f54eb' }, { label: '酱紫', color: '#722ed1' }, { label: '法式洋红', color: '#eb2f96' }]
-export const tagTypeList = [{ label: '物品', icon: 'code-sandbox', value: 0 }, { label: '人员', icon: 'user', value: 1 }]
+/**
+ *
+ *
+ * @export
+ */
+export function translatePurchaseRecordList(purchaseRecordList) {
+  let allStoreList = [];
+  purchaseRecordList.forEach((item) => {
+    const itemCopy = JSON.parse(JSON.stringify(item))
+    delete itemCopy.content
+    const storesList = JSON.parse(item.content)
+    storesList.forEach((store) => {
+      store.other = itemCopy
+      allStoreList.push(store)
+    })
+  })
+  return allStoreList
+}

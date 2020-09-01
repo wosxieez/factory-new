@@ -157,7 +157,7 @@ export default props => {
                 delete item.key
                 return item
               })
-              let sql = `insert into orders (create_user,tag_id,type_id,content,remark,code,createdAt) values (${user.id},${tagId},${props.orderType},'${JSON.stringify(content)}','${remarkText}','TW${moment().toDate().getTime()}','${moment().format(FORMAT)}')`
+              let sql = `insert into orders (create_user,tag_id,type_id,content,remark,code,createdAt) values (${user.id},${tagId},${props.orderType},'${JSON.stringify(content)}','${remarkText}','${props.orderType === 3 ? 'RK' : 'TW'}${moment().toDate().getTime()}','${moment().format(FORMAT)} ')`
               let result = await api.query(sql)
               if (result.code === 0) {
                 message.success('提交成功-等待审核', 3)

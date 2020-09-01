@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import { Route, Link } from 'react-router-dom'
 import { Layout, Menu, Icon, Modal } from 'antd';
-// import DepartmentView from './department/View'
-// import UserView from './user/View'
 import DptAndUser from './dptAndUser/View'
 import TagView from './tag/View'
 import StoreHouseView from './storehouse/View'
@@ -10,6 +8,10 @@ import ApplyView from './apply/View'
 import ApproveView from './approve/View'
 import svgs from '../assets/svgs';
 import { SubMenu } from 'rc-menu';
+import ExportStoreView from './exportStore/ExportStoreView';
+import BackStoreView from './backStore/BackStoreView';
+import PurchaseStorageView from './purchaseStorage/PurchaseStorageView';
+import PurchaseStoreView from './purchaseStore/PurchaseStoreView';
 const { Header, Content, Sider } = Layout;
 export default (props) => {
   const [collapsed, setCollapsed] = useState(false)
@@ -20,11 +22,35 @@ export default (props) => {
         <span style={{ ...styles.title, visibility: collapsed ? 'hidden' : 'visible' }}>Welcome</span>
       </div>
       <Menu theme="dark" mode="inline" selectedKeys={[props.location.pathname]}>
-        <Menu.Item key={'/main/storeview'}>
-          <Icon type="code-sandbox" />
-          <span className="nav-text">物料列表</span>
-          <Link to={`${props.match.url}/storeview`} />
-        </Menu.Item>
+        <SubMenu key="库存管理" title={<span><Icon type="reconciliation" /><span>库存管理</span></span>}>
+          <Menu.Item key={'/main/storeview'}>
+            <Icon type="hdd" />
+            <span className="nav-text">库存列表</span>
+            <Link to={`${props.match.url}/storeview`} />
+          </Menu.Item>
+          <Menu.Item key={'/main/purchasestorageview'}>
+            <Icon type="shopping-cart" />
+            <span className="nav-text">采购入库</span>
+            <Link to={`${props.match.url}/purchasestorageview`} />
+          </Menu.Item>
+        </SubMenu>
+        <SubMenu key="报表统计" title={<span><Icon type="area-chart" /><span>报表统计</span></span>}>
+          <Menu.Item key={'/main/exportstoreview'}>
+            <Icon type="area-chart" />
+            <span className="nav-text">出库列表</span>
+            <Link to={`${props.match.url}/exportstoreview`} />
+          </Menu.Item>
+          <Menu.Item key={'/main/backstoreview'}>
+            <Icon type="area-chart" />
+            <span className="nav-text">退库列表</span>
+            <Link to={`${props.match.url}/backstoreview`} />
+          </Menu.Item>
+          <Menu.Item key={'/main/purchasetoreview'}>
+            <Icon type="area-chart" />
+            <span className="nav-text">采购列表</span>
+            <Link to={`${props.match.url}/purchasetoreview`} />
+          </Menu.Item>
+        </SubMenu>
         <Menu.Item key="/main/departmentview">
           <Icon type="apartment" />
           <span>部门列表</span>
@@ -88,6 +114,10 @@ export default (props) => {
         <Route path={`${props.match.url}/approveview`} component={ApproveView} />
         <Route path={`${props.match.url}/storetag`} component={() => { return <TagView type={0} /> }} />
         <Route path={`${props.match.url}/usertag`} component={() => { return <TagView type={1} /> }} />
+        <Route path={`${props.match.url}/exportstoreview`} component={ExportStoreView} />
+        <Route path={`${props.match.url}/purchasetoreview`} component={PurchaseStoreView} />
+        <Route path={`${props.match.url}/backstoreview`} component={BackStoreView} />
+        <Route path={`${props.match.url}/purchasestorageview`} component={PurchaseStorageView} />
       </Content>
     </Layout>
   </Layout>

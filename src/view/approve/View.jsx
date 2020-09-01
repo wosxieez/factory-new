@@ -82,23 +82,7 @@ export default props => {
             setOrdersList(originOrdersList)
         }
         setIsLoading(false)
-        // eslint-disable-next-line
-    }, []) ///code, type, tag, dateDuring,
-    /**
-     * 整合搜索筛选条件
-     */
-    // const getCondition = useCallback(() => {
-    //     let code_sql = code ? ` and orders.code like '%${code}%'` : ''
-    //     let type_sql = type ? ` and orders.type_id = ${type}` : ''
-    //     let tag_sql = tag ? ` and orders.tag_id = ${tag}` : ''
-    //     let date_sql = dateDuring.length > 0 ? `and orders.createdAt>'${dateDuring[0].startOf('day').format('YYYY-MM-DD HH:mm:ss')}' and orders.createdAt<'${dateDuring[1].endOf('day').format('YYYY-MM-DD HH:mm:ss')}'` : ''
-    //     let condition_sql = code_sql + type_sql + tag_sql + date_sql;
-    //     console.log('condition_sql:', condition_sql)
-    //     listOrders(condition_sql)
-    //     getOrderCount(condition_sql)
-
-    // }, [code, dateDuring, type, tag, listOrders, getOrderCount])
-
+    }, [getOrderCount])
     useEffect(() => {
         listOrders()
         getType()
@@ -206,10 +190,10 @@ export default props => {
                 let color = '#AAAAAA'
                 switch (text) {
                     case 0:
-                        result = '待审核'
+                        result = '待处理'
                         break
                     case 1:
-                        result = '审核中'
+                        result = '处理中'
                         color = '#2db7f5'
                         break
                     case 2:

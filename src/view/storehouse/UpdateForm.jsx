@@ -29,7 +29,7 @@ const AddForm = Form.create({ name: 'form' })((props) => {
                     {props.form.getFieldDecorator('count', {
                         initialValue: props.data.count,
                         rules: [{ required: true, message: '请输入数量' }]
-                    })(<InputNumber placeholder='请输入数量' min={1} style={{ width: '100%' }} />)}
+                    })(<InputNumber placeholder='请输入数量' min={0} style={{ width: '100%' }} />)}
                 </Form.Item>
                 <Form.Item label='单位' >
                     {props.form.getFieldDecorator('unit', {

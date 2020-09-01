@@ -31,8 +31,8 @@ export default props => {
         return <MaterialForm orderType={selectType} />
       case 2:
         return <ReturnForm orderType={selectType} />
-      // case 3:
-      //   return <div>采购申请表</div>
+      case 3:
+        return <ReturnForm orderType={selectType} />
       default:
         break
     }

@@ -7,6 +7,7 @@ import UpdateForm from './UpdateForm'
 import { getJsonTree, filterTag } from '../../util/tool'
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 var originStoreList
+var allCondition = { keywords: null, tag: null, dateDuring: [], currentPage: 1, currentPageSize: 10 };
 /**
  * 库品信息表单
  */
@@ -21,9 +22,6 @@ export default props => {
   const [currentItem, setCurrentItem] = useState({})
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [selectedRows, setSelectedRows] = useState([])
-  const [searchName, setSearchName] = useState('')
-  const [searchTags, setSearchTags] = useState([])
-  const [searchTime, setSearchTime] = useState([])
   const listAllStore = useCallback(async () => {
     setIsLoading(true)
     setSelectedRowKeys([])
@@ -119,7 +117,7 @@ export default props => {
       }
     },
     {
-      title: '单价【元】',
+      title: '参考单价【元】',
       dataIndex: 'oprice',
       align: 'center',
       width: 140,
@@ -178,9 +176,8 @@ export default props => {
                 <Input
                   allowClear
                   placeholder={'请输入名称或备注'}
-                  value={searchName}
                   onChange={e => {
-                    setSearchName(e.target.value)
+                    allCondition.keywords = e.target.value
                   }}
                 />
               </Col>
@@ -200,9 +197,8 @@ export default props => {
                   dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                   placeholder='请选择标签-支持搜索'
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
-                  value={searchTags}
                   onChange={v => {
-                    setSearchTags(v)
+                    allCondition.tag = v;
                   }}
                 />
               </Col>
@@ -213,13 +209,16 @@ export default props => {
               <Col span={5}>入库时间:</Col>
               <Col span={19}>
                 <DatePicker.RangePicker
-                  value={searchTime}
+                  style={{ width: '100%' }}
+                  disabledDate={(current) => {
+                    return current > moment().endOf('day');
+                  }}
                   ranges={{
                     今日: [moment(), moment()],
-                    本月: [moment().startOf('month'), moment().endOf('month')]
+                    本月: [moment().startOf('month'), moment().endOf('day')]
                   }}
                   onChange={t => {
-                    setSearchTime(t)
+                    allCondition.dateDuring = t;
                   }}
                 />
               </Col>
@@ -231,27 +230,18 @@ export default props => {
                 type='primary'
                 style={styles.button}
                 onClick={async () => {
-                  let param = {};
-                  if (searchTime.length === 2) { param.date = [moment(searchTime[0]).startOf('day').format(FORMAT), moment(searchTime[1]).endOf('day').format(FORMAT)] }
-                  if (searchTags.length > 0) { param.tids = searchTags }
-                  if (searchName) { param.key = searchName }
-                  let result = await api.listStore(param)
-                  console.log('result:', result)
-                  if (result.code === 0) {
-                    let tempList = result.data.map((item, index) => { item.key = index; return item }).reverse()
-                    setStoreList(tempList)
-                  }
+                  // let param = {};
+                  // if (searchTime.length === 2) { param.date = [moment(searchTime[0]).startOf('day').format(FORMAT), moment(searchTime[1]).endOf('day').format(FORMAT)] }
+                  // if (searchTags.length > 0) { param.tids = searchTags }
+                  // if (searchName) { param.key = searchName }
+                  // let result = await api.listStore(param)
+                  // console.log('result:', result)
+                  // if (result.code === 0) {
+                  //   let tempList = result.data.map((item, index) => { item.key = index; return item }).reverse()
+                  //   setStoreList(tempList)
+                  // }
                 }}>
                 查询
-              </Button>
-              <Button
-                style={styles.button}
-                onClick={() => {
-                  setSearchName('')
-                  setSearchTags([])
-                  setSearchTime([])
-                }}>
-                重置
               </Button>
             </div>
           </Col>
