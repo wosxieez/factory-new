@@ -73,14 +73,6 @@ export default _ => {
             }
         },
         {
-            title: '流水',
-            dataIndex: 'other.code',
-            key: 'other.code',
-            render: (text) => {
-                return <Tag color='blue'>{text}</Tag>
-            }
-        },
-        {
             title: '单号',
             dataIndex: 'other.code_num',
             key: 'other.code_num',
@@ -133,6 +125,14 @@ export default _ => {
             key: 'other.record_user_name',
             align: 'center',
             width: 100,
+        },
+        {
+            title: '流水',
+            dataIndex: 'other.code',
+            key: 'other.code',
+            render: (text) => {
+                return <Tag color='blue'>{text}</Tag>
+            }
         },
         {
             title: '入库备注',

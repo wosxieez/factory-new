@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Alert } from 'antd';
+import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Alert, Row, Col } from 'antd';
 import moment from 'moment';
 import api from '../../http';
 
@@ -171,7 +171,6 @@ export default Form.create({ name: 'form' })(props => {
                     okText: '提交',
                     okType: 'danger',
                     onOk: async function () {
-                        // console.log('提交: ', values);
                         updateStoreAndrecordHandler(values)
                     },
                 })
@@ -183,88 +182,94 @@ export default Form.create({ name: 'form' })(props => {
         listAllStore()
         calculSumCountAndPrice()
     }, [listAllStore, calculSumCountAndPrice])
-
+    const itemProps = { labelCol: { span: 6 }, wrapperCol: { span: 18 } }
     return <div style={styles.root}>
         <div style={styles.body}>
             <Alert message={'注意！当同一个物品单价发生浮动时可以修改单价，数据库中就会结合原有数据计算出该物品每件的平均单价，若要区分请在【库存列表】中新建一个物品，数量设置为0'} type='info' showIcon />
-            <Form>
-                <Form.Item label='采购日期' >
-                    {props.form.getFieldDecorator('date', {
-                        initialValue: moment(),
-                        rules: [{ required: true, message: '请选择采购日期' }]
-                    })(<DatePicker allowClear={false} disabledDate={(current) => current > moment().endOf('day')} />)}
-                </Form.Item>
-            </Form>
-            <Form>
-                <Form.Item label='单号[选填]' >
-                    {props.form.getFieldDecorator('code_num', {
-                        rules: [{ required: false }]
-                    })(<Input style={{ width: 300 }} />)}
-                </Form.Item>
-            </Form>
-            <Form>
-                <Form.Item label='采购人[选填]' >
-                    {props.form.getFieldDecorator('buy_user_id', {
-                        rules: [{ required: false }]
-                    })(<Select allowClear style={{ width: 300 }} placeholder='请选择采购人' showSearch optionFilterProp="children">
-                        {userOptionList.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
-                        })}
-                    </Select>)}
-                </Form.Item>
-            </Form>
-            <Form>
-                <Form.Item label='记录人' >
-                    {props.form.getFieldDecorator('record_user_id', {
-                        initialValue: JSON.parse(localStorage.getItem('user') || '{}').id || null,
-                        rules: [{ required: true }]
-                    })(<Select allowClear style={{ width: 300 }} placeholder='请选择采购人' showSearch optionFilterProp="children">
-                        {userOptionList.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
-                        })}
-                    </Select>)}
-                </Form.Item>
-            </Form>
-            <Form>
-                <Form.Item label='入库明细' >
-                    {props.form.getFieldDecorator('storeList', {
-                        rules: [{ required: true, message: '请添加入库明细' }]
-                    })(
-                        <>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: -46 }}>
-                                <span></span>
-                                <div style={{ marginBottom: 10 }}>
-                                    <Tag color={'#faad14'}>总数量#: {sumCount}</Tag>
-                                    <Tag color={'#fa541c'}>总价格¥: {sumPrice}</Tag>
+            <Form  {...itemProps} style={{ marginTop: 16 }} onSubmit={handleSubmit}>
+                <Row>
+                    <Col span={6}>
+                        <Form.Item label='日期' >
+                            {props.form.getFieldDecorator('date', {
+                                initialValue: moment(),
+                                rules: [{ required: true, message: '请选择采购日期' }]
+                            })(<DatePicker style={{ width: '100%' }} allowClear={false} disabledDate={(current) => current > moment().endOf('day')} />)}
+                        </Form.Item>
+                    </Col>
+                    <Col span={6}>
+                        <Form.Item label='单号' >
+                            {props.form.getFieldDecorator('code_num', {
+                                rules: [{ required: false }]
+                            })(<Input />)}
+                        </Form.Item>
+                    </Col>
+                    <Col span={6}>
+                        <Form.Item label='采购人' >
+                            {props.form.getFieldDecorator('buy_user_id', {
+                                rules: [{ required: false }]
+                            })(<Select allowClearplaceholder='请选择采购人' showSearch optionFilterProp="children">
+                                {userOptionList.map((item, index) => {
+                                    return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
+                                })}
+                            </Select>)}
+                        </Form.Item>
+                    </Col>
+                    <Col span={6}>
+                        <Form.Item label='记录人' >
+                            {props.form.getFieldDecorator('record_user_id', {
+                                initialValue: JSON.parse(localStorage.getItem('user') || '{}').id || null,
+                                rules: [{ required: true }]
+                            })(<Select allowClear placeholder='请选择采购人' showSearch optionFilterProp="children">
+                                {userOptionList.map((item, index) => {
+                                    return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
+                                })}
+                            </Select>)}
+                        </Form.Item>
+                    </Col>
+                </Row>
+                <Row>
+                    <Form.Item label='入库明细' labelCol={{ span: 24 }} wrapperCol={{ span: 24 }}>
+                        {props.form.getFieldDecorator('storeList', {
+                            rules: [{ required: true, message: '请添加入库明细' }]
+                        })(
+                            <>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: -46 }}>
+                                    <span></span>
+                                    <div style={{ marginBottom: 10 }}>
+                                        <Tag color={'#faad14'}>总数量#: {sumCount}</Tag>
+                                        <Tag color={'#fa541c'}>总价格¥: {sumPrice}</Tag>
+                                    </div>
                                 </div>
-                            </div>
-                            <Table
-                                locale={{ emptyText: "请添加物品数据" }}
-                                dataSource={storeList}
-                                pagination={false}
-                                columns={columns}
-                                bordered
-                                size='small'
-                                footer={() => <Button size='small' type='link' icon='plus' onClick={() => {
-                                    storeList.push({ key: storeList.length })
-                                    // console.log('storeList:', storeList)
-                                    props.form.setFieldsValue({ storeList })
-                                }}>添加</Button>}
-                            />
-                        </>
-                    )}
-                </Form.Item>
+                                <Table
+                                    style={{ width: '100%' }}
+                                    locale={{ emptyText: "请添加物品数据" }}
+                                    dataSource={storeList}
+                                    pagination={false}
+                                    columns={columns}
+                                    bordered
+                                    size='small'
+                                    footer={() => <Button size='small' type='link' icon='plus' onClick={() => {
+                                        storeList.push({ key: storeList.length })
+                                        props.form.setFieldsValue({ storeList })
+                                    }}>添加</Button>}
+                                />
+                            </>
+                        )}
+                    </Form.Item>
+                </Row>
+                <Row>
+                    <Form.Item label='备注' labelCol={{ span: 24 }} wrapperCol={{ span: 24 }} >
+                        {props.form.getFieldDecorator('remark', {
+                            rules: [{ required: false }]
+                        })(<Input.TextArea placeholder="采购单备注[小于100字符]" allowClear autoSize={{ minRows: 3, maxRows: 6 }} maxLength={100}></Input.TextArea>)}
+                    </Form.Item>
+                </Row>
+                <Row>
+                    <Form.Item wrapperCol={{ span: 24 }}>
+                        <div style={{ textAlign: 'right' }}><Button type="primary" htmlType="submit">提交</Button></div>
+                    </Form.Item>
+                </Row>
             </Form>
-            <Form>
-                <Form.Item label='备注[选填]' >
-                    {props.form.getFieldDecorator('remark', {
-                        rules: [{ required: false }]
-                    })(<Input.TextArea placeholder="采购单备注[小于100字符]" allowClear autoSize={{ minRows: 3, maxRows: 6 }} maxLength={100}></Input.TextArea>)}
-                </Form.Item>
-            </Form>
-            <Form.Item>
-                <Button onClick={handleSubmit}>提交</Button>
-            </Form.Item>
         </div>
     </div >
 })
@@ -288,8 +293,7 @@ const styles = {
     },
     body: {
         backgroundColor: '#FFFFFF',
-        padding: 24,
-        // marginTop: 16
+        padding: '24px 24px 0px 24px',
     },
     button: {
         marginLeft: 10

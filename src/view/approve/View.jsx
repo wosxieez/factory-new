@@ -128,7 +128,7 @@ export default props => {
                 return <div>{text ? moment(text).format('YYYY-MM-DD HH:mm:ss') : ''}</div>
             }
         },
-        { title: '单号', dataIndex: 'code', width: 120, align: 'center' },
+        { title: '流水', dataIndex: 'code', width: 120, align: 'center' },
         {
             title: '申请类型',
             dataIndex: 'order_type_name',
@@ -245,11 +245,11 @@ export default props => {
                 <Row gutter={16} {...rowProps}>
                     <Col span={5}>
                         <Row {...rowProps}>
-                            <Col span={4}>单号:</Col>
+                            <Col span={4}>流水:</Col>
                             <Col span={20}>
                                 <Input
                                     allowClear
-                                    placeholder={'请输入单号'}
+                                    placeholder={'请输入流水'}
                                     onChange={e => {
                                         allCondition.code = e.target.value;
                                     }}
