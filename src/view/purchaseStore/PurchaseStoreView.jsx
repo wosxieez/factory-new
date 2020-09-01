@@ -46,12 +46,18 @@ export default _ => {
         let result = await api.query(sql)
         if (result.code === 0) {
             let storeData = translatePurchaseRecordList(result.data[0])
+            ///过滤物品id,因为一单中可能有多个物品
+            if (conditionObj.store_id_list) {
+                storeData = storeData.filter((item) => {
+                    return conditionObj.store_id_list.indexOf(item.store_id) !== -1
+                })
+            }
             setDataSource(storeData.map((item, index) => { item.key = index; return item }))
             let records_sum_price = 0
             let records_sum_count = 0
-            result.data[0].forEach((oneRecord) => {
-                records_sum_price += parseFloat(oneRecord.sum_price)
-                records_sum_count += parseFloat(oneRecord.sum_count)
+            storeData.forEach((item) => {
+                records_sum_price += parseFloat(item.count * item.price)
+                records_sum_count += parseFloat(item.count)
             })
             setSumPrice(parseFloat(records_sum_price).toFixed(2))
             setSumCount(records_sum_count)
@@ -145,7 +151,6 @@ export default _ => {
     return (<div style={styles.root}>
         <div style={styles.header}>
             <Searchfrom startSearch={(conditionsValue) => {
-                console.log('conditionsValue:', conditionsValue)
                 listData(conditionsValue)
             }} />
         </div>
