@@ -83,7 +83,7 @@ export default _ => {
             dataIndex: 'other.code_num',
             key: 'other.code_num',
             render: (text) => {
-                return <Tag color='blue'>{text}</Tag>
+                return text ? <Tag color='blue'>{text}</Tag> : null
             }
         },
         {
@@ -156,7 +156,7 @@ export default _ => {
         </div>
         <div style={styles.body}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <h3>采购物品列表</h3>
+                <h3>入库物品列表</h3>
                 <div>
                     <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
                     <Tag color={'#fa541c'}>总价格¥: {sum_price}</Tag>

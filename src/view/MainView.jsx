@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Route, Link } from 'react-router-dom'
 import { Layout, Menu, Icon, Modal } from 'antd';
-import DptAndUser from './dptAndUser/View'
+import NewDptAndUser from './newDptAndUser/View'
 import TagView from './tag/View'
 import StoreHouseView from './storehouse/View'
 import ApplyView from './apply/View'
@@ -12,6 +12,7 @@ import ExportStoreView from './exportStore/ExportStoreView';
 import BackStoreView from './backStore/BackStoreView';
 import PurchaseStorageView from './purchaseStorage/PurchaseStorageView';
 import PurchaseStoreView from './purchaseStore/PurchaseStoreView';
+// import CamView from './cam/CamView';
 const { Header, Content, Sider } = Layout;
 export default (props) => {
   const [collapsed, setCollapsed] = useState(false)
@@ -47,13 +48,13 @@ export default (props) => {
           </Menu.Item>
           <Menu.Item key={'/main/purchasetoreview'}>
             <Icon type="area-chart" />
-            <span className="nav-text">采购列表</span>
+            <span className="nav-text">入库列表</span>
             <Link to={`${props.match.url}/purchasetoreview`} />
           </Menu.Item>
         </SubMenu>
         <Menu.Item key="/main/departmentview">
           <Icon type="apartment" />
-          <span>部门列表</span>
+          <span>部门管理</span>
           <Link to={`${props.match.url}/departmentview`} />
         </Menu.Item>
         {/* <Menu.Item key={'/main/userview'}>
@@ -83,6 +84,11 @@ export default (props) => {
             <Link to={`${props.match.url}/storetag`} />
           </Menu.Item>
         </SubMenu>
+        {/* <Menu.Item key={'/main/camview'}>
+          <Icon type="tags" />
+          <span className="nav-text">摄像头测试</span>
+          <Link to={`${props.match.url}/camview`} />
+        </Menu.Item> */}
       </Menu>
     </Sider>
     <Layout style={{ marginLeft: collapsed ? 80 : 200 }} >
@@ -107,7 +113,7 @@ export default (props) => {
         </div>
       </Header>
       <Content style={{ margin: '80px 16px 0', overflow: 'initial', height: '100vh' }}>
-        <Route path={`${props.match.url}/departmentview`} component={DptAndUser} />
+        <Route path={`${props.match.url}/departmentview`} component={NewDptAndUser} />
         <Route path={`${props.match.url}/storeview`} component={StoreHouseView} />
         {/* <Route path={`${props.match.url}/userview`} component={UserView} /> */}
         <Route path={`${props.match.url}/applyview`} component={ApplyView} />
@@ -118,6 +124,7 @@ export default (props) => {
         <Route path={`${props.match.url}/purchasetoreview`} component={PurchaseStoreView} />
         <Route path={`${props.match.url}/backstoreview`} component={BackStoreView} />
         <Route path={`${props.match.url}/purchasestorageview`} component={PurchaseStorageView} />
+        {/* <Route path={`${props.match.url}/camview`} component={CamView} /> */}
       </Content>
     </Layout>
   </Layout>
