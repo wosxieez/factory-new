@@ -3,6 +3,7 @@ import api from '../../http';
 import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form } from 'antd';
 import moment from 'moment';
 import { translatePurchaseRecordList } from '../../util/tool';
+import HttpApi from '../../http/HttpApi';
 export default _ => {
     const [isLoading, setIsLoading] = useState(false)
     const [dataSource, setDataSource] = useState([])
@@ -39,8 +40,8 @@ export default _ => {
         let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_bug_user_id + sql_record_user_id
         // console.log('sql_condition:', sql_condition)
         let sql = `select pr.*,users1.name as buy_user_name,users2.name as record_user_name from purchase_record as pr
-        left join (select * from users where isdelete = 0) users1 on users1.id = pr.buy_user_id
-        left join (select * from users where isdelete = 0) users2 on users2.id = pr.record_user_id
+        left join (select * from users where effective = 1) users1 on users1.id = pr.buy_user_id
+        left join (select * from users where effective = 1) users2 on users2.id = pr.record_user_id
         where pr.isdelete = 0${sql_condition} order by id desc`
         // console.log('sql:', sql)
         let result = await api.query(sql)
@@ -156,7 +157,7 @@ export default _ => {
         </div>
         <div style={styles.body}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <h3>入库物品列表</h3>
+                <h3>入库物品记录</h3>
                 <div>
                     <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
                     <Tag color={'#fa541c'}>总价格¥: {sum_price}</Tag>
@@ -189,8 +190,9 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
     const listAllOptions = useCallback(async () => {
         let result = await api.listAllStore()
         if (result.code === 0) { setStoreOptionList(result.data) }
-        let result_user = await api.listAllUser()
-        if (result_user.code === 0) { setUserOptionList(result_user.data) }
+        let result_user = await HttpApi.getUserList()
+        setUserOptionList(result_user)
+        // if (result_user.code === 0) { setUserOptionList(result_user.data) }
     }, [])
     useEffect(() => {
         listAllOptions()
@@ -220,7 +222,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
             <Col span={6}>
                 <Form.Item label='日期区间'  {...itemProps}>
                     {props.form.getFieldDecorator('date_range', {
-                        initialValue: [moment().add(-1, 'month').startOf('month'), moment().endOf('day')],
+                        initialValue: [moment().add(0, 'month').startOf('month'), moment().endOf('day')],
                         rules: [{ required: false }]
                     })(
                         <DatePicker.RangePicker

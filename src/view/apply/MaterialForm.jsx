@@ -67,7 +67,7 @@ export default props => {
     return <div style={styles.root}>
         <Descriptions size='small' bordered column={1} >
             <Descriptions.Item label='申请人'><div style={styles.descriptionItem}>{user.name || '/'}</div></Descriptions.Item>
-            <Descriptions.Item label='标签' >
+            {/* <Descriptions.Item label='标签' >
                 <div style={styles.descriptionItem}>
                     <TreeSelect
                         value={tagId}
@@ -83,7 +83,7 @@ export default props => {
                         }}
                     />
                 </div>
-            </Descriptions.Item>
+            </Descriptions.Item> */}
         </Descriptions>
         <Button style={styles.marginTop} type='primary' icon='plus' onClick={addHandler}>选择物料</Button>
         <Table
@@ -95,7 +95,7 @@ export default props => {
             pagination={false}
         />
         <Input.TextArea style={styles.marginTop} placeholder='选填 备注说明' rows={4} value={remarkText} onChange={(e) => { setRemarkText(e.target.value) }} />
-        <Button disabled={!(tagId && dataSource.length > 0)} style={{ ...styles.marginTop, float: 'right' }} type='primary' onClick={() => {
+        <Button disabled={dataSource.length === 0} style={{ ...styles.marginTop, float: 'right' }} type='primary' onClick={() => {
             confirm({
                 title: '确定提交吗?',
                 icon: <Icon type="info-circle" />,

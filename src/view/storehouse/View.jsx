@@ -7,7 +7,7 @@ import UpdateForm from './UpdateForm'
 import { getJsonTree, filterTag } from '../../util/tool'
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 var originStoreList
-var allCondition = { keywords: null, tag: null, dateDuring: [], currentPage: 1, currentPageSize: 10 };
+var allCondition = {};
 /**
  * 库品信息表单
  */
@@ -177,7 +177,9 @@ export default props => {
                   allowClear
                   placeholder={'请输入名称或备注'}
                   onChange={e => {
-                    allCondition.keywords = e.target.value
+                    if (e.target.value === '') { delete allCondition.key } else {
+                      allCondition.key = e.target.value
+                    }
                   }}
                 />
               </Col>
@@ -198,7 +200,9 @@ export default props => {
                   placeholder='请选择标签-支持搜索'
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   onChange={v => {
-                    allCondition.tag = v;
+                    if (!v || v.length === 0) { delete allCondition.tids } else {
+                      allCondition.tids = v;
+                    }
                   }}
                 />
               </Col>
@@ -218,7 +222,9 @@ export default props => {
                     本月: [moment().startOf('month'), moment().endOf('day')]
                   }}
                   onChange={t => {
-                    allCondition.dateDuring = t;
+                    if (!t || t.length === 0) { delete allCondition.date } else {
+                      allCondition.date = t;
+                    }
                   }}
                 />
               </Col>
@@ -230,16 +236,16 @@ export default props => {
                 type='primary'
                 style={styles.button}
                 onClick={async () => {
-                  // let param = {};
-                  // if (searchTime.length === 2) { param.date = [moment(searchTime[0]).startOf('day').format(FORMAT), moment(searchTime[1]).endOf('day').format(FORMAT)] }
-                  // if (searchTags.length > 0) { param.tids = searchTags }
-                  // if (searchName) { param.key = searchName }
-                  // let result = await api.listStore(param)
-                  // console.log('result:', result)
-                  // if (result.code === 0) {
-                  //   let tempList = result.data.map((item, index) => { item.key = index; return item }).reverse()
-                  //   setStoreList(tempList)
-                  // }
+                  let result = []
+                  if (JSON.stringify(allCondition) === '{}') {
+                    result = await api.listAllStore()
+                  } else {
+                    result = await api.listStore(allCondition)
+                  }
+                  if (result.code === 0) {
+                    let tempList = result.data.map((item, index) => { item.key = index; return item }).reverse()
+                    setStoreList(tempList)
+                  }
                 }}>
                 查询
               </Button>

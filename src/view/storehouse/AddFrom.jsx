@@ -4,6 +4,7 @@ import api from '../../http';
 import { getJsonTree, filterTag } from '../../util/tool';
 
 const AddForm = Form.create({ name: 'form' })((props) => {
+  // console.log('props.initData.count:', props.initData.count)
   const [treeData, setTreeData] = useState([])
   const listData = useCallback(async () => {
     let result = await api.listAllTag()
@@ -27,12 +28,13 @@ const AddForm = Form.create({ name: 'form' })((props) => {
             rules: [{ required: true, message: '请输入名称' }]
           })(<Input placeholder='请输入名称' />)}
         </Form.Item>
-        <Form.Item label='数量' >
-          {props.form.getFieldDecorator('count', {
-            initialValue: 1,
-            rules: [{ required: true, message: '请输入数量' }]
-          })(<InputNumber placeholder='请输入数量' min={0} style={{ width: '100%' }} />)}
-        </Form.Item>
+        {props.initData && props.initData.count === 0 ? null :
+          <Form.Item label='数量' >
+            {props.form.getFieldDecorator('count', {
+              initialValue: props.initData && props.initData.count === 0 ? 0 : 1,
+              rules: [{ required: true, message: '请输入数量' }]
+            })(<InputNumber placeholder='请输入数量' min={0} style={{ width: '100%' }} />)}
+          </Form.Item>}
         <Form.Item label='单位' >
           {props.form.getFieldDecorator('unit', {
             initialValue: '个',

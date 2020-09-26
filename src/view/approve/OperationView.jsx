@@ -16,14 +16,14 @@ export default props => {
         let result = await api.query(`select orders.*,order_type.order_name as order_type_name ,tags.name as tag_name,users.name as user_name from orders 
         left join (select * from order_type where isdelete = 0) order_type on orders.type_id = order_type.id
         left join (select * from tags where isdelete = 0) tags on orders.tag_id = tags.id
-        left join (select * from users where isdelete = 0) users on orders.create_user = users.id
+        left join (select * from users where effective = 1) users on orders.create_user = users.id
         where orders.isdelete = 0 and orders.id = ${props.record.id} `)
         if (result.code === 0) {
             // console.log('getOrderData 结果:', result.data[0][0])
             setRecord(result.data[0][0]);
         }
         let result2 = await api.query(`select order_step_log.*,users.name as user_name from order_step_log 
-        left join (select * from users where isdelete = 0) users on order_step_log.assignee_id = users.id
+        left join (select * from users where effective = 1) users on order_step_log.assignee_id = users.id
         where order_id = ${props.record.id} `)
         if (result2.code === 0) {
             // console.log('getorderSteplog 结果:', result2.data[0])
@@ -67,11 +67,11 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
     let sum_price = 0;///总价
     let sum_count = 0;///总件数
     JSON.parse(record.content).forEach((item) => {
-        sum_price = sum_price + item.count * item.oprice;
+        sum_price = sum_price + item.count * item.avg_price;
         sum_count = sum_count + item.count;
     })
     let tempList = JSON.parse(record.content);
-    tempList.push({ store_name: '总计', count: sum_count, oprice: sum_price, isSum: true })
+    tempList.push({ store_name: '总计', count: sum_count, o_price: sum_price, isSum: true })
     let data = tempList.map((item, index) => { item.key = index; return item })
     const columns = [{
         title: '物料', dataIndex: 'store_name',
@@ -90,7 +90,7 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
             return text
         }
     }, {
-        title: '单价【元】', dataIndex: 'oprice',
+        title: '单价【元】', dataIndex: 'o_price',
         render: (text, record) => {
             if (record.isSum) {
                 return <Tag color={'red'}>{xiaomeiParseFloat(text)}</Tag>

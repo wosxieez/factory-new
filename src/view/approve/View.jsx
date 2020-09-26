@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Select } from 'antd'
+import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, Select } from 'antd'
 import OperationView from './OperationView'
-import { getJsonTree, filterTag } from '../../util/tool';
+// import { getJsonTree, filterTag } from '../../util/tool';
 import api from '../../http'
 import moment from 'moment'
+import HttpApi from '../../http/HttpApi';
 const { Option } = Select;
 var originOrdersList
 
@@ -20,8 +21,8 @@ export default props => {
     const [selectedRows, setSelectedRows] = useState([])
     const [listCount, setListCount] = useState(0)///数据总共查询到多少条
     const [typeOptions, setTypeOptions] = useState([])///类型选项数据
-    const [treeData, setTreeData] = useState([])///标签选项数据
-
+    // const [treeData, setTreeData] = useState([])///标签选项数据
+    const [majorOptions, setMajorOptions] = useState([])
 
     const getType = useCallback(async () => {
         let sql = `select * from order_type where isdelete = 0`
@@ -33,13 +34,17 @@ export default props => {
     }, [])
 
     const getTag = useCallback(async () => {
-        let result = await api.listAllTag()
+        // let result = await api.listAllTag()
+        // if (result.code === 0) {
+        //     result.data = filterTag(result.data, 1)
+        //     let treeResult = result.data.map((item) => {
+        //         return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name }
+        //     })
+        //     setTreeData(getJsonTree(treeResult, 0))
+        // }
+        let result = await HttpApi.getMajor();
         if (result.code === 0) {
-            result.data = filterTag(result.data, 1)
-            let treeResult = result.data.map((item) => {
-                return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name }
-            })
-            setTreeData(getJsonTree(treeResult, 0))
+            setMajorOptions(result.data)
         }
     }, [])
 
@@ -66,10 +71,10 @@ export default props => {
         getOrderCount(condition_sql)
 
         let beginNum = (allCondition.currentPage - 1) * allCondition.currentPageSize
-        let sql = `select orders.*,order_type.order_name as order_type_name ,tags.name as tag_name,users.name as user_name from orders 
+        let sql = `select orders.*,order_type.order_name as order_type_name ,majors.name as tag_name,users.name as user_name from orders 
         left join (select * from order_type where isdelete = 0) order_type on orders.type_id = order_type.id
-        left join (select * from tags where isdelete = 0) tags on orders.tag_id = tags.id
-        left join (select * from users where isdelete = 0) users on orders.create_user = users.id
+        left join (select * from majors where effective = 1) majors on orders.tag_id = majors.id
+        left join (select * from users where effective = 1) users on orders.create_user = users.id
         where orders.isdelete = 0 ${condition_sql}
         order by orders.id desc limit ${beginNum},${allCondition.currentPageSize}
         `
@@ -139,7 +144,7 @@ export default props => {
             }
         },
         {
-            title: '标签',
+            title: '专业',
             dataIndex: 'tag_name',
             width: 120,
             align: 'center',
@@ -177,7 +182,7 @@ export default props => {
             align: 'center',
             width: 140,
             render: (text, record) => {
-                return <div>{text || '/'}</div>
+                return <div>{text || '-'}</div>
             }
         },
         {
@@ -279,9 +284,9 @@ export default props => {
                     </Col>
                     <Col span={5}>
                         <Row {...rowProps}>
-                            <Col span={4}>标签:</Col>
+                            <Col span={4}>专业:</Col>
                             <Col span={20}>
-                                <TreeSelect
+                                {/* <TreeSelect
                                     allowClear
                                     treeNodeFilterProp='title'
                                     showSearch
@@ -293,7 +298,18 @@ export default props => {
                                     onChange={v => {
                                         allCondition.tag = v
                                     }}
-                                />
+                                /> */}
+                                <Select style={{ width: '100%' }} allowClear placeholder='选择专业' showSearch optionFilterProp="children" onChange={v => {
+                                    allCondition.tag = v
+                                }}>
+                                    {
+                                        majorOptions.map((item, index) => {
+                                            return <Select.Option value={item.id} key={index}>
+                                                {item.name}
+                                            </Select.Option>
+                                        })
+                                    }
+                                </Select >
                             </Col>
                         </Row>
                     </Col>

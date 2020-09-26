@@ -1,21 +1,34 @@
 import React, { useCallback } from 'react'
 import { Button, Form, Input, message, Icon } from 'antd'
-import api from '../../http';
+import HttpApi from '../../http/HttpApi';
+// import api from '../../http/index'
 
 const LoginForm = Form.create({ name: 'form' })(props => {
-    const handleSubmit = useCallback((e) => {
+    const handleSubmit = useCallback(async (e) => {
+        // let result = await HttpApi.test();
+        // console.log('result:', result)
+        // return;
         e.preventDefault();
         props.form.validateFields(async (err, values) => {
             if (!err) {
-                const response = await api.login(values.username, values.password)
-                if (response.code === 0) {
-                    localStorage.setItem('user', JSON.stringify(response.data))
-                    localStorage.setItem('token', response.token)
-                    const response2 = await api.getCompany()
-                    if (response2.code === 0 && response2.data) { localStorage.setItem('cname', response2.data.name) }
+                ///老的登录接口
+                // const response = await api.login(values.username, values.password)
+                // if (response.code === 0) {
+                //     localStorage.setItem('user', JSON.stringify(response.data))
+                //     localStorage.setItem('token', response.token)
+                //     const response2 = await api.getCompany()
+                //     if (response2.code === 0 && response2.data) { localStorage.setItem('cname', response2.data.name) }
+                //     props.history.push('/main/storeview')
+                // } else {
+                //     message.error(response.data, 3)
+                // }
+                ///新的根据工厂数据库中的用户数据表
+                let response = await HttpApi.getUserList(values.username, values.password);
+                if (response.length > 0) {
+                    localStorage.setItem('user', JSON.stringify(response[0]))
                     props.history.push('/main/storeview')
                 } else {
-                    message.error(response.data, 3)
+                    message.error('账号或密码可能错误')
                 }
             }
         });

@@ -284,7 +284,7 @@ export default _ => {
         </div>
         <div style={styles.body}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <h3>出库物品列表</h3>
+                <h3>出库物品记录</h3>
                 <div>
                     <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
                     <Tag color={'#fa541c'}>总价格¥: {sum_price}</Tag>

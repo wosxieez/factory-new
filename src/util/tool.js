@@ -109,7 +109,7 @@ export function translateOrderList(orderList, store_id_list = []) {
             contentJSON.forEach((store) => {
               if (parseInt(store_id) === store.store_id) {
                 sum_count = sum_count + store.count
-                sum_price = sum_price + store.oprice
+                sum_price = sum_price + store.avg_price
                 allStoreList.push({ store, order })
               }
             })
@@ -117,7 +117,7 @@ export function translateOrderList(orderList, store_id_list = []) {
         } else {
           contentJSON.forEach((store) => {
             sum_count = sum_count + store.count
-            sum_price = sum_price + store.oprice * store.count
+            sum_price = sum_price + store.avg_price * store.count
             allStoreList.push({ store, order })
           })
         }

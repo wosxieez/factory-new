@@ -4,7 +4,8 @@ import { Layout, Menu, Icon, Modal } from 'antd';
 import NewDptAndUser from './newDptAndUser/View'
 import TagView from './tag/View'
 import StoreHouseView from './storehouse/View'
-import ApplyView from './apply/View'
+// import ApplyView from './apply/View'
+import ApplyView from './apply/ApplyFormView'
 import ApproveView from './approve/View'
 import svgs from '../assets/svgs';
 import { SubMenu } from 'rc-menu';
@@ -17,7 +18,7 @@ const { Header, Content, Sider } = Layout;
 export default (props) => {
   const [collapsed, setCollapsed] = useState(false)
   return <Layout>
-    <Sider style={styles.side} width='200' trigger={null} collapsible collapsed={collapsed}>
+    <Sider style={styles.side} width='180' trigger={null} collapsible collapsed={collapsed}>
       <div style={styles.logo} >
         <span style={styles.titleIcon}>{svgs.loginTitle(30, 30, '#FFFFFF')}</span>
         <span style={{ ...styles.title, visibility: collapsed ? 'hidden' : 'visible' }}>Welcome</span>
@@ -38,25 +39,25 @@ export default (props) => {
         <SubMenu key="报表统计" title={<span><Icon type="area-chart" /><span>报表统计</span></span>}>
           <Menu.Item key={'/main/exportstoreview'}>
             <Icon type="area-chart" />
-            <span className="nav-text">出库列表</span>
+            <span className="nav-text">出库记录</span>
             <Link to={`${props.match.url}/exportstoreview`} />
           </Menu.Item>
-          <Menu.Item key={'/main/backstoreview'}>
+          {/* <Menu.Item key={'/main/backstoreview'}>
             <Icon type="area-chart" />
-            <span className="nav-text">退库列表</span>
+            <span className="nav-text">退库记录</span>
             <Link to={`${props.match.url}/backstoreview`} />
-          </Menu.Item>
+          </Menu.Item> */}
           <Menu.Item key={'/main/purchasetoreview'}>
             <Icon type="area-chart" />
-            <span className="nav-text">入库列表</span>
+            <span className="nav-text">入库记录</span>
             <Link to={`${props.match.url}/purchasetoreview`} />
           </Menu.Item>
         </SubMenu>
-        <Menu.Item key="/main/departmentview">
+        {/* <Menu.Item key="/main/departmentview">
           <Icon type="apartment" />
           <span>部门管理</span>
           <Link to={`${props.match.url}/departmentview`} />
-        </Menu.Item>
+        </Menu.Item> */}
         {/* <Menu.Item key={'/main/userview'}>
           <Icon type="user" />
           <span className="nav-text">用户列表</span>
@@ -73,11 +74,11 @@ export default (props) => {
           <Link to={`${props.match.url}/approveview`} />
         </Menu.Item>
         <SubMenu key="设置" title={<span><Icon type="setting" /><span>设置</span></span>}>
-          <Menu.Item key={'/main/usertag'}>
+          {/* <Menu.Item key={'/main/usertag'}>
             <Icon type="tags" />
             <span className="nav-text">用户标签</span>
             <Link to={`${props.match.url}/usertag`} />
-          </Menu.Item>
+          </Menu.Item> */}
           <Menu.Item key={'/main/storetag'}>
             <Icon type="tags" />
             <span className="nav-text">物料标签</span>
@@ -91,8 +92,8 @@ export default (props) => {
         </Menu.Item> */}
       </Menu>
     </Sider>
-    <Layout style={{ marginLeft: collapsed ? 80 : 200 }} >
-      <Header style={{ position: 'fixed', zIndex: 10, width: `calc(100% - ${collapsed ? 80 : 200}px)`, backgroundColor: '#fff', padding: 0, borderBottomStyle: 'solid', borderBottomWidth: 1, borderBottomColor: '#e8e8e8' }}>
+    <Layout style={{ marginLeft: collapsed ? 80 : 180 }} >
+      <Header style={{ position: 'fixed', zIndex: 10, width: `calc(100% - ${collapsed ? 80 : 180}px)`, backgroundColor: '#fff', padding: 0, borderBottomStyle: 'solid', borderBottomWidth: 1, borderBottomColor: '#e8e8e8' }}>
         <div style={{ display: 'flex', alignItems: 'center', width: `100%`, flexDirection: 'row', justifyContent: 'space-between' }}>
           <Icon
             style={styles.trigger}
@@ -134,7 +135,6 @@ export default (props) => {
 const styles = {
   logo: {
     height: "32px",
-    // background: "rgba(200, 200, 200, 1)",
     margin: "16px",
   },
   side: {
@@ -160,5 +160,17 @@ const styles = {
     color: '#F0F0F0',
     marginLeft: 10,
     position: 'absolute',
+  },
+  icon: {
+    marginRight: 0,
+    fontSize: 28,
+  },
+  itemStyle: {
+    display: 'flex',
+    padding: '10px 24px 0px 24px',
+    height: 80,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 }

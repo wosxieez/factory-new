@@ -3,6 +3,7 @@ import api from '../../http'
 import { Row, Col, Select } from 'antd'
 import MaterialForm from './MaterialForm'
 import ReturnForm from './ReturnForm'
+import ApplyFormView from './ApplyFormView';
 const { Option } = Select
 /**
  * 发起申请界面
@@ -45,7 +46,8 @@ export default props => {
           <h3>申请模块</h3>
           {/* <Button style={styles.button} type="primary" onClick={() => { }}>清空</Button> */}
         </div>
-        <div style={styles.main}>
+        {/* <ApplyFormView /> */}
+        {/* <div style={styles.main}>
           <div style={styles.row}>
             <Row {...rowProps}>
               <Col span={4}>表单类型:</Col>
@@ -72,7 +74,7 @@ export default props => {
             </Row>
           </div>
           <div style={styles.row}>{getFormByType()}</div>
-        </div>
+        </div> */}
       </div>
     </div>
   )

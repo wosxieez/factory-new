@@ -3,6 +3,7 @@ import api from '../../http';
 import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form } from 'antd';
 import moment from 'moment';
 import { translateOrderList } from '../../util/tool';
+import HttpApi from '../../http/HttpApi';
 export default _ => {
     const [isLoading, setIsLoading] = useState(false)
     const [dataSource, setDataSource] = useState([])
@@ -31,7 +32,7 @@ export default _ => {
         let sql_condition = sql_date + sql_store_id + sql_code + sql_user_id
         // console.log('sql_condition:', sql_condition)
         let sql = `select orders.*,users.name as user_name from orders
-        left join (select * from users where isdelete = 0) users on orders.create_user = users.id
+        left join (select * from users where effective = 1) users on orders.create_user = users.id
         where orders.isdelete = 0 and orders.status in (2,3) and orders.type_id = 2 ${sql_condition}
         order by id desc`
         // console.log('sql:', sql)
@@ -70,8 +71,8 @@ export default _ => {
         },
         {
             title: '单价(元)',
-            dataIndex: 'store.oprice',
-            key: 'oprice',
+            dataIndex: 'store.avg_price',
+            key: 'avg_price',
             render: (text) => {
                 return <Tag color='orange'>{text}</Tag>
             }
@@ -89,13 +90,13 @@ export default _ => {
             dataIndex: 'store',
             key: 'sum_oprice',
             render: (_, record) => {
-                const oprice = record.store.oprice
+                const avg_price = record.store.avg_price
                 const count = record.store.count
-                return <Tag color='#fa541c'>{parseFloat(oprice * count).toFixed(2)}</Tag>
+                return <Tag color='#fa541c'>{parseFloat(avg_price * count).toFixed(2)}</Tag>
             }
         },
         {
-            title: '人员',
+            title: '领料人员',
             dataIndex: 'order.user_name',
             key: 'user_name',
             align: 'center',
@@ -118,7 +119,7 @@ export default _ => {
         </div>
         <div style={styles.body}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <h3>退库物品列表</h3>
+                <h3>退库物品记录</h3>
                 <div>
                     <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
                     <Tag color={'#fa541c'}>总价格¥: {sum_price}</Tag>
@@ -151,7 +152,8 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
     const listAllOptions = useCallback(async () => {
         let result = await api.listAllStore()
         if (result.code === 0) { setStoreOptionList(result.data) }
-        let result_user = await api.listAllUser()
+        let result_user = await HttpApi.getUserList()
+        setUserOptionList(result_user)
         if (result_user.code === 0) { setUserOptionList(result_user.data) }
     }, [])
     useEffect(() => {
