@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import api from '../../http'
-import { Table, Modal, Button, Icon, Input, message, Row, Col, Alert, Tooltip, DatePicker, Tag, TreeSelect } from 'antd'
+import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect } from 'antd'
 import moment from 'moment'
 import AddForm from './AddFrom'
 import UpdateForm from './UpdateForm'
 import { getJsonTree, filterTag } from '../../util/tool'
+import AppData from '../../util/AppData';
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 var originStoreList
 var allCondition = {};
@@ -272,45 +273,38 @@ export default props => {
                   批量删除
               </Button>
               )}
-            <Tooltip title='刷新'>
-              <Icon
-                style={styles.button}
-                type='reload'
-                onClick={() => {
-                  listAllStore()
-                }}
-              />
-            </Tooltip>
           </div>
         </div>
-        <Alert
-          style={styles.marginTop}
-          message={
-            <span style={styles.alertMessage}>
-              <span>
-                已选择 <span style={{ color: '#1890ff', fontWeight: 800 }}>{selectedRowKeys.length}</span> 项
+        {AppData.userinfo().isadmin ?
+          <Alert
+            style={styles.marginTop}
+            message={
+              <span style={styles.alertMessage}>
+                <span>
+                  已选择 <span style={{ color: '#1890ff', fontWeight: 800 }}>{selectedRowKeys.length}</span> 项
               </span>
-              <Button
-                type='link'
-                size='small'
-                onClick={() => {
-                  setSelectedRowKeys([])
-                  setSelectedRows([])
-                }}>
-                清空
+                <Button
+                  type='link'
+                  size='small'
+                  onClick={() => {
+                    setSelectedRowKeys([])
+                    setSelectedRows([])
+                  }}>
+                  清空
               </Button>
-            </span>
-          }
-          type='info'
-          showIcon
-        />
+              </span>
+            }
+            type='info'
+            showIcon
+          /> : null}
         <Table
           loading={isLoading}
           style={styles.marginTop}
-          rowSelection={rowSelection}
+          rowSelection={AppData.userinfo().isadmin || (AppData.userinfo().permission && AppData.userinfo().permission.indexOf(String(5)) !== -1) ? rowSelection : null}
           size='small'
           bordered
-          columns={columns}
+          columns={AppData.userinfo().isadmin || (AppData.userinfo().permission && AppData.userinfo().permission.indexOf(String(5)) !== -1) ?
+            columns : columns.filter((item) => item.title !== '操作')}
           dataSource={storeList}
           pagination={{
             total: storeList.length,

@@ -5,6 +5,7 @@ import OperationView from './OperationView'
 import api from '../../http'
 import moment from 'moment'
 import HttpApi from '../../http/HttpApi';
+import AppData from '../../util/AppData';
 const { Option } = Select;
 var originOrdersList
 
@@ -357,24 +358,25 @@ export default props => {
                         )}
                     </div>
                 </div>
-                <Alert
-                    style={styles.marginTop}
-                    message={
-                        <span style={styles.alertMessage}>
-                            <span>已选择 <span style={{ color: '#1890ff', fontWeight: 800 }}>{selectedRowKeys.length}</span> 项</span>
-                            <Button type='link' size='small' onClick={() => {
-                                setSelectedRowKeys([])
-                                setSelectedRows([])
-                            }}>清空</Button>
-                        </span>
-                    }
-                    type='info'
-                    showIcon
-                />
+                {AppData.userinfo().isadmin ?
+                    <Alert
+                        style={styles.marginTop}
+                        message={
+                            <span style={styles.alertMessage}>
+                                <span>已选择 <span style={{ color: '#1890ff', fontWeight: 800 }}>{selectedRowKeys.length}</span> 项</span>
+                                <Button type='link' size='small' onClick={() => {
+                                    setSelectedRowKeys([])
+                                    setSelectedRows([])
+                                }}>清空</Button>
+                            </span>
+                        }
+                        type='info'
+                        showIcon
+                    /> : null}
                 <Table
                     loading={isLoading}
                     style={styles.marginTop}
-                    rowSelection={rowSelection}
+                    rowSelection={AppData.userinfo().isadmin ? rowSelection : null}
                     size='small'
                     bordered
                     columns={columns}

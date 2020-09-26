@@ -3,6 +3,7 @@ import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, mes
 import api from '../../http';
 import moment from 'moment'
 import { xiaomeiParseFloat } from '../../util/tool';
+import AppData from '../../util/AppData'
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 const { Step } = Steps;
 
@@ -42,6 +43,7 @@ export default props => {
 
     return (
         <Modal
+            destroyOnClose
             width={900}
             title='审批处理'
             visible={props.visible}
@@ -120,7 +122,7 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
             {renderApproveSteps(record, workflok, orderStepLog)}
             <Step key='10' title="完毕" />
         </Steps>
-        {record.status < 3 ?
+        {record.status < 3 && shouldRenderCurrentPanel(record, workflok) ?
             <>
                 <Divider />
                 <h3>{getCurrentStepName(record, workflok)}操作</h3>
@@ -181,7 +183,7 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                                     }
                                     // console.log('step_number_next:', step_number_next)
                                     let sql2 = `update orders set status=${order_status},step_number=${step_number_next} where id = ${record.id}`
-                                    console.log('sql2:', sql2)
+                                    // console.log('sql2:', sql2)
                                     // return;
                                     let result2 = await api.query(sql2)
                                     if (result2.code === 0) { message.success('审批成功', 3); getOrderData(); props.refreshTableData() }
@@ -221,6 +223,16 @@ function renderApproveSteps(record, workflok, orderStepLog) {
             </div>) : null}
         />
     })
+}
+function shouldRenderCurrentPanel(record, workflok) {
+    const hasPermission = AppData.userinfo().permission;
+    let flag = false
+    workflok.forEach((item) => {
+        if (item.step_number === record.step_number && hasPermission.indexOf(String(item.assginee_id)) !== -1) {
+            flag = true
+        }
+    })
+    return flag
 }
 function getCurrentStepName(record, workflok) {
     let result = ''
