@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Route, Link } from 'react-router-dom'
-import { Layout, Menu, Icon, Modal } from 'antd';
+import { Layout, Menu, Icon, Modal, Avatar } from 'antd';
 import NewDptAndUser from './newDptAndUser/View'
 import TagView from './tag/View'
 import StoreHouseView from './storehouse/View'
@@ -65,7 +65,7 @@ export default (props) => {
         </Menu.Item> */}
         <Menu.Item key={'/main/applyview'}>
           <Icon type="form" />
-          <span className="nav-text">物品申请</span>
+          <span className="nav-text">物料申请</span>
           <Link to={`${props.match.url}/applyview`} />
         </Menu.Item>
         <Menu.Item key={'/main/approveview'}>
@@ -81,7 +81,7 @@ export default (props) => {
           </Menu.Item> */}
           <Menu.Item key={'/main/storetag'}>
             <Icon type="tags" />
-            <span className="nav-text">物料标签</span>
+            <span className="nav-text">物料属性</span>
             <Link to={`${props.match.url}/storetag`} />
           </Menu.Item>
         </SubMenu>
@@ -93,24 +93,30 @@ export default (props) => {
       </Menu>
     </Sider>
     <Layout style={{ marginLeft: collapsed ? 80 : 180 }} >
-      <Header style={{ position: 'fixed', zIndex: 10, width: `calc(100% - ${collapsed ? 80 : 180}px)`, backgroundColor: '#fff', padding: 0, borderBottomStyle: 'solid', borderBottomWidth: 1, borderBottomColor: '#e8e8e8' }}>
-        <div style={{ display: 'flex', alignItems: 'center', width: `100%`, flexDirection: 'row', justifyContent: 'space-between' }}>
+      <Header style={{ position: 'fixed', backgroundColor: '#FFF', zIndex: 10, width: `calc(100% - ${collapsed ? 80 : 180}px)`, padding: 0, borderBottomStyle: 'solid', borderBottomWidth: 1, borderBottomColor: '#e8e8e8', }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', height: '100%' }}>
           <Icon
             style={styles.trigger}
             type={collapsed ? 'menu-unfold' : 'menu-fold'}
             onClick={() => { setCollapsed(!collapsed) }}
           />
-          <Icon style={styles.trigger} type="poweroff" onClick={() => {
-            Modal.confirm({
-              title: `确认要退出吗？`,
-              okText: '确定',
-              okType: 'danger',
-              onOk: async function () {
-                localStorage.removeItem('cname');
-                props.history.push('/')
-              }
-            })
-          }} />
+          <div>
+            <Icon
+              style={{ marginRight: 20, fontSize: 16 }}
+              type="poweroff"
+              onClick={() => {
+                Modal.confirm({
+                  title: `确认要退出吗？`,
+                  okText: '确定',
+                  okType: 'danger',
+                  onOk: async function () {
+                    localStorage.removeItem('cname');
+                    props.history.push('/')
+                  }
+                })
+              }} />
+            <Avatar style={{ marginRight: 20, cursor: 'pointer' }} shape='square' size={36} icon="user" />
+          </div>
         </div>
       </Header>
       <Content style={{ margin: '80px 16px 0', overflow: 'initial', height: '100vh' }}>
@@ -144,11 +150,8 @@ const styles = {
     left: 0,
   },
   trigger: {
-    fontSize: "18px",
-    lineHeight: "64px",
-    padding: "0 24px",
-    cursor: "pointer",
-    transition: "color 0.3s"
+    marginLeft: 10,
+    fontSize: "20px",
   },
   titleIcon: {
     marginLeft: 10
