@@ -93,7 +93,7 @@ export default props => {
     { title: '编号', dataIndex: 'no', width: 120, align: 'center' },
     { title: '名称', dataIndex: 'name', width: 120, align: 'center' },
     {
-      title: '标签',
+      title: '属性',
       dataIndex: 'tags',
       render: (text, record) => {
         let tagList = []
@@ -188,7 +188,7 @@ export default props => {
           </Col>
           <Col span={6}>
             <Row {...rowProps}>
-              <Col span={4}>标签:</Col>
+              <Col span={4}>属性:</Col>
               <Col span={20}>
                 <TreeSelect
                   allowClear
@@ -198,7 +198,7 @@ export default props => {
                   treeData={treeData}
                   style={{ width: '100%' }}
                   dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                  placeholder='请选择标签-支持搜索'
+                  placeholder='请选择属性-支持搜索'
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   onChange={v => {
                     if (!v || v.length === 0) { delete allCondition.tids } else {

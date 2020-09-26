@@ -13,6 +13,7 @@ import ExportStoreView from './exportStore/ExportStoreView';
 import BackStoreView from './backStore/BackStoreView';
 import PurchaseStorageView from './purchaseStorage/PurchaseStorageView';
 import PurchaseStoreView from './purchaseStore/PurchaseStoreView';
+import AppData from '../util/AppData';
 // import CamView from './cam/CamView';
 const { Header, Content, Sider } = Layout;
 export default (props) => {
@@ -115,7 +116,7 @@ export default (props) => {
                   }
                 })
               }} />
-            <Avatar style={{ marginRight: 20, cursor: 'pointer' }} shape='square' size={36} icon="user" />
+            <Avatar style={{ marginRight: 20, backgroundColor: '#1890ff' }} shape='square' size={36} >{AppData.userinfo().name}</Avatar>
           </div>
         </div>
       </Header>
