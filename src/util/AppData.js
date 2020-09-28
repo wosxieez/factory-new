@@ -1,4 +1,5 @@
 export default {
+    version: 'Bate 0.1',
     userinfo: () => {
         let result = {};
         try {
