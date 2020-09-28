@@ -1,53 +1,23 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, Select } from 'antd'
+import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, Select, Form } from 'antd'
 import OperationView from './OperationView'
-// import { getJsonTree, filterTag } from '../../util/tool';
 import api from '../../http'
 import moment from 'moment'
 import HttpApi from '../../http/HttpApi';
 import AppData from '../../util/AppData';
-const { Option } = Select;
-var originOrdersList
 
-var allCondition = { code: null, type: null, tag: null, dateDuring: [], currentPage: 1, currentPageSize: 10 };
+var allCondition = { code: null, type_list: [], major_list: [], create_user_list: [], date_range: [], currentPage: 1, currentPageSize: 10 };
 /**
  * 待审批的申请列表
  */
 export default props => {
     const [isLoading, setIsLoading] = useState(false)
     const [operationVisible, setOperationVisible] = useState(false)
-    const [storeList, setOrdersList] = useState([])
+    const [orderList, setOrdersList] = useState([])
     const [currentItem, setCurrentItem] = useState({})
     const [selectedRowKeys, setSelectedRowKeys] = useState([])
     const [selectedRows, setSelectedRows] = useState([])
     const [listCount, setListCount] = useState(0)///数据总共查询到多少条
-    const [typeOptions, setTypeOptions] = useState([])///类型选项数据
-    // const [treeData, setTreeData] = useState([])///标签选项数据
-    const [majorOptions, setMajorOptions] = useState([])
-
-    const getType = useCallback(async () => {
-        let sql = `select * from order_type where isdelete = 0`
-        let result = await api.query(sql)
-        if (result.code === 0) {
-            let data = result.data[0]
-            setTypeOptions(data)
-        }
-    }, [])
-
-    const getTag = useCallback(async () => {
-        // let result = await api.listAllTag()
-        // if (result.code === 0) {
-        //     result.data = filterTag(result.data, 1)
-        //     let treeResult = result.data.map((item) => {
-        //         return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name }
-        //     })
-        //     setTreeData(getJsonTree(treeResult, 0))
-        // }
-        let result = await HttpApi.getMajor();
-        if (result.code === 0) {
-            setMajorOptions(result.data)
-        }
-    }, [])
 
     const getOrderCount = useCallback(async (condition_sql = '') => {
         let sql = `select count(id) count from orders where isdelete = 0 ${condition_sql}`
@@ -57,20 +27,18 @@ export default props => {
             setListCount(data[0].count)
         }
     }, [])
-
     const listOrders = useCallback(async () => {
         setIsLoading(true)
         setSelectedRowKeys([])
         setSelectedRows([])
-
+        let date_sql = allCondition.date_range.length > 0 ? ` and orders.createdAt>'${allCondition.date_range[0]}' and orders.createdAt<'${allCondition.date_range[1]}'` : ''
         let code_sql = allCondition.code ? ` and orders.code like '%${allCondition.code}%'` : ''
-        let type_sql = allCondition.type ? ` and orders.type_id = ${allCondition.type}` : ''
-        let tag_sql = allCondition.tag ? ` and orders.tag_id = ${allCondition.tag}` : ''
-        let date_sql = allCondition.dateDuring.length > 0 ? ` and orders.createdAt>'${allCondition.dateDuring[0].startOf('day').format('YYYY-MM-DD HH:mm:ss')}' and orders.createdAt<'${allCondition.dateDuring[1].endOf('day').format('YYYY-MM-DD HH:mm:ss')}'` : ''
-        let condition_sql = code_sql + type_sql + tag_sql + date_sql;
+        let type_sql = allCondition.type_list && allCondition.type_list.length > 0 ? ` and orders.type_id in (${allCondition.type_list.join(',')})` : ''
+        let major_sql = allCondition.major_list && allCondition.major_list.length > 0 ? ` and orders.tag_id in (${allCondition.major_list.join(',')})` : ''
+        let user_sql = allCondition.create_user_list && allCondition.create_user_list.length > 0 ? ` and orders.create_user in (${allCondition.create_user_list.join(',')})` : ''
+        let condition_sql = code_sql + type_sql + major_sql + date_sql + user_sql;
         // console.log('条件sql:', condition_sql)
         getOrderCount(condition_sql)
-
         let beginNum = (allCondition.currentPage - 1) * allCondition.currentPageSize
         let sql = `select orders.*,order_type.order_name as order_type_name ,majors.name as tag_name,users.name as user_name from orders 
         left join (select * from order_type where isdelete = 0) order_type on orders.type_id = order_type.id
@@ -84,16 +52,14 @@ export default props => {
         if (result.code === 0) {
             result.data = result.data[0]
             // console.log('分页查询获取的数据:', result.data)
-            originOrdersList = result.data.map((item, index) => { item.key = index; return item })
+            let originOrdersList = result.data.map((item, index) => { item.key = index; return item })
             setOrdersList(originOrdersList)
         }
         setIsLoading(false)
     }, [getOrderCount])
     useEffect(() => {
         listOrders()
-        getType()
-        getTag()
-    }, [listOrders, getType, getTag])
+    }, [listOrders])
 
     const batchDelete = useCallback(() => {
         Modal.confirm({
@@ -248,106 +214,10 @@ export default props => {
     return (
         <div style={styles.root}>
             <div style={styles.header}>
-                <Row gutter={16} {...rowProps}>
-                    <Col span={5}>
-                        <Row {...rowProps}>
-                            <Col span={4}>流水:</Col>
-                            <Col span={20}>
-                                <Input
-                                    allowClear
-                                    placeholder={'请输入流水'}
-                                    onChange={e => {
-                                        allCondition.code = e.target.value;
-                                    }}
-                                />
-                            </Col>
-                        </Row>
-                    </Col>
-                    <Col span={5}>
-                        <Row {...rowProps}>
-                            <Col span={4}>类型:</Col>
-                            <Col span={20}>
-                                <Select
-                                    allowClear
-                                    showSearch
-                                    style={{ width: '100%' }}
-                                    placeholder="请选择类型"
-                                    optionFilterProp="children"
-                                    onChange={(v) => { allCondition.type = v }}
-                                    filterOption={(input, option) =>
-                                        option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                    }
-                                >
-                                    {typeOptions.map((item, index) => { return <Option value={item.id} key={index}>{item.order_name}</Option> })}
-                                </Select>
-                            </Col>
-                        </Row>
-                    </Col>
-                    <Col span={5}>
-                        <Row {...rowProps}>
-                            <Col span={4}>专业:</Col>
-                            <Col span={20}>
-                                {/* <TreeSelect
-                                    allowClear
-                                    treeNodeFilterProp='title'
-                                    showSearch
-                                    treeData={treeData}
-                                    style={{ width: '100%' }}
-                                    dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                                    placeholder='请选择标签'
-                                    showCheckedStrategy={TreeSelect.SHOW_PARENT}
-                                    onChange={v => {
-                                        allCondition.tag = v
-                                    }}
-                                /> */}
-                                <Select style={{ width: '100%' }} allowClear placeholder='选择专业' showSearch optionFilterProp="children" onChange={v => {
-                                    allCondition.tag = v
-                                }}>
-                                    {
-                                        majorOptions.map((item, index) => {
-                                            return <Select.Option value={item.id} key={index}>
-                                                {item.name}
-                                            </Select.Option>
-                                        })
-                                    }
-                                </Select >
-                            </Col>
-                        </Row>
-                    </Col>
-                    <Col span={7}>
-                        <Row {...rowProps}>
-                            <Col span={3}>时间:</Col>
-                            <Col span={21}>
-                                <DatePicker.RangePicker
-                                    style={{ width: '100%' }}
-                                    disabledDate={(current) => {
-                                        return current > moment().endOf('day');
-                                    }}
-                                    ranges={{
-                                        今日: [moment(), moment()],
-                                        本月: [moment().startOf('month'), moment().endOf('day')]
-                                    }}
-                                    onChange={t => {
-                                        allCondition.dateDuring = t;
-                                    }}
-                                />
-                            </Col>
-                        </Row>
-                    </Col>
-                    <Col span={2}>
-                        <div style={styles.headerCell}>
-                            <Button
-                                icon='search'
-                                // size='small'
-                                type='primary'
-                                style={styles.button}
-                                onClick={() => {
-                                    // console.log(code, type, tag, dateDuring)
-                                    listOrders();
-                                }}>查询</Button>
-                        </div>
-                    </Col>
-                </Row>
+                <Searchfrom startSearch={(conditionsValue) => {
+                    allCondition = { currentPage: allCondition.currentPage, currentPageSize: allCondition.currentPageSize, ...conditionsValue }
+                    listOrders()
+                }} />
             </div>
             <div style={styles.body}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -380,7 +250,7 @@ export default props => {
                     size='small'
                     bordered
                     columns={columns}
-                    dataSource={storeList}
+                    dataSource={orderList}
                     pagination={{
                         total: listCount,
                         showTotal: () => {
@@ -420,6 +290,132 @@ export default props => {
         </div>
     )
 }
+const Searchfrom = Form.create({ name: 'form' })(props => {
+    const [userOptionList, setUserOptionList] = useState([])
+    const [typeOptions, setTypeOptions] = useState([])///类型选项数据
+    const [majorOptions, setMajorOptions] = useState([])
+
+    const getType = useCallback(async () => {
+        let sql = `select * from order_type where isdelete = 0`
+        let result = await api.query(sql)
+        if (result.code === 0) {
+            let data = result.data[0]
+            setTypeOptions(data)
+        }
+    }, [])
+    const getMajor = useCallback(async () => {
+        let result = await HttpApi.getMajor();
+        if (result.code === 0) {
+            setMajorOptions(result.data)
+        }
+    }, [])
+    const getUser = useCallback(async () => {
+        let result_user = await HttpApi.getOrderUserList()
+        setUserOptionList(result_user)
+    }, [])
+    const listAllOptions = useCallback(async () => {
+        getUser()
+        getType()
+        getMajor()
+    }, [getUser, getType, getMajor])
+    useEffect(() => {
+        listAllOptions()
+    }, [listAllOptions])
+    const itemProps = { labelCol: { span: 6 }, wrapperCol: { span: 18 } }
+    return <Form onSubmit={(e) => {
+        e.preventDefault();
+        props.form.validateFields((err, values) => {
+            ///values搜寻条件数据过滤
+            let newObj = {};
+            for (const key in values) {
+                if (values.hasOwnProperty(key)) {
+                    const element = values[key];
+                    if (element && element.length > 0) {
+                        if (key === 'date_range') {
+                            newObj[key] = [element[0].startOf('day').format('YYYY-MM-DD HH:mm:ss'), element[1].endOf('day').format('YYYY-MM-DD HH:mm:ss')]
+                        } else {
+                            newObj[key] = values[key]
+                        }
+                    }
+                }
+            }
+            props.startSearch(newObj);
+        });
+    }}>
+        <Row>
+            <Col span={6}>
+                <Form.Item label='日期区间'  {...itemProps}>
+                    {props.form.getFieldDecorator('date_range', {
+                        initialValue: [moment().add(0, 'month').startOf('month'), moment().endOf('day')],
+                        rules: [{ required: false }]
+                    })(
+                        <DatePicker.RangePicker
+                            allowClear={false}
+                            style={{ width: '100%' }}
+                            disabledDate={(current) => {
+                                return current > moment().endOf('day');
+                            }}
+                            ranges={{
+                                今日: [moment(), moment()],
+                                昨日: [moment().add(-1, 'day'), moment().add(-1, 'day')],
+                                本月: [moment().startOf('month'), moment().endOf('day')],
+                                上月: [moment().add(-1, 'month').startOf('month'), moment().add(-1, 'month').endOf('month')]
+                            }}
+                        />
+                    )}
+                </Form.Item>
+            </Col>
+            <Col span={6}>
+                <Form.Item label='流水' {...itemProps}>
+                    {props.form.getFieldDecorator('code', {
+                        rules: [{ required: false }]
+                    })(<Input allowClear placeholder="请输入流水号" />)}
+                </Form.Item>
+            </Col>
+            <Col span={6}>
+                <Form.Item label='类型' {...itemProps}>
+                    {props.form.getFieldDecorator('type_list', {
+                        rules: [{ required: false }]
+                    })(<Select mode='multiple' allowClear placeholder='选择申请类型-支持名称搜索' showSearch optionFilterProp="children">
+                        {typeOptions.map((item, index) => {
+                            return <Select.Option value={item.id} key={index} all={item}>{item.order_name}</Select.Option>
+                        })}
+                    </Select>)}
+                </Form.Item>
+            </Col>
+            <Col span={6}>
+                <Form.Item label='专业' {...itemProps}>
+                    {props.form.getFieldDecorator('major_list', {
+                        rules: [{ required: false }]
+                    })(<Select mode='multiple' allowClear placeholder='选择专业-支持名称搜索' showSearch optionFilterProp="children">
+                        {majorOptions.map((item, index) => {
+                            return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
+                        })}
+                    </Select>)}
+                </Form.Item>
+            </Col>
+        </Row>
+        <Row>
+            <Col span={6}>
+                <Form.Item label='申请人'  {...itemProps}>
+                    {props.form.getFieldDecorator('create_user_list', {
+                        rules: [{ required: false }]
+                    })(<Select mode='multiple' allowClear placeholder='选择申请人-支持名称搜索' showSearch optionFilterProp="children">
+                        {userOptionList.map((item, index) => {
+                            return <Select.Option value={item.create_user} key={index} all={item}>{item.user_name}</Select.Option>
+                        })}
+                    </Select>)}
+                </Form.Item>
+            </Col>
+            <Col span={18}>
+                <div style={{ textAlign: 'right' }}>
+                    <Button type="primary" htmlType="submit">查询</Button>
+                    <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>
+                </div>
+            </Col>
+        </Row>
+    </Form>
+})
 const styles = {
     root: {
         backgroundColor: '#F1F1F1',
@@ -450,9 +446,4 @@ const styles = {
         display: 'flex',
         justifyContent: 'space-between'
     }
-}
-const rowProps = {
-    type: 'flex',
-    justify: 'space-around',
-    align: 'middle'
 }

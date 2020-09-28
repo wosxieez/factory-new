@@ -17,6 +17,16 @@ const HttpApi = {
             return Axios.post(Testuri + 'obs', params, f1, f2)
         }
     },
+    getOrderUserList: async () => {
+        let sql = `select distinct create_user,users.name as user_name from orders
+        left join (select * from users where effective = 1) users on users.id = orders.create_user 
+        where orders.isdelete = 0`
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return result.data
+        }
+        return []
+    },
     getUserList: async (username, password) => {
         let condition_sql = '';
         if (username && password) {
