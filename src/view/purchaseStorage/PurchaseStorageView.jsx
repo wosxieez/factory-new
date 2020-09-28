@@ -249,7 +249,7 @@ export default Form.create({ name: 'form' })(props => {
                         <Form.Item label='采购人' >
                             {props.form.getFieldDecorator('buy_user_id', {
                                 rules: [{ required: false }]
-                            })(<Select allowClearplaceholder='请选择采购人' showSearch optionFilterProp="children">
+                            })(<Select allowClear placeholder='请选择采购人' showSearch optionFilterProp="children">
                                 {userOptionList.map((item, index) => {
                                     return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
                                 })}

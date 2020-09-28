@@ -140,10 +140,11 @@ export default Form.create({ name: 'form' })(props => {
     }, [changeTableListHandler])
 
     const resetHandler = useCallback(() => {
-        props.form.resetFields();
+        props.form.resetFields()
         storeList = [{ key: 0 }]
         props.form.setFieldsValue({ storeList })
-    }, [props.form])
+        listAllStore()
+    }, [props.form, listAllStore])
 
     const handleSubmit = useCallback((e) => {
         props.form.setFieldsValue({ storeList })
