@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Row, Col } from 'antd';
+import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Row, Col, Tooltip } from 'antd';
 import moment from 'moment';
 import api from '../../http';
 import AppData from '../../util/AppData';
@@ -304,8 +304,17 @@ export default Form.create({ name: 'form' })(props => {
                     </Form.Item>
                 </Row>
                 <Row>
-                    <Form.Item wrapperCol={{ span: 24 }}>
+                    {/* <Form.Item wrapperCol={{ span: 24 }}>
                         <div style={{ textAlign: 'right' }}><Button type="primary" htmlType="submit">提交</Button></div>
+                    </Form.Item> */}
+                    <Form.Item wrapperCol={{ span: 24 }}>
+                        <div style={{ textAlign: 'right' }}>
+                            <Tooltip title={`${!(AppData.userinfo().permission && (AppData.userinfo().permission.indexOf('0') !== -1 || AppData.userinfo().permission.indexOf('3') !== -1) && AppData.userinfo().major_id_all) ? '需要维修或专工权限和所属专业' : ''}`}>
+                                <Button type="primary" htmlType="submit"
+                                    disabled={!(AppData.userinfo().permission && (AppData.userinfo().permission.indexOf('0') !== -1 || AppData.userinfo().permission.indexOf('3') !== -1) && AppData.userinfo().major_id_all)}
+                                >提交</Button>
+                            </Tooltip>
+                        </div>
                     </Form.Item>
                 </Row>
             </Form>

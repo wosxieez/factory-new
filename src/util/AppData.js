@@ -22,8 +22,8 @@ export default {
                     }
                 })
             })
-            return result.join(',')
+            return result
         }
-        return '-'
+        return []
     }
 }

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Alert, Row, Col, Divider } from 'antd';
+import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Alert, Row, Col, Divider, Tooltip } from 'antd';
 import moment from 'moment';
 import api from '../../http';
 import AddForm from '../storehouse/AddFrom';
@@ -227,7 +227,7 @@ export default Form.create({ name: 'form' })(props => {
     const itemProps = { labelCol: { span: 6 }, wrapperCol: { span: 18 } }
     return <div style={styles.root}>
         <div style={styles.body}>
-            <Alert message={'注意！当同一个物品单价发生浮动时可以修改单价，平台会结合原有数据计算出该物品每件的平均单价，若要区分请点击【+创建物品】；新建一个物品'} type='info' showIcon />
+            <Alert message={'注意！当同一个物品单价发生浮动时可以修改单价，平台会结合原有数据计算出该物品每件的平均单价，若要区分请点击【+创建物品】新建一个物品'} type='info' showIcon />
             <Form  {...itemProps} style={{ marginTop: 16 }} onSubmit={handleSubmit}>
                 <Row>
                     <Col span={6}>
@@ -308,7 +308,13 @@ export default Form.create({ name: 'form' })(props => {
                 </Row>
                 <Row>
                     <Form.Item wrapperCol={{ span: 24 }}>
-                        <div style={{ textAlign: 'right' }}><Button type="primary" htmlType="submit">提交</Button></div>
+                        <div style={{ textAlign: 'right' }}>
+                            <Tooltip title={`${!(AppData.userinfo().permission && AppData.userinfo().permission.indexOf('5') !== -1) ? '需要库管权限' : ''}`}>
+                                <Button type="primary" htmlType="submit"
+                                    disabled={!(AppData.userinfo().permission && AppData.userinfo().permission.indexOf('5') !== -1)}
+                                >提交</Button>
+                            </Tooltip>
+                        </div>
                     </Form.Item>
                 </Row>
             </Form>
