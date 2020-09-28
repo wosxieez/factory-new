@@ -6,11 +6,16 @@ import moment from 'moment'
 import HttpApi from '../../http/HttpApi';
 import AppData from '../../util/AppData';
 
-var allCondition = { code: null, type_list: [], major_list: [], create_user_list: [], date_range: [], currentPage: 1, currentPageSize: 10 };
+var allCondition = { code: null, type_list: [], major_list: [], create_user_list: [], date_range: [], status_list: [], currentPage: 1, currentPageSize: 10 };
+const statusOptions = [{ value: 1, type_and_step: [{ type: 1, step: 1 }, { type: 2, step: 1 }], des: '专工确认中', permission: 0 },
+{ value: 2, type_and_step: [{ type: 1, step: 2 }, { type: 2, step: 2 }, { type: 3, step: 3 }], des: '库管确认中', permission: 5 },
+{ value: 3, type_and_step: [{ type: 3, step: 1 }], des: '财务确认', permission: 2 },
+{ value: 4, type_and_step: [{ type: 1, step: 3 }, { type: 2, step: 3 }], des: '财务审计中', permission: 2 },
+{ value: 5, type_and_step: [{ type: 3, step: 2 }], des: '采购处理', permission: 4 }]
 /**
  * 待审批的申请列表
  */
-export default props => {
+export default _ => {
     const [isLoading, setIsLoading] = useState(false)
     const [operationVisible, setOperationVisible] = useState(false)
     const [orderList, setOrdersList] = useState([])
@@ -18,7 +23,7 @@ export default props => {
     const [selectedRowKeys, setSelectedRowKeys] = useState([])
     const [selectedRows, setSelectedRows] = useState([])
     const [listCount, setListCount] = useState(0)///数据总共查询到多少条
-
+    const [defaultStatus, setDefaultStatus] = useState([])
     const getOrderCount = useCallback(async (condition_sql = '') => {
         let sql = `select count(id) count from orders where isdelete = 0 ${condition_sql}`
         let result = await api.query(sql)
@@ -36,14 +41,15 @@ export default props => {
         let type_sql = allCondition.type_list && allCondition.type_list.length > 0 ? ` and orders.type_id in (${allCondition.type_list.join(',')})` : ''
         let major_sql = allCondition.major_list && allCondition.major_list.length > 0 ? ` and orders.tag_id in (${allCondition.major_list.join(',')})` : ''
         let user_sql = allCondition.create_user_list && allCondition.create_user_list.length > 0 ? ` and orders.create_user in (${allCondition.create_user_list.join(',')})` : ''
-        let condition_sql = code_sql + type_sql + major_sql + date_sql + user_sql;
+        let condition_sql = code_sql + type_sql + major_sql + date_sql + user_sql + checkStatusSql(allCondition.status_list);
         // console.log('条件sql:', condition_sql)
         getOrderCount(condition_sql)
         let beginNum = (allCondition.currentPage - 1) * allCondition.currentPageSize
-        let sql = `select orders.*,order_type.order_name as order_type_name ,majors.name as tag_name,users.name as user_name from orders 
+        let sql = `select orders.*,order_type.order_name as order_type_name ,majors.name as tag_name,users.name as user_name,order_workflok.name as order_workflok_name from orders 
         left join (select * from order_type where isdelete = 0) order_type on orders.type_id = order_type.id
         left join (select * from majors where effective = 1) majors on orders.tag_id = majors.id
         left join (select * from users where effective = 1) users on orders.create_user = users.id
+        left join (select * from order_workflok where isdelete = 0) order_workflok on order_workflok.step_number = orders.step_number and order_workflok.order_type_id = orders.type_id
         where orders.isdelete = 0 ${condition_sql}
         order by orders.id desc limit ${beginNum},${allCondition.currentPageSize}
         `
@@ -57,9 +63,17 @@ export default props => {
         }
         setIsLoading(false)
     }, [getOrderCount])
+    const getDefaultStatusSelect = useCallback(() => {
+        let copyStatusOptions = JSON.parse(JSON.stringify(statusOptions));
+        let afterFilter = copyStatusOptions.filter((item) => { return AppData.userinfo().permission.indexOf(String(item.permission)) !== -1 })
+        let defaultValues = afterFilter.map((item) => { return item.value })
+        allCondition.status_list = afterFilter;
+        setDefaultStatus(defaultValues)
+    }, [])
     useEffect(() => {
+        getDefaultStatusSelect() ///先根据个人的权限 设定默认选中的 当前状态；再将状态设定到 查询条件对象中
         listOrders()
-    }, [listOrders])
+    }, [listOrders, getDefaultStatusSelect])
 
     const batchDelete = useCallback(() => {
         Modal.confirm({
@@ -162,14 +176,14 @@ export default props => {
                 let color = '#AAAAAA'
                 switch (text) {
                     case 0:
-                        result = '待处理'
+                        result = record.order_workflok_name + '中'
                         break
                     case 1:
-                        result = '处理中'
+                        result = record.order_workflok_name + '中'
                         color = '#2db7f5'
                         break
                     case 2:
-                        result = record.type_id === 1 ? '已出库' : '已入库'
+                        result = (record.type_id === 1 ? '已出库' : '已入库') + '-' + record.order_workflok_name + '中'
                         color = '#722ed1'
                         break
                     case 3:
@@ -177,7 +191,7 @@ export default props => {
                         color = '#87d068'
                         break
                     case 4:
-                        result = '拒绝'
+                        result = record.order_workflok_name + '-已拒绝'
                         color = '#f50'
                         break
                     case 5:
@@ -214,8 +228,16 @@ export default props => {
     return (
         <div style={styles.root}>
             <div style={styles.header}>
-                <Searchfrom startSearch={(conditionsValue) => {
-                    allCondition = { currentPage: allCondition.currentPage, currentPageSize: allCondition.currentPageSize, ...conditionsValue }
+                <Searchfrom defaultData={{ status: defaultStatus }} startSearch={(conditionsValue) => {
+                    let tempList = [];
+                    if (conditionsValue.curent_status && conditionsValue.curent_status.length > 0) {
+                        statusOptions.forEach((item) => {
+                            conditionsValue.curent_status.forEach((value) => {
+                                if (item.value === value) { tempList.push(item) }
+                            })
+                        })
+                    }
+                    allCondition = { currentPage: allCondition.currentPage, currentPageSize: allCondition.currentPageSize, ...conditionsValue, status_list: tempList }
                     listOrders()
                 }} />
             </div>
@@ -407,7 +429,19 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                     </Select>)}
                 </Form.Item>
             </Col>
-            <Col span={18}>
+            <Col span={6}>
+                <Form.Item label='当前状态'  {...itemProps}>
+                    {props.form.getFieldDecorator('curent_status', {
+                        initialValue: props.defaultData.status,
+                        rules: [{ required: false }]
+                    })(<Select mode='multiple' allowClear placeholder='选择当前状态-支持名称搜索' showSearch optionFilterProp="children">
+                        {statusOptions.map((item, index) => {
+                            return <Select.Option value={item.value} key={index} all={item}>{item.des}</Select.Option>
+                        })}
+                    </Select>)}
+                </Form.Item>
+            </Col>
+            <Col span={12}>
                 <div style={{ textAlign: 'right' }}>
                     <Button type="primary" htmlType="submit">查询</Button>
                     <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>
@@ -416,6 +450,21 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
         </Row>
     </Form>
 })
+
+function checkStatusSql(tempList) {
+    if (tempList.length === 0) { return '' }
+    let sql = []
+    tempList.forEach((item) => {
+        const type_and_step = item.type_and_step;
+        type_and_step.forEach((element) => {
+            sql.push(` (orders.type_id = ${element.type} and orders.step_number = ${element.step}) `)
+        })
+    })
+    if (sql.length === 0) {
+        return ''
+    }
+    return ' and ' + sql.join('or')
+}
 const styles = {
     root: {
         backgroundColor: '#F1F1F1',
