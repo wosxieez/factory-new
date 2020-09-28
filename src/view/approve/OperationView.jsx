@@ -154,8 +154,8 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                                 icon: <Icon type="info-circle" />,
                                 content: '请自行确保提交信息的准确性--审批操作不可撤销',
                                 onOk: async () => {
-                                    console.log('1workflok:', workflok)
-                                    console.log('record:', record)
+                                    // console.log('1workflok:', workflok)
+                                    // console.log('record:', record)
                                     // return;
                                     /// step_number +1 用于表示当前写的审批出现在 step 中的位置
                                     let currentWirteStep = record.step_number;
@@ -187,15 +187,26 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                                     // return;
                                     let result2 = await api.query(sql2)
                                     if (result2.code === 0) { message.success('审批成功', 3); getOrderData(); props.refreshTableData() }
-                                    workflok.forEach((item) => {
-                                        // console.log('item.step_number:', item.step_number, 'record.step_number:', record.step_number, 'item.is_over:', item.is_over, 'status:', status)
+                                    // workflok.forEach((item) => {
+                                    //     // console.log('item.step_number:', item.step_number, 'record.step_number:', record.step_number, 'item.is_over:', item.is_over, 'status:', status)
+                                    //     if (item.step_number === currentWirteStep && item.is_change === 1 && status === 1) {
+                                    //         console.log('库管确认---仓库变动')
+                                    //         console.log('record:', record)
+                                    //         // api.updateStore()
+                                    //         updateStoreHandler(record)
+                                    //     }
+                                    // })
+                                    for (let index = 0; index < workflok.length; index++) {
+                                        const item = workflok[index];
                                         if (item.step_number === currentWirteStep && item.is_change === 1 && status === 1) {
                                             console.log('库管确认---仓库变动')
                                             console.log('record:', record)
+                                            let sql3 = `update orders set in_out_time='${moment().format(FORMAT)}' where id = ${record.id}`
+                                            await api.query(sql3)
                                             // api.updateStore()
                                             updateStoreHandler(record)
                                         }
-                                    })
+                                    }
                                 },
                             });
                         }}>提交</Button>

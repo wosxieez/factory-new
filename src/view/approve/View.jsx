@@ -9,8 +9,8 @@ import AppData from '../../util/AppData';
 var allCondition = { code: null, type_list: [], major_list: [], create_user_list: [], date_range: [], status_list: [], currentPage: 1, currentPageSize: 10 };
 const statusOptions = [{ value: 1, type_and_step: [{ type: 1, step: 1 }, { type: 2, step: 1 }], des: '专工确认中', permission: 0 },
 { value: 2, type_and_step: [{ type: 1, step: 2 }, { type: 2, step: 2 }, { type: 3, step: 3 }], des: '库管确认中', permission: 5 },
-{ value: 3, type_and_step: [{ type: 3, step: 1 }], des: '财务确认', permission: 2 },
-{ value: 4, type_and_step: [{ type: 1, step: 3 }, { type: 2, step: 3 }], des: '财务审计中', permission: 2 },
+{ value: 3, type_and_step: [{ type: 3, step: 1 }], des: '财务采购确认中', permission: 6 },
+{ value: 4, type_and_step: [{ type: 1, step: 3 }, { type: 2, step: 3 }], des: '财务审计中', permission: 6 },
 { value: 5, type_and_step: [{ type: 3, step: 2 }], des: '采购处理', permission: 4 }]
 /**
  * 待审批的申请列表
@@ -42,7 +42,7 @@ export default _ => {
         let major_sql = allCondition.major_list && allCondition.major_list.length > 0 ? ` and orders.tag_id in (${allCondition.major_list.join(',')})` : ''
         let user_sql = allCondition.create_user_list && allCondition.create_user_list.length > 0 ? ` and orders.create_user in (${allCondition.create_user_list.join(',')})` : ''
         let condition_sql = code_sql + type_sql + major_sql + date_sql + user_sql + checkStatusSql(allCondition.status_list);
-        // console.log('条件sql:', condition_sql)
+        console.log('条件sql:', condition_sql)
         getOrderCount(condition_sql)
         let beginNum = (allCondition.currentPage - 1) * allCondition.currentPageSize
         let sql = `select orders.*,order_type.order_name as order_type_name ,majors.name as tag_name,users.name as user_name,order_workflok.name as order_workflok_name from orders 
@@ -463,7 +463,7 @@ function checkStatusSql(tempList) {
     if (sql.length === 0) {
         return ''
     }
-    return ' and ' + sql.join('or')
+    return ' and (' + sql.join('or') + ')'
 }
 const styles = {
     root: {

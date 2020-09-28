@@ -13,7 +13,7 @@ export default _ => {
     const listData = useCallback(async (conditionObj) => {
         setIsLoading(true)
         let date_range = conditionObj.date_range || [moment().add(-1, 'month').startOf('month').format('YYYY-MM-DD HH:mm:ss'), moment().endOf('day').format('YYYY-MM-DD HH:mm:ss')]
-        let sql_date = ` and orders.createdAt >= '${date_range[0]}' and orders.createdAt <= '${date_range[1]}'`
+        let sql_date = ` and orders.in_out_time >= '${date_range[0]}' and orders.in_out_time <= '${date_range[1]}'`
         let sql_store_id = ''
         if (conditionObj.store_id_list) {
             conditionObj.store_id_list.forEach((store_id) => {
@@ -34,7 +34,7 @@ export default _ => {
         let sql = `select orders.*,users.name as user_name from orders
         left join (select * from users where effective = 1) users on orders.create_user = users.id
         where orders.isdelete = 0 and orders.status in (2,3) and orders.type_id = 1 ${sql_condition}
-        order by id desc`
+        order by in_out_time desc`
         // console.log('sql:', sql)
         let result = await api.query(sql)
         if (result.code === 0) {
@@ -53,13 +53,22 @@ export default _ => {
         listData({});
     }, [listData])
     const columns = [
+        // {
+        //     title: '提交时间',
+        //     dataIndex: 'order.createdAt',
+        //     key: 'createdAt',
+        //     width: 180,
+        //     render: (text) => {
+        //         return moment(text).format('YYYY-MM-DD HH:mm:ss')
+        //     }
+        // },
         {
-            title: '时间',
-            dataIndex: 'order.createdAt',
-            key: 'createdAt',
+            title: '出库时间',
+            dataIndex: 'order.in_out_time',
+            key: 'in_out_time',
             width: 180,
             render: (text) => {
-                return moment(text).format('YYYY-MM-DD HH:mm:ss')
+                return text ? moment(text).format('YYYY-MM-DD HH:mm:ss') : '-'
             }
         },
         {
@@ -183,7 +192,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
     }}>
         <Row>
             <Col span={6}>
-                <Form.Item label='日期区间'  {...itemProps}>
+                <Form.Item label='出库时间'  {...itemProps}>
                     {props.form.getFieldDecorator('date_range', {
                         initialValue: [moment().add(0, 'month').startOf('month'), moment().endOf('day')],
                         rules: [{ required: false }]
