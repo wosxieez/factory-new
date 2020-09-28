@@ -261,8 +261,8 @@ export default Form.create({ name: 'form' })(props => {
                             {props.form.getFieldDecorator('record_user_id', {
                                 initialValue: AppData.userinfo().id,
                                 rules: [{ required: true, message: '请选择记录人' }]
-                            })(<Select allowClear placeholder='请选择记录人' showSearch optionFilterProp="children">
-                                {userOptionList.map((item, index) => {
+                            })(<Select placeholder='请选择记录人' showSearch optionFilterProp="children">
+                                {[AppData.userinfo()].map((item, index) => {
                                     return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
                                 })}
                             </Select>)}

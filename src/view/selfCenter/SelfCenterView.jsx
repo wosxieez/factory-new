@@ -1,5 +1,5 @@
 import React from 'react'
-import { Descriptions } from 'antd';
+import { Descriptions, Icon } from 'antd';
 import AppData from '../../util/AppData';
 export default _ => {
     return <div style={styles.root}>
@@ -10,6 +10,7 @@ export default _ => {
                 <Descriptions.Item label="部门">{AppData.userinfo().level_name}</Descriptions.Item>
                 <Descriptions.Item label="专业">{AppData.userinfo().major_name_all}</Descriptions.Item>
                 <Descriptions.Item label="权限">{AppData.userPermissions()}</Descriptions.Item>
+                <Descriptions.Item label="管理">{AppData.userinfo().isadmin ? <Icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" /> : '-'}</Descriptions.Item>
                 <Descriptions.Item label="备注">{AppData.userinfo().remark || '-'}</Descriptions.Item>
             </Descriptions>
         </div>
