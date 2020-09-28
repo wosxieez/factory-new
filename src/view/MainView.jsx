@@ -14,6 +14,7 @@ import BackStoreView from './backStore/BackStoreView';
 import PurchaseStorageView from './purchaseStorage/PurchaseStorageView';
 import PurchaseStoreView from './purchaseStore/PurchaseStoreView';
 import AppData from '../util/AppData';
+import SelfCenterView from './selfCenter/SelfCenterView';
 // import CamView from './cam/CamView';
 const { Header, Content, Sider } = Layout;
 export default (props) => {
@@ -85,6 +86,11 @@ export default (props) => {
             <span className="nav-text">物料属性</span>
             <Link to={`${props.match.url}/storetag`} />
           </Menu.Item>
+          <Menu.Item key={'/main/selfcenterview'}>
+            <Icon type="user" />
+            <span className="nav-text">个人中心</span>
+            <Link to={`${props.match.url}/selfcenterview`} />
+          </Menu.Item>
         </SubMenu>
         {/* <Menu.Item key={'/main/camview'}>
           <Icon type="tags" />
@@ -132,6 +138,7 @@ export default (props) => {
         <Route path={`${props.match.url}/purchasetoreview`} component={PurchaseStoreView} />
         <Route path={`${props.match.url}/backstoreview`} component={BackStoreView} />
         <Route path={`${props.match.url}/purchasestorageview`} component={PurchaseStorageView} />
+        <Route path={`${props.match.url}/selfcenterview`} component={SelfCenterView} />
         {/* <Route path={`${props.match.url}/camview`} component={CamView} /> */}
       </Content>
     </Layout>
