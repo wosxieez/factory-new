@@ -92,7 +92,8 @@ export default (props) => {
                 onClick={e => {
                   setTags([])
                 }}>
-                {localStorage.getItem('cname')}
+                {/* {localStorage.getItem('cname')} */}
+                物料属性
               </Button>
             </Breadcrumb.Item>
             {Tags.map((Tag, index) => (

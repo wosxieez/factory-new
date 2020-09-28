@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 import { Button, Form, Input, message, Icon } from 'antd'
 import HttpApi from '../../http/HttpApi';
+import { checkPasswordChart } from '../../util/tool';
 // import api from '../../http/index'
 
 const LoginForm = Form.create({ name: 'form' })(props => {
@@ -22,11 +23,14 @@ const LoginForm = Form.create({ name: 'form' })(props => {
                 // } else {
                 //     message.error(response.data, 3)
                 // }
+                let is_legal = checkPasswordChart(values.password)
+                if (!is_legal) { message.error('非法密码，请重新输入密码'); return }
                 ///新的根据工厂数据库中的用户数据表
                 let response = await HttpApi.getUserList(values.username, values.password);
                 if (response.length > 0) {
                     localStorage.setItem('user', JSON.stringify(response[0]))
-                    props.history.push('/main/storeview')
+                    // props.history.push('/main/storeview')
+                    props.history.replace('/main/storeview')
                 } else {
                     message.error('账号或密码可能错误')
                 }

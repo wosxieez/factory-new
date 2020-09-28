@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Route, Link } from 'react-router-dom'
-import { Layout, Menu, Icon, Modal, Avatar } from 'antd';
+import { Layout, Menu, Icon, Modal, Avatar, Dropdown } from 'antd';
 import NewDptAndUser from './newDptAndUser/View'
 import TagView from './tag/View'
 import StoreHouseView from './storehouse/View'
@@ -19,13 +19,46 @@ import SelfCenterView from './selfCenter/SelfCenterView';
 const { Header, Content, Sider } = Layout;
 export default (props) => {
   const [collapsed, setCollapsed] = useState(false)
+  const menu = (
+    <Menu onClick={(target) => {
+      switch (target.key) {
+        case '1':
+          props.history.push('/main/setting/selfcenterview')
+          break;
+        case '2':
+          Modal.confirm({
+            title: `确认要退出吗？`,
+            okText: '确定',
+            okType: 'danger',
+            onOk: async function () {
+              localStorage.removeItem('cname');
+              localStorage.removeItem('user');
+              props.history.replace('/')
+            }
+          })
+          break;
+        default:
+          break;
+      }
+    }}>
+      <Menu.Item key="1">
+        <Icon type="user" />
+        个人中心
+      </Menu.Item>
+      <Menu.Divider />
+      <Menu.Item key="2">
+        <Icon type="poweroff" />
+        退出登录
+        </Menu.Item>
+    </Menu>
+  );
   return <Layout>
     <Sider style={styles.side} width='180' trigger={null} collapsible collapsed={collapsed}>
       <div style={styles.logo} >
         <span style={styles.titleIcon}>{svgs.loginTitle(30, 30, '#FFFFFF')}</span>
         <span style={{ ...styles.title, visibility: collapsed ? 'hidden' : 'visible' }}>Welcome</span>
       </div>
-      <Menu theme="dark" mode="inline" selectedKeys={[props.location.pathname]}>
+      <Menu theme="dark" mode="inline" selectedKeys={[props.location.pathname]} >
         <SubMenu key="库存管理" title={<span><Icon type="reconciliation" /><span>库存管理</span></span>}>
           <Menu.Item key={'/main/storeview'}>
             <Icon type="hdd" />
@@ -75,21 +108,21 @@ export default (props) => {
           <span className="nav-text">申请审批</span>
           <Link to={`${props.match.url}/approveview`} />
         </Menu.Item>
-        <SubMenu key="设置" title={<span><Icon type="setting" /><span>设置</span></span>}>
+        <SubMenu key={'设置'} title={<span><Icon type="setting" /><span>设置</span></span>}>
           {/* <Menu.Item key={'/main/usertag'}>
             <Icon type="tags" />
             <span className="nav-text">用户标签</span>
             <Link to={`${props.match.url}/usertag`} />
           </Menu.Item> */}
-          <Menu.Item key={'/main/storetag'}>
+          <Menu.Item key={'/main/setting/storetag'}>
             <Icon type="tags" />
             <span className="nav-text">物料属性</span>
-            <Link to={`${props.match.url}/storetag`} />
+            <Link to={`${props.match.url}/setting/storetag`} />
           </Menu.Item>
-          <Menu.Item key={'/main/selfcenterview'}>
+          <Menu.Item key={'/main/setting/selfcenterview'}>
             <Icon type="user" />
             <span className="nav-text">个人中心</span>
-            <Link to={`${props.match.url}/selfcenterview`} />
+            <Link to={`${props.match.url}/setting/selfcenterview`} />
           </Menu.Item>
         </SubMenu>
         {/* <Menu.Item key={'/main/camview'}>
@@ -100,46 +133,37 @@ export default (props) => {
       </Menu>
     </Sider>
     <Layout style={{ marginLeft: collapsed ? 80 : 180 }} >
-      <Header style={{ position: 'fixed', backgroundColor: '#FFF', zIndex: 10, width: `calc(100% - ${collapsed ? 80 : 180}px)`, padding: 0, borderBottomStyle: 'solid', borderBottomWidth: 1, borderBottomColor: '#e8e8e8', }}>
+      <Header style={{ backgroundColor: '#FFF', zIndex: 10, width: '100%', height: 64, padding: 0, borderBottomStyle: 'solid', borderBottomWidth: 1, borderBottomColor: '#e8e8e8', }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', height: '100%' }}>
           <Icon
             style={styles.trigger}
             type={collapsed ? 'menu-unfold' : 'menu-fold'}
             onClick={() => { setCollapsed(!collapsed) }}
           />
-          <div>
-            <Icon
-              style={{ marginRight: 20, fontSize: 16 }}
-              type="poweroff"
-              onClick={() => {
-                Modal.confirm({
-                  title: `确认要退出吗？`,
-                  okText: '确定',
-                  okType: 'danger',
-                  onOk: async function () {
-                    localStorage.removeItem('cname');
-                    props.history.push('/')
-                  }
-                })
-              }} />
-            <Avatar style={{ marginRight: 20, backgroundColor: '#1890ff' }} shape='square' size={36} >{AppData.userinfo().name}</Avatar>
-          </div>
+          <Dropdown overlay={menu} trigger={['click']}>
+            <Avatar style={{ marginRight: 20, backgroundColor: '#1890ff', cursor: 'pointer' }} shape='square' size={36}>{AppData.userinfo().name}</Avatar>
+          </Dropdown>
         </div>
       </Header>
-      <Content style={{ margin: '80px 16px 0', overflow: 'initial', height: '100vh' }}>
+      <Content style={{ margin: '16px 16px 0', overflow: 'initial', height: '100vh' }}>
         <Route path={`${props.match.url}/departmentview`} component={NewDptAndUser} />
         <Route path={`${props.match.url}/storeview`} component={StoreHouseView} />
         {/* <Route path={`${props.match.url}/userview`} component={UserView} /> */}
         <Route path={`${props.match.url}/applyview`} component={ApplyView} />
         <Route path={`${props.match.url}/approveview`} component={ApproveView} />
-        <Route path={`${props.match.url}/storetag`} component={() => { return <TagView type={0} /> }} />
-        <Route path={`${props.match.url}/usertag`} component={() => { return <TagView type={1} /> }} />
         <Route path={`${props.match.url}/exportstoreview`} component={ExportStoreView} />
         <Route path={`${props.match.url}/purchasetoreview`} component={PurchaseStoreView} />
         <Route path={`${props.match.url}/backstoreview`} component={BackStoreView} />
         <Route path={`${props.match.url}/purchasestorageview`} component={PurchaseStorageView} />
-        <Route path={`${props.match.url}/selfcenterview`} component={SelfCenterView} />
+        <Route path={`${props.match.url}/setting/selfcenterview`} component={SelfCenterView} />
+        <Route path={`${props.match.url}/setting/storetag`} component={() => { return <TagView type={0} /> }} />
+        {/* <Route path={`${props.match.url}/usertag`} component={() => { return <TagView type={1} /> }} /> */}
         {/* <Route path={`${props.match.url}/camview`} component={CamView} /> */}
+        {/* <Affix offsetBottom={10}>
+          <div style={{ textAlign: 'right' }} >
+            <Button icon='to-top' type="primary">top</Button>
+          </div>
+        </Affix> */}
       </Content>
     </Layout>
   </Layout>
@@ -175,13 +199,5 @@ const styles = {
   icon: {
     marginRight: 0,
     fontSize: 28,
-  },
-  itemStyle: {
-    display: 'flex',
-    padding: '10px 24px 0px 24px',
-    height: 80,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 }

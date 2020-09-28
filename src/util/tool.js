@@ -147,3 +147,24 @@ export function translatePurchaseRecordList(purchaseRecordList) {
   })
   return allStoreList
 }
+/**
+ *
+ * @export
+ * @param {*} password
+ */
+/**
+ *检查密码是否有非法字符。避免sql注入的情况
+ * @export
+ * @param {*} password
+ * @returns 
+ */
+export function checkPasswordChart(password) {
+  let illegal_list = [',', "'", '"', '=', ' ']
+  for (let index = 0; index < password.length; index++) {
+    const chart = password[index];
+    if (illegal_list.indexOf(chart) !== -1) {
+      return false
+    }
+  }
+  return true
+}

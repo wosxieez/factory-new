@@ -71,7 +71,7 @@ export default _ => {
     }, [listData])
     const columns = [
         {
-            title: '时间',
+            title: '入库时间',
             dataIndex: 'other.date',
             key: 'other.date',
             width: 180,
@@ -220,7 +220,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
     }}>
         <Row>
             <Col span={6}>
-                <Form.Item label='日期区间'  {...itemProps}>
+                <Form.Item label='入库时间'  {...itemProps}>
                     {props.form.getFieldDecorator('date_range', {
                         initialValue: [moment().add(0, 'month').startOf('month'), moment().endOf('day')],
                         rules: [{ required: false }]
