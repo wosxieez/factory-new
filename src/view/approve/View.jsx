@@ -42,7 +42,7 @@ export default _ => {
         let major_sql = allCondition.major_list && allCondition.major_list.length > 0 ? ` and orders.tag_id in (${allCondition.major_list.join(',')})` : ''
         let user_sql = allCondition.create_user_list && allCondition.create_user_list.length > 0 ? ` and orders.create_user in (${allCondition.create_user_list.join(',')})` : ''
         let condition_sql = code_sql + type_sql + major_sql + date_sql + user_sql + checkStatusSql(allCondition.status_list);
-        console.log('条件sql:', condition_sql)
+        // console.log('条件sql:', condition_sql)
         getOrderCount(condition_sql)
         let beginNum = (allCondition.currentPage - 1) * allCondition.currentPageSize
         let sql = `select orders.*,order_type.order_name as order_type_name ,majors.name as tag_name,users.name as user_name,order_workflok.name as order_workflok_name from orders 
@@ -442,7 +442,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                 </Form.Item>
             </Col>
             <Col span={12}>
-                <div style={{ textAlign: 'right' }}>
+                <div style={{ textAlign: 'right', paddingTop: 3 }}>
                     <Button type="primary" htmlType="submit">查询</Button>
                     <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>
                 </div>
@@ -473,16 +473,9 @@ const styles = {
     },
     header: {
         backgroundColor: '#FFFFFF',
-        padding: 24,
-        // display: 'none'
+        padding: '24px 24px 0px 24px',
     },
     marginTop: { marginTop: 10 },
-    headerCell: {
-        display: 'flex',
-        flexDirection: 'row-reverse',
-        alignItems: 'center',
-        height: 40
-    },
     body: {
         backgroundColor: '#FFFFFF',
         padding: 24,

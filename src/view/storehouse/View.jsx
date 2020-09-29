@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import api from '../../http'
-import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect } from 'antd'
+import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Form } from 'antd'
 import moment from 'moment'
 import AddForm from './AddFrom'
 import UpdateForm from './UpdateForm'
@@ -8,12 +8,10 @@ import { getJsonTree, filterTag } from '../../util/tool'
 import AppData from '../../util/AppData';
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 var originStoreList
-var allCondition = {};
 /**
  * 库品信息表单
  */
 export default props => {
-  const [treeData, setTreeData] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
@@ -31,12 +29,6 @@ export default props => {
     if (result.code === 0) {
       originStoreList = result.data.map((item, index) => { item.key = index; return item }).reverse()
       setStoreList(originStoreList)
-    }
-    let result2 = await api.listAllTag()
-    if (result2.code === 0) {
-      result2.data = filterTag(result2.data, 0)
-      let treeResult = result2.data.map((item) => { return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name } })
-      setTreeData(getJsonTree(treeResult, 0))
     }
     setIsLoading(false)
   }, [])
@@ -95,7 +87,7 @@ export default props => {
     {
       title: '属性',
       dataIndex: 'tags',
-      render: (text, record) => {
+      render: (text) => {
         let tagList = []
         if (text && text.length > 0) {
           tagList = text.map((item, index) => (
@@ -122,7 +114,7 @@ export default props => {
       dataIndex: 'oprice',
       align: 'center',
       width: 140,
-      render: (text, record) => {
+      render: (text) => {
         return <div>{text}</div>
       }
     },
@@ -131,7 +123,7 @@ export default props => {
       dataIndex: 'createdAt',
       align: 'center',
       width: 140,
-      render: (text, record) => {
+      render: (text) => {
         return <div>{text ? moment(text).format(FORMAT) : ''}</div>
       }
     },
@@ -140,7 +132,7 @@ export default props => {
       dataIndex: 'remark',
       align: 'center',
       width: 140,
-      render: (text, record) => {
+      render: (text) => {
         return <div>{text || ''}</div>
       }
     },
@@ -149,7 +141,7 @@ export default props => {
       dataIndex: 'action',
       width: 80,
       align: 'center',
-      render: (text, record) => {
+      render: (_, record) => {
         return (
           <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
             <Button
@@ -169,90 +161,21 @@ export default props => {
   return (
     <div style={styles.root}>
       <div style={styles.header}>
-        <Row gutter={16} {...rowProps}>
-          <Col span={6}>
-            <Row {...rowProps}>
-              <Col span={5}>关键字:</Col>
-              <Col span={19}>
-                <Input
-                  allowClear
-                  placeholder={'请输入名称或备注'}
-                  onChange={e => {
-                    if (e.target.value === '') { delete allCondition.key } else {
-                      allCondition.key = e.target.value
-                    }
-                  }}
-                />
-              </Col>
-            </Row>
-          </Col>
-          <Col span={6}>
-            <Row {...rowProps}>
-              <Col span={4}>属性:</Col>
-              <Col span={20}>
-                <TreeSelect
-                  allowClear
-                  multiple
-                  treeNodeFilterProp='title'
-                  showSearch
-                  treeData={treeData}
-                  style={{ width: '100%' }}
-                  dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                  placeholder='请选择属性-支持搜索'
-                  showCheckedStrategy={TreeSelect.SHOW_PARENT}
-                  onChange={v => {
-                    if (!v || v.length === 0) { delete allCondition.tids } else {
-                      allCondition.tids = v;
-                    }
-                  }}
-                />
-              </Col>
-            </Row>
-          </Col>
-          <Col span={8}>
-            <Row {...rowProps}>
-              <Col span={5}>入库时间:</Col>
-              <Col span={19}>
-                <DatePicker.RangePicker
-                  style={{ width: '100%' }}
-                  disabledDate={(current) => {
-                    return current > moment().endOf('day');
-                  }}
-                  ranges={{
-                    今日: [moment(), moment()],
-                    本月: [moment().startOf('month'), moment().endOf('day')]
-                  }}
-                  onChange={t => {
-                    if (!t || t.length === 0) { delete allCondition.date } else {
-                      allCondition.date = t;
-                    }
-                  }}
-                />
-              </Col>
-            </Row>
-          </Col>
-          <Col span={4}>
-            <div style={styles.headerCell}>
-              <Button
-                type='primary'
-                style={styles.button}
-                onClick={async () => {
-                  let result = []
-                  if (JSON.stringify(allCondition) === '{}') {
-                    result = await api.listAllStore()
-                  } else {
-                    result = await api.listStore(allCondition)
-                  }
-                  if (result.code === 0) {
-                    let tempList = result.data.map((item, index) => { item.key = index; return item }).reverse()
-                    setStoreList(tempList)
-                  }
-                }}>
-                查询
-              </Button>
-            </div>
-          </Col>
-        </Row>
+        <Searchfrom startSearch={async (conditionsValue) => {
+          console.log('conditionsValue:', conditionsValue)
+          setIsLoading(true)
+          let result = []
+          if (JSON.stringify(conditionsValue) === '{}') {
+            result = await api.listAllStore()
+          } else {
+            result = await api.listStore(conditionsValue)
+          }
+          if (result.code === 0) {
+            let tempList = result.data.map((item, index) => { item.key = index; return item }).reverse()
+            setStoreList(tempList)
+          }
+          setIsLoading(false)
+        }} />
       </div>
       <div style={styles.body}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -352,6 +275,98 @@ export default props => {
     </div>
   )
 }
+const Searchfrom = Form.create({ name: 'form' })(props => {
+  const [treeData, setTreeData] = useState([])
+  const getType = useCallback(async () => {
+    let result2 = await api.listAllTag()
+    if (result2.code === 0) {
+      result2.data = filterTag(result2.data, 0)
+      let treeResult = result2.data.map((item) => { return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name } })
+      setTreeData(getJsonTree(treeResult, 0))
+    }
+  }, [])
+  const listAllOptions = useCallback(async () => {
+    getType()
+  }, [getType])
+  useEffect(() => {
+    listAllOptions()
+  }, [listAllOptions])
+  const itemProps = { labelCol: { span: 6 }, wrapperCol: { span: 18 } }
+  return <Form onSubmit={(e) => {
+    e.preventDefault();
+    props.form.validateFields((err, values) => {
+      ///values搜寻条件数据过滤
+      let newObj = {};
+      for (const key in values) {
+        if (values.hasOwnProperty(key)) {
+          const element = values[key];
+          if (element && element.length > 0) {
+            if (key === 'date') {
+              newObj[key] = [element[0].startOf('day').format('YYYY-MM-DD HH:mm:ss'), element[1].endOf('day').format('YYYY-MM-DD HH:mm:ss')]
+            } else {
+              newObj[key] = values[key]
+            }
+          }
+        }
+      }
+      props.startSearch(newObj);
+    });
+  }}>
+    <Row>
+      <Col span={6}>
+        <Form.Item label='入库时间'  {...itemProps}>
+          {props.form.getFieldDecorator('date', {
+            rules: [{ required: false }]
+          })(
+            <DatePicker.RangePicker
+              allowClear={false}
+              style={{ width: '100%' }}
+              disabledDate={(current) => {
+                return current > moment().endOf('day');
+              }}
+              ranges={{
+                今日: [moment(), moment()],
+                昨日: [moment().add(-1, 'day'), moment().add(-1, 'day')],
+                本月: [moment().startOf('month'), moment().endOf('day')],
+                上月: [moment().add(-1, 'month').startOf('month'), moment().add(-1, 'month').endOf('month')]
+              }}
+            />
+          )}
+        </Form.Item>
+      </Col>
+      <Col span={6}>
+        <Form.Item label='类型' {...itemProps}>
+          {props.form.getFieldDecorator('tids', {
+            rules: [{ required: false }]
+          })(<TreeSelect
+            allowClear
+            multiple
+            treeNodeFilterProp='title'
+            showSearch
+            treeData={treeData}
+            style={{ width: '100%' }}
+            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+            placeholder='请选择属性-支持搜索'
+            showCheckedStrategy={TreeSelect.SHOW_PARENT}
+          />)}
+        </Form.Item>
+      </Col>
+      <Col span={6}>
+        <Form.Item label='关键字' {...itemProps}>
+          {props.form.getFieldDecorator('key', {
+            rules: [{ required: false }]
+          })(<Input allowClear placeholder="请输入名称或备注" />)}
+        </Form.Item>
+      </Col>
+      <Col span={6}>
+        <div style={{ textAlign: 'right', paddingTop: 3 }}>
+          <Button type="primary" htmlType="submit">查询</Button>
+          <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>
+        </div>
+      </Col>
+    </Row>
+  </Form>
+})
 const styles = {
   root: {
     backgroundColor: '#F1F2F5',
@@ -360,7 +375,7 @@ const styles = {
   },
   header: {
     backgroundColor: '#FFFFFF',
-    padding: 24,
+    padding: '24px 24px 0px 24px',
   },
   marginTop: { marginTop: 10 },
   headerCell: {
@@ -381,9 +396,4 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between'
   }
-}
-const rowProps = {
-  type: 'flex',
-  justify: 'space-around',
-  align: 'middle'
 }
