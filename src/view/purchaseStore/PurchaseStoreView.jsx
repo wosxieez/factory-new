@@ -187,11 +187,14 @@ export default _ => {
 const Searchfrom = Form.create({ name: 'form' })(props => {
     const [storeOptionList, setStoreOptionList] = useState([])
     const [userOptionList, setUserOptionList] = useState([])
+    const [userOptionList2, setUserOptionList2] = useState([])
     const listAllOptions = useCallback(async () => {
         let result = await api.listAllStore()
         if (result.code === 0) { setStoreOptionList(result.data) }
-        let result_user = await HttpApi.getUserList()
+        let result_user = await HttpApi.getUserListForPurchase(1)
         setUserOptionList(result_user)
+        let result_user2 = await HttpApi.getUserListForPurchase(2)
+        setUserOptionList2(result_user2)
         // if (result_user.code === 0) { setUserOptionList(result_user.data) }
     }, [])
     useEffect(() => {
@@ -284,7 +287,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                     {props.form.getFieldDecorator('record_user_id_list', {
                         rules: [{ required: false }]
                     })(<Select mode='multiple' allowClear placeholder='选择人员-支持名称搜索' showSearch optionFilterProp="children">
-                        {userOptionList.map((item, index) => {
+                        {userOptionList2.map((item, index) => {
                             return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
                         })}
                     </Select>)}

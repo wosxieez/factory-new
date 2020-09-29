@@ -162,7 +162,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
     const listAllOptions = useCallback(async () => {
         let result = await api.listAllStore()
         if (result.code === 0) { setStoreOptionList(result.data) }
-        let result_user = await HttpApi.getUserList()
+        let result_user = await HttpApi.getUserListForOutIn(1)
         setUserOptionList(result_user)
         if (result_user.code === 0) { setUserOptionList(result_user.data) }
     }, [])

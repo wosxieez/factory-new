@@ -32,7 +32,7 @@ export default _ => {
                 <Descriptions.Item label="版本">{<Tag color='blue'>{AppData.version}</Tag>}</Descriptions.Item>
             </Descriptions>
         </div>
-        <div style={styles.body2}>
+        <div style={styles.body}>
             <Descriptions title="权限信息" bordered size='small' column={2}>
                 <Descriptions.Item label="维修权限">可发起申请</Descriptions.Item>
                 <Descriptions.Item label="专工权限">可发起申请，参与【领料】审批流程</Descriptions.Item>
@@ -41,7 +41,7 @@ export default _ => {
                 <Descriptions.Item label="财务权限">参与【采购】审批流程，参与【领料】的最后审计</Descriptions.Item>
             </Descriptions>
         </div>
-        <div style={styles.body2}>
+        <div style={styles.body}>
             <Descriptions title="流程信息" bordered size='small' column={1}>
                 {flok.map((item, index) => {
                     return <Descriptions.Item key={index + 1} label={item.order_name + '流程'}>
@@ -53,7 +53,6 @@ export default _ => {
                                 return <Tag style={{ marginLeft: 10 }} key={index2} color={'blue'}>{ele}</Tag>
                             }
                         })}
-                        {/* {item.step_list.split(',').map((step_name) => <Tag>{step_name}</Tag>)} */}
                     </Descriptions.Item>
                 })}
             </Descriptions>
@@ -81,11 +80,7 @@ const styles = {
     body: {
         backgroundColor: '#FFFFFF',
         padding: 24,
-    },
-    body2: {
-        backgroundColor: '#FFFFFF',
-        padding: 24,
-        marginTop: 16,
+        marginBottom: 16,
     },
     button: {
         marginLeft: 10

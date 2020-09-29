@@ -56,6 +56,35 @@ const HttpApi = {
         }
         return []
     },
+    /***
+     * 查询出退库记录中出现过的人员信息
+     */
+    getUserListForOutIn: async (type_id = 1) => {
+        let sql = `select distinct create_user as id,users.name from orders 
+        left join (select * from users where effective = 1) users on users.id = orders.create_user
+        where type_id = ${type_id} and isdelete = 0`
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return result.data
+        }
+        return []
+    },
+    /***
+     * 查询采购记录中出现过的人员信息
+     */
+    getUserListForPurchase: async (type_id = 1) => {
+        let sql = type_id === 1 ? `select distinct buy_user_id as id,users.name from purchase_record
+        left join (select * from users where effective = 1) users on users.id = purchase_record.buy_user_id
+        where isdelete = 0
+        `: `select distinct record_user_id as id,users.name from purchase_record
+        left join (select * from users where effective = 1) users on users.id = purchase_record.buy_user_id
+        where isdelete = 0`
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return result.data
+        }
+        return []
+    },
     getNfc: (params) => {
         return Axios.post(Testuri + 'find_nfc', { ...params, effective: 1 })
     },
