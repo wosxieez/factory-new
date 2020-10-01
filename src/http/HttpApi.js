@@ -75,10 +75,10 @@ const HttpApi = {
     getUserListForPurchase: async (type_id = 1) => {
         let sql = type_id === 1 ? `select distinct buy_user_id as id,users.name from purchase_record
         left join (select * from users where effective = 1) users on users.id = purchase_record.buy_user_id
-        where isdelete = 0
+        where isdelete = 0 and purchase_record.buy_user_id is not NULL
         `: `select distinct record_user_id as id,users.name from purchase_record
-        left join (select * from users where effective = 1) users on users.id = purchase_record.buy_user_id
-        where isdelete = 0`
+        left join (select * from users where effective = 1) users on users.id = purchase_record.record_user_id
+        where isdelete = 0 and purchase_record.record_user_id is not NULL`
         let result = await HttpApi.obs({ sql })
         if (result.code === 0) {
             return result.data
