@@ -12,7 +12,7 @@ export default _ => {
 
     const listData = useCallback(async (conditionObj) => {
         setIsLoading(true)
-        let date_range = conditionObj.date_range || [moment().add(-1, 'month').startOf('month').format('YYYY-MM-DD HH:mm:ss'), moment().endOf('day').format('YYYY-MM-DD HH:mm:ss')]
+        let date_range = conditionObj.date_range || [moment().add(0, 'month').startOf('month').format('YYYY-MM-DD HH:mm:ss'), moment().endOf('day').format('YYYY-MM-DD HH:mm:ss')]
         let sql_date = ` and orders.in_out_time >= '${date_range[0]}' and orders.in_out_time <= '${date_range[1]}'`
         let sql_store_id = ''
         if (conditionObj.store_id_list) {
@@ -72,11 +72,19 @@ export default _ => {
             }
         },
         {
+            title: '流水',
+            dataIndex: 'order.code',
+            key: 'code',
+            render: (text) => {
+                return <Tag color='blue'>{text}</Tag>
+            }
+        },
+        {
             title: '物品',
             dataIndex: 'store.store_name',
             key: 'store_name',
             render: (text, record) => {
-                return <Tag color='cyan'>{text}</Tag>
+                return <Tag color='cyan' style={{ marginRight: 0 }}>{text}</Tag>
             }
         },
         {
@@ -84,7 +92,7 @@ export default _ => {
             dataIndex: 'store.avg_price',
             key: 'avg_price',
             render: (text) => {
-                return <Tag color='orange'>{text}</Tag>
+                return <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
             }
         },
         {
@@ -92,7 +100,7 @@ export default _ => {
             dataIndex: 'store.count',
             key: 'count',
             render: (text) => {
-                return <Tag color='#faad14'>{text}</Tag>
+                return <Tag color='#faad14' style={{ marginRight: 0 }}>{text}</Tag>
             }
         },
         {
@@ -102,7 +110,7 @@ export default _ => {
             render: (_, record) => {
                 const avg_price = record.store.avg_price
                 const count = record.store.count
-                return <Tag color='#fa541c'>{parseFloat(avg_price * count).toFixed(2)}</Tag>
+                return <Tag color='#fa541c' style={{ marginRight: 0 }}>{parseFloat(avg_price * count).toFixed(2)}</Tag>
             }
         },
         {
@@ -111,14 +119,6 @@ export default _ => {
             key: 'user_name',
             align: 'center',
             width: 100,
-        },
-        {
-            title: '流水',
-            dataIndex: 'order.code',
-            key: 'code',
-            render: (text) => {
-                return <Tag color='blue'>{text}</Tag>
-            }
         },
     ]
     return (<div style={styles.root}>
@@ -132,7 +132,7 @@ export default _ => {
                 <h3>出库物品记录</h3>
                 <div>
                     <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
-                    <Tag color={'#fa541c'}>总价格¥: {sum_price}</Tag>
+                    <Tag color={'#fa541c'} style={{ marginRight: 0 }}>总价格¥: {sum_price}</Tag>
                 </div>
             </div>
             <Table

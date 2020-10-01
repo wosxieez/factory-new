@@ -1,14 +1,16 @@
-import React, { useEffect, useCallback, useState } from 'react';
-import api from '../../http';
-import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form } from 'antd';
-import moment from 'moment';
-import { translatePurchaseRecordList } from '../../util/tool';
+import React, { useState, useEffect, useCallback } from 'react'
+import api from '../../http'
+import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select } from 'antd'
+import moment from 'moment'
 import HttpApi from '../../http/HttpApi';
-export default _ => {
-    const [isLoading, setIsLoading] = useState(false)
-    const [dataSource, setDataSource] = useState([])
+/**
+ * 采购信息单--用于财务审计
+ */
+export default props => {
     const [sum_price, setSumPrice] = useState(0)
     const [sum_count, setSumCount] = useState(0)
+    const [isLoading, setIsLoading] = useState(false)
+    const [dataSource, setDataSource] = useState([])
 
     const listData = useCallback(async (conditionObj) => {
         setIsLoading(true)
@@ -38,7 +40,6 @@ export default _ => {
             sql_record_user_id = ' and record_user_id in (' + conditionObj.record_user_id_list.join(',') + ')'
         }
         let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_bug_user_id + sql_record_user_id
-        // console.log('sql_condition:', sql_condition)
         let sql = `select pr.*,users1.name as buy_user_name,users2.name as record_user_name from purchase_record as pr
         left join (select * from users where effective = 1) users1 on users1.id = pr.buy_user_id
         left join (select * from users where effective = 1) users2 on users2.id = pr.record_user_id
@@ -46,142 +47,154 @@ export default _ => {
         // console.log('sql:', sql)
         let result = await api.query(sql)
         if (result.code === 0) {
-            let storeData = translatePurchaseRecordList(result.data[0])
-            ///过滤物品id,因为一单中可能有多个物品
-            if (conditionObj.store_id_list) {
-                storeData = storeData.filter((item) => {
-                    return conditionObj.store_id_list.indexOf(item.store_id) !== -1
-                })
-            }
-            setDataSource(storeData.map((item, index) => { item.key = index; return item }))
-            let records_sum_price = 0
-            let records_sum_count = 0
-            storeData.forEach((item) => {
-                records_sum_price += parseFloat(item.count * item.price)
-                records_sum_count += parseFloat(item.count)
-            })
-            setSumPrice(parseFloat(records_sum_price).toFixed(2))
-            setSumCount(records_sum_count)
+            let tempSumcount = 0;
+            let tempSumprice = 0;
+            // console.log('result.data[0]:', result.data[0])
+            setDataSource(result.data[0].map((item, index) => {
+                tempSumcount += parseInt(item.sum_count);
+                tempSumprice += parseFloat(item.sum_price);
+                item.key = index;
+                return item
+            }))
+            // console.log('tempSumcount:', tempSumcount.toFixed(0))
+            // console.log('tempSumprice:', tempSumprice.toFixed(2))
+            setSumCount(tempSumcount.toFixed(0))
+            setSumPrice(tempSumprice.toFixed(2))
         }
         setIsLoading(false)
     }, [])
-    ////////////////
     useEffect(() => {
-        listData({});
+        listData({})
     }, [listData])
+
     const columns = [
-        {
-            title: '采购时间',
-            dataIndex: 'other.date',
-            key: 'other.date',
-            width: 180,
-            render: (text) => {
-                return moment(text).format('YYYY-MM-DD HH:mm:ss')
-            }
-        },
+        { title: '时间', dataIndex: 'date', key: 'date', width: 120, align: 'center' },
         {
             title: '单号',
-            dataIndex: 'other.code_num',
-            key: 'other.code_num',
+            dataIndex: 'code_num',
+            key: 'code_num',
+            align: 'center',
+            width: 100,
             render: (text) => {
-                return text ? <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag> : null
+                return text ? <Tag color={'blue'} style={{ marginRight: 0 }}>{text}</Tag> : '-'
             }
         },
         {
-            title: '流水',
-            dataIndex: 'other.code',
-            key: 'other.code',
+            title: '流水', dataIndex: 'code', width: 120, align: 'center',
             render: (text) => {
-                return <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                return <Tag color={'blue'} style={{ marginRight: 0 }}>{text}</Tag>
             }
         },
         {
-            title: '物品',
-            dataIndex: 'store_name',
-            key: 'store_name',
+            title: '采购单',
+            dataIndex: 'content',
+            // align: 'center',
             render: (text, record) => {
-                return <Tag color='cyan' style={{ marginRight: 0 }}>{text}</Tag>
+                let contentList = JSON.parse(text)
+                return contentList.map((item, index) => {
+                    return <div key={index}><Tag key={index} color={'cyan'} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>{item.store_name} 采购价{item.price}元*{item.count}</Tag><br /></div>
+                })
             }
         },
         {
-            title: '采购单价(元)',
-            dataIndex: 'price',
-            key: 'price',
+            title: '总数量',
+            dataIndex: 'sum_count',
+            key: 'sum_count',
+            align: 'center',
+            width: 100,
             render: (text) => {
-                return <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
+                return <Tag color={'#faad14'} style={{ marginRight: 0 }}>{text}</Tag>
             }
         },
         {
-            title: '采购数量(个)',
-            dataIndex: 'count',
-            key: 'count',
+            title: '总价格',
+            dataIndex: 'sum_price',
+            key: 'sum_price',
+            align: 'center',
+            width: 100,
             render: (text) => {
-                return <Tag color='#faad14' style={{ marginRight: 0 }}>{text}</Tag>
-            }
-        },
-        {
-            title: '采购总价(元)',
-            dataIndex: 'sum_oprice',
-            key: 'sum_oprice',
-            render: (_, record) => {
-                return <Tag color='#fa541c' style={{ marginRight: 0 }}>{parseFloat((record.count * record.price || 0).toFixed(2))}</Tag>
+                return <Tag color={'#fa541c'} style={{ marginRight: 0 }}>{text}</Tag>
             }
         },
         {
             title: '采购人员',
-            dataIndex: 'other.buy_user_name',
-            key: 'other.buy_user_name',
+            dataIndex: 'buy_user_name',
+            key: 'buy_user_name',
             align: 'center',
             width: 100,
         },
         {
             title: '记录人员',
-            dataIndex: 'other.record_user_name',
-            key: 'other.record_user_name',
+            dataIndex: 'record_user_name',
+            key: 'record_user_name',
             align: 'center',
             width: 100,
         },
         {
-            title: '采购备注',
-            dataIndex: 'other.remark',
-            key: 'other.remark',
+            title: '备注',
+            dataIndex: 'remark',
             align: 'center',
-            width: 100,
+            width: 140,
+            render: (text) => {
+                return <div>{text || '-'}</div>
+            }
         },
+        {
+            title: '操作',
+            dataIndex: 'action',
+            width: 80,
+            align: 'center',
+            render: (_, record) => {
+                return (
+                    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                        <Button
+                            type='link'
+                            size='small'
+                            onClick={() => {
+                                // setCurrentItem(record)
+                                // setIsUpdating(true)
+                            }}>
+                            处理
+            </Button>
+                    </div>
+                )
+            }
+        }
     ]
-    return (<div style={styles.root}>
-        <div style={styles.header}>
-            <Searchfrom startSearch={(conditionsValue) => {
-                listData(conditionsValue)
-            }} />
-        </div>
-        <div style={styles.body}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <h3>采购物品记录</h3>
-                <div>
-                    <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
-                    <Tag color={'#fa541c'} style={{ marginRight: 0 }}>总价格¥: {sum_price}</Tag>
-                </div>
+    return (
+        <div style={styles.root}>
+            <div style={styles.header}>
+                <Searchfrom startSearch={async (conditionsValue) => {
+                    // console.log('conditionsValue:', conditionsValue)
+                    listData(conditionsValue)
+                }} />
             </div>
-            <Table
-                loading={isLoading}
-                style={styles.marginTop}
-                size='small'
-                bordered
-                columns={columns}
-                dataSource={dataSource}
-                pagination={{
-                    total: dataSource.length,
-                    showTotal: () => {
-                        return <div>共{dataSource.length}条记录</div>
-                    },
-                    showSizeChanger: true,
-                    showQuickJumper: true,
-                    pageSizeOptions: ['10', '50', '100'],
-                }}
-            />
+            <div style={styles.body}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <h3>采购单记录</h3>
+                    <div>
+                        <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
+                        <Tag color={'#fa541c'} style={{ marginRight: 0 }}>总价格¥: {sum_price}</Tag>
+                    </div>
+                </div>
+                <Table
+                    loading={isLoading}
+                    bordered
+                    size='small'
+                    columns={columns}
+                    dataSource={dataSource}
+                    pagination={{
+                        total: dataSource.length,
+                        showTotal: () => {
+                            return <div>共{dataSource.length}条记录</div>
+                        },
+                        showSizeChanger: true,
+                        showQuickJumper: true,
+                        pageSizeOptions: ['10', '50', '100'],
+                    }}
+                />
+            </div>
         </div>
-    </div >
     )
 }
 const Searchfrom = Form.create({ name: 'form' })(props => {

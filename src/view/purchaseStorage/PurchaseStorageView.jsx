@@ -270,7 +270,7 @@ export default Form.create({ name: 'form' })(props => {
                     </Col>
                 </Row>
                 <Row>
-                    <Form.Item label='入库明细' labelCol={{ span: 24 }} wrapperCol={{ span: 24 }}>
+                    <Form.Item label='单据明细' labelCol={{ span: 24 }} wrapperCol={{ span: 24 }}>
                         {props.form.getFieldDecorator('storeList', {
                             rules: [{ required: true, message: '请添加入库明细' }]
                         })(

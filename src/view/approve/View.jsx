@@ -114,7 +114,11 @@ export default _ => {
                 return <div>{text ? moment(text).format('YYYY-MM-DD HH:mm:ss') : ''}</div>
             }
         },
-        { title: '流水', dataIndex: 'code', width: 120, align: 'center' },
+        {
+            title: '流水', dataIndex: 'code', width: 120, align: 'center', render: (text) => {
+                return <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+            }
+        },
         {
             title: '申请类型',
             dataIndex: 'order_type_name',
@@ -145,11 +149,11 @@ export default _ => {
         {
             title: '申请内容',
             dataIndex: 'content',
-            align: 'center',
+            // align: 'center',
             render: (text, record) => {
                 let result = JSON.parse(text).map((item, index) => {
                     return (
-                        <Tag color={'blue'} key={index}>
+                        <Tag color={'blue'} key={index} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>
                             {item.store_name} 数量:{item.count}
                         </Tag>
                     )
@@ -200,7 +204,7 @@ export default _ => {
                     default:
                         break
                 }
-                return <div>{<Tag color={color}>{result}</Tag> || '/'}</div>
+                return <div>{<Tag color={color} style={{ marginRight: 0 }}>{result}</Tag> || '/'}</div>
             }
         },
         {

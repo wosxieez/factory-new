@@ -15,6 +15,7 @@ import PurchaseStorageView from './purchaseStorage/PurchaseStorageView';
 import PurchaseStoreView from './purchaseStore/PurchaseStoreView';
 import AppData from '../util/AppData';
 import SelfCenterView from './selfCenter/SelfCenterView';
+import PurchasecheckView from './approve/PurchasecheckView';
 // import CamView from './cam/CamView';
 const { Header, Content, Sider } = Layout;
 export default (props) => {
@@ -59,7 +60,7 @@ export default (props) => {
         <span style={{ ...styles.title, visibility: collapsed ? 'hidden' : 'visible' }}>Welcome</span>
       </div>
       <Menu theme="dark" mode="inline" selectedKeys={[props.location.pathname]} >
-        <SubMenu key="库存管理" title={<span><Icon type="reconciliation" /><span>库存管理</span></span>}>
+        <SubMenu key="库存管理" title={<span><Icon type="reconciliation" /><span>库存</span></span>}>
           <Menu.Item key={'/main/storeview'}>
             <Icon type="hdd" />
             <span className="nav-text">库存列表</span>
@@ -67,26 +68,26 @@ export default (props) => {
           </Menu.Item>
           <Menu.Item key={'/main/purchasestorageview'}>
             <Icon type="shopping-cart" />
-            <span className="nav-text">采购入库</span>
+            <span className="nav-text">采购单据</span>
             <Link to={`${props.match.url}/purchasestorageview`} />
           </Menu.Item>
         </SubMenu>
-        <SubMenu key="报表统计" title={<span><Icon type="area-chart" /><span>报表统计</span></span>}>
+        <SubMenu key="报表统计" title={<span><Icon type="area-chart" /><span>统计</span></span>}>
           <Menu.Item key={'/main/exportstoreview'}>
             <Icon type="area-chart" />
             <span className="nav-text">出库记录</span>
             <Link to={`${props.match.url}/exportstoreview`} />
+          </Menu.Item>
+          <Menu.Item key={'/main/purchasetoreview'}>
+            <Icon type="area-chart" />
+            <span className="nav-text">采购记录</span>
+            <Link to={`${props.match.url}/purchasetoreview`} />
           </Menu.Item>
           {/* <Menu.Item key={'/main/backstoreview'}>
             <Icon type="area-chart" />
             <span className="nav-text">退库记录</span>
             <Link to={`${props.match.url}/backstoreview`} />
           </Menu.Item> */}
-          <Menu.Item key={'/main/purchasetoreview'}>
-            <Icon type="area-chart" />
-            <span className="nav-text">入库记录</span>
-            <Link to={`${props.match.url}/purchasetoreview`} />
-          </Menu.Item>
         </SubMenu>
         {/* <Menu.Item key="/main/departmentview">
           <Icon type="apartment" />
@@ -100,14 +101,21 @@ export default (props) => {
         </Menu.Item> */}
         <Menu.Item key={'/main/applyview'}>
           <Icon type="form" />
-          <span className="nav-text">物料申请</span>
+          <span className="nav-text">申请</span>
           <Link to={`${props.match.url}/applyview`} />
         </Menu.Item>
-        <Menu.Item key={'/main/approveview'}>
-          <Icon type="ordered-list" />
-          <span className="nav-text">申请审批</span>
-          <Link to={`${props.match.url}/approveview`} />
-        </Menu.Item>
+        <SubMenu key={'审批'} title={<span><Icon type="audit" /><span>审批</span></span>}>
+          <Menu.Item key={'/main/approve/approveview'}>
+            <Icon type="ordered-list" />
+            <span className="nav-text">申请表审批</span>
+            <Link to={`${props.match.url}/approve/approveview`} />
+          </Menu.Item>
+          <Menu.Item key={'/main/approve/purchasecheckview'}>
+            <Icon type="ordered-list" />
+            <span className="nav-text">采购单审计</span>
+            <Link to={`${props.match.url}/approve/purchasecheckview`} />
+          </Menu.Item>
+        </SubMenu>
         <SubMenu key={'设置'} title={<span><Icon type="setting" /><span>设置</span></span>}>
           {/* <Menu.Item key={'/main/usertag'}>
             <Icon type="tags" />
@@ -150,7 +158,8 @@ export default (props) => {
         <Route path={`${props.match.url}/storeview`} component={StoreHouseView} />
         {/* <Route path={`${props.match.url}/userview`} component={UserView} /> */}
         <Route path={`${props.match.url}/applyview`} component={ApplyView} />
-        <Route path={`${props.match.url}/approveview`} component={ApproveView} />
+        <Route path={`${props.match.url}/approve/approveview`} component={ApproveView} />
+        <Route path={`${props.match.url}/approve/purchasecheckview`} component={PurchasecheckView} />
         <Route path={`${props.match.url}/exportstoreview`} component={ExportStoreView} />
         <Route path={`${props.match.url}/purchasetoreview`} component={PurchaseStoreView} />
         <Route path={`${props.match.url}/backstoreview`} component={BackStoreView} />
