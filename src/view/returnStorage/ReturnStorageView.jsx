@@ -211,7 +211,7 @@ export default Form.create({ name: 'form' })(props => {
                     <Col span={6}>
                         <Form.Item label='退料人' >
                             {props.form.getFieldDecorator('return_user_id', {
-                                rules: [{ required: true }]
+                                rules: [{ required: true, message: '请选择退料人' }]
                             })(<Select allowClear placeholder='请选择退料人' showSearch optionFilterProp="children">
                                 {userOptionList.map((item, index) => {
                                     return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
