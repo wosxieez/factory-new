@@ -168,7 +168,7 @@ export default Form.create({ name: 'form' })(props => {
         // console.log('formData:', formData)
         const { date, storeList, remark, buy_user_id, record_user_id, code_num } = formData;
         const code = 'CG' + moment().toDate().getTime()
-        let sql = `insert into purchase_record (date,code,code_num,supplier_id,content,buy_user_id,record_user_id,remark,sum_count,sum_price) values ('${date.format('YYYY-MM-DD HH:mm:ss')}','${code}',${code_num ? '\'' + code_num + '\'' : null},${null},'${JSON.stringify(storeList)}',${buy_user_id || null},${record_user_id},${remark ? '\'' + remark + '\'' : null},${sumCount},${sumPrice})`
+        let sql = `insert into purchase_record (date,code,code_num,content,buy_user_id,record_user_id,remark,sum_count,sum_price) values ('${date.format('YYYY-MM-DD HH:mm:ss')}','${code}',${code_num ? '\'' + code_num + '\'' : null},'${JSON.stringify(storeList)}',${buy_user_id || null},${record_user_id},${remark ? '\'' + remark + '\'' : null},${sumCount},${sumPrice})`
         let result = await api.query(sql)
         if (result.code === 0) { ///记录入库成功-开始循环修改store表中物品的信息。条件:store_id---数据:avg_price all_count remark 等
             for (let index = 0; index < storeList.length; index++) {
@@ -227,6 +227,7 @@ export default Form.create({ name: 'form' })(props => {
     const itemProps = { labelCol: { span: 6 }, wrapperCol: { span: 18 } }
     return <div style={styles.root}>
         <div style={styles.body}>
+            <h3>采购入库单</h3>
             <Alert message={'注意！当同一个物品单价发生浮动时可以修改单价，平台会结合原有数据计算出该物品每件的平均单价，若要区分请点击【+创建物品】新建一个物品'} type='info' showIcon />
             <Form  {...itemProps} style={{ marginTop: 16 }} onSubmit={handleSubmit}>
                 <Row>

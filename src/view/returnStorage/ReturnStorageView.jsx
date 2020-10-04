@@ -1,56 +1,28 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Row, Col, Tooltip, Alert } from 'antd';
+import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Alert, Row, Col, Tooltip } from 'antd';
 import moment from 'moment';
 import api from '../../http';
-import AppData from '../../util/AppData';
 import HttpApi from '../../http/HttpApi';
+import AppData from '../../util/AppData';
 
-const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 var storeList = [{ key: 0 }]
 const starIcon = <span style={{ color: 'red' }}>* </span>
 /**
- * 申请单界面
+ * 退料入库单界面
  */
 export default Form.create({ name: 'form' })(props => {
-    // console.log('AppData.userinfo:', AppData.userinfo())
     const [storeOptionList, setStoreOptionList] = useState([])
-    const [orderTypeList, setOrderTypeList] = useState([])
-    const [marjorList, setMajorList] = useState([])
-    const [selectOrderType, setSelectOrderType] = useState(1)
+    const [userOptionList, setUserOptionList] = useState([])
     const [sumCount, setSumCount] = useState(0)
     const [sumPrice, setSumPrice] = useState(0)
     const listAllStore = useCallback(async () => {
-        let major_list = await HttpApi.getCurrentUserMajor()
-        // console.log('major_list:', major_list)
-        setMajorList(major_list)
-        let response_store = await api.listAllStore()
-        ///查询现有的 那些处于待审核 和 审核中的 申请。得到对应的物品的id 和 count -- 对现有的store 数据进行相减
-        const response_order = await api.query(
-            `select * from orders where isdelete = 0 and status in (0,1) and type_id = 1`
-        )
-        if (response_order.code === 0 && response_order.data[0].length > 0) {
-            let orderList = response_order.data[0]
-            // console.log('申请列表数据:', orderList)
-            orderList.forEach(order => {
-                let contentList = JSON.parse(order.content)
-                // console.log('contentList:', contentList)
-                contentList.forEach(item => {
-                    response_store.data.forEach(store => {
-                        if (item.store_id === store.id) {
-                            store.count = store.count - item.count
-                        }
-                    })
-                })
-            })
-        }
-        // console.log('response_store:', response_store.data)
-        setStoreOptionList(response_store.data)
-
-        let sql = `select * from order_type where isdelete = 0`
-        let result2 = await api.query(sql)
-        if (result2.code === 0) {
-            setOrderTypeList(result2.data[0])
-        }
+        let result = await api.listAllStore()
+        if (result.code === 0) { setStoreOptionList(result.data) }
+        // let result_user = await api.listAllUser()
+        let result_user = await HttpApi.getUserList() ///是否需要限制为那些已经领取过物料的人？
+        // result_user = result_user.filter((item) => {
+        // })
+        setUserOptionList(result_user)
     }, [])
     const columns = [
         { title: '编号', dataIndex: 'key', width: 50, align: 'center', render: (text) => <div>{text + 1}</div> },
@@ -59,9 +31,7 @@ export default Form.create({ name: 'form' })(props => {
                 return <Select placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children" value={text} onChange={(_, option) => { handleSelectChange(option, record.key) }}>
                     {
                         storeOptionList.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item} disabled={(storeList.map((item) => item.store_id).indexOf(item.id) !== -1) || (selectOrderType === 1 && item.count === 0)}>
-                                {selectOrderType === 1 ? item.name + '--剩余' + item.count : item.name}
-                            </Select.Option>
+                            return <Select.Option value={item.id} key={index} all={item} disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}>{item.name}</Select.Option>
                         })
                     }
                 </Select >
@@ -69,7 +39,7 @@ export default Form.create({ name: 'form' })(props => {
         },
         {
             title: <div>{starIcon}数量</div>, dataIndex: 'count', width: 80, align: 'center', render: (text, record) => {
-                return <InputNumber placeholder='输入数量' precision={0} value={text} min={1} max={selectOrderType === 1 ? record.max_count : 99999999} disabled={!record.store_id} onChange={(v) => {
+                return <InputNumber placeholder='输入数量' precision={0} value={text} min={1} disabled={!record.store_id} onChange={(v) => {
                     if (!v) { v = 1 }
                     let param = { 'key': record.key, 'count': v }
                     changeTableListHandler(param)
@@ -83,7 +53,7 @@ export default Form.create({ name: 'form' })(props => {
         },
         {
             title: <div>{starIcon}单价[元]</div>, dataIndex: 'price', width: 130, align: 'center', render: (text, record) => {
-                return <InputNumber placeholder='输入价格' value={text} disabled></InputNumber>
+                return <InputNumber placeholder='输入价格' value={text} min={0.01} disabled={true}></InputNumber>
             }
         },
         {
@@ -135,16 +105,46 @@ export default Form.create({ name: 'form' })(props => {
 
     const handleSelectChange = useCallback((option, key) => {
         const selectObj = option.props.all;
-        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'o_count': selectObj.count, 'o_price': selectObj.oprice, 'remark': selectObj.remark, 'max_count': selectObj.count }
+        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'o_count': selectObj.count, 'o_price': selectObj.oprice, 'remark': selectObj.remark }
         changeTableListHandler(param)
     }, [changeTableListHandler])
 
     const resetHandler = useCallback(() => {
-        props.form.resetFields()
+        props.form.resetFields();
         storeList = [{ key: 0 }]
         props.form.setFieldsValue({ storeList })
-        listAllStore()
-    }, [props.form, listAllStore])
+    }, [props.form])
+
+    /**
+     * 更新物品库存信息。同时要给记录表插入一条记录
+     */
+    const updateStoreAndrecordHandler = useCallback(async (formData) => {
+        for (const key in formData) {
+            if (formData.hasOwnProperty(key)) {
+                const element = formData[key];
+                if (!element) {
+                    formData[key] = null
+                }
+            }
+        }
+        // console.log('formData:', formData)
+        const { date, storeList, remark, return_user_id, record_user_id, code_num } = formData;
+        const code = 'TL' + moment().toDate().getTime()
+        let sql = `insert into return_record (date,code,code_num,content,return_user_id,record_user_id,remark,sum_count,sum_price) values ('${date.format('YYYY-MM-DD HH:mm:ss')}','${code}',${code_num ? '\'' + code_num + '\'' : null},'${JSON.stringify(storeList)}',${return_user_id || null},${record_user_id},${remark ? '\'' + remark + '\'' : null},${sumCount},${sumPrice})`
+        let result = await api.query(sql)
+        if (result.code === 0) { ///记录入库成功-开始循环修改store表中物品的信息。条件:store_id---数据:avg_price all_count remark 等
+            for (let index = 0; index < storeList.length; index++) {
+                const storeObj = storeList[index]
+                let params = { 'oprice': storeObj.avg_price, 'count': storeObj.all_count, 'remark': storeObj.remark }
+                ///这里-用的是循环调用单次修改接口一次修改一个物品，所以会出现多次返回修改结果；后期接口需要升级。支持批量修改
+                let result = await api.updateStore({ id: storeObj.store_id, ...params })
+                if (result.code === 0) {
+                    message.success('入库成功', 3);
+                    resetHandler()
+                }
+            }
+        }
+    }, [sumCount, sumPrice, resetHandler])
 
     const handleSubmit = useCallback((e) => {
         props.form.setFieldsValue({ storeList })
@@ -170,37 +170,17 @@ export default Form.create({ name: 'form' })(props => {
                 }
                 values.storeList = afterFilter;
                 Modal.confirm({
-                    title: `确认要提交这些采购信息入库吗？`,
+                    title: `确认要提交这些退料信息入库吗？`,
                     content: '请自行确保所选的信息的准确性',
                     okText: '提交',
                     okType: 'danger',
                     onOk: async function () {
-                        // console.log('asdasdasd')
-                        let tempCodeHeader = ''
-                        if (values.type_id === 1) {
-                            tempCodeHeader = 'SL'
-                        } else if (values.type_id === 2) {
-                            tempCodeHeader = 'ST'
-                        } else {
-                            tempCodeHeader = 'SG'
-                        }
-                        let tempRemark = null;
-                        if (values.remark) {
-                            tempRemark = "'" + values.remark + "'"
-                        }
-                        let sql = `insert into orders (create_user,tag_id,type_id,content,remark,code,createdAt) values (${values.apply_user_id},${values.major_id},${values.type_id},'${JSON.stringify(values.storeList)}',${tempRemark},'${tempCodeHeader + moment().toDate().getTime()}','${moment().format(FORMAT)} ')`
-                        // console.log('sql:', sql)
-                        let result = await api.query(sql)
-                        if (result.code === 0) {
-                            message.success('提交成功，等待审批')
-                            resetHandler()
-                        }
-                        // console.log('result:', result)
+                        updateStoreAndrecordHandler(values)
                     },
                 })
             }
         });
-    }, [props.form, resetHandler])
+    }, [props.form, updateStoreAndrecordHandler])
 
     useEffect(() => {
         listAllStore()
@@ -209,69 +189,53 @@ export default Form.create({ name: 'form' })(props => {
     const itemProps = { labelCol: { span: 6 }, wrapperCol: { span: 18 } }
     return <div style={styles.root}>
         <div style={styles.body}>
-            <h3>申领、申购单</h3>
-            <Alert message={'注意！当有需要申领物料和申购物料时，请填写相关申请，完成流程'} type='info' showIcon />
+            <h3>退料入库单</h3>
+            <Alert message={'注意！当有物料退库时，库管在确认后可以直接填写【退料入库单】；不需要走退料申请流程'} type='info' showIcon />
             <Form  {...itemProps} style={{ marginTop: 16 }} onSubmit={handleSubmit}>
                 <Row>
                     <Col span={6}>
                         <Form.Item label='日期' >
                             {props.form.getFieldDecorator('date', {
                                 initialValue: moment(),
-                                rules: [{ required: true, message: '请选择日期' }]
+                                rules: [{ required: true, message: '请选择退料日期' }]
                             })(<DatePicker style={{ width: '100%' }} allowClear={false} disabledDate={(current) => current > moment().endOf('day')} />)}
                         </Form.Item>
                     </Col>
                     <Col span={6}>
-                        <Form.Item label='申请类型' >
-                            {props.form.getFieldDecorator('type_id', {
-                                initialValue: 1,
-                                rules: [{ required: true, message: '请选择申请类型' }]
-                            })(<Select placeholder='请选择申请类型' showSearch optionFilterProp="children" onChange={(v) => {
-                                setSelectOrderType(v)
-                                // storeList = [{ key: 0 }]
-                                // props.form.setFieldsValue({ storeList })
-                                resetHandler()
-                                calculSumCountAndPrice()
-                            }}>
-                                {orderTypeList.map((item, index) => {
-                                    return <Select.Option value={item.id} key={index} all={item}>{item.order_name}</Select.Option>
+                        <Form.Item label='单号' >
+                            {props.form.getFieldDecorator('code_num', {
+                                rules: [{ required: false }]
+                            })(<Input />)}
+                        </Form.Item>
+                    </Col>
+                    <Col span={6}>
+                        <Form.Item label='退料人' >
+                            {props.form.getFieldDecorator('return_user_id', {
+                                rules: [{ required: true }]
+                            })(<Select allowClear placeholder='请选择退料人' showSearch optionFilterProp="children">
+                                {userOptionList.map((item, index) => {
+                                    return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
                                 })}
                             </Select>)}
                         </Form.Item>
                     </Col>
                     <Col span={6}>
-                        <Form.Item label='申请人' >
-                            {props.form.getFieldDecorator('apply_user_id', {
+                        <Form.Item label='记录人' >
+                            {props.form.getFieldDecorator('record_user_id', {
                                 initialValue: AppData.userinfo().id,
-                                rules: [{ required: true, message: '请选择申请人' }]
-                            })(
-                                <Select disabled>
-                                    {[AppData.userinfo()].map((item, index) => {
-                                        return <Select.Option value={item.id} key={index}>{item.name}</Select.Option>
-                                    })}
-                                </Select>
-                            )}
-                        </Form.Item>
-                    </Col>
-                    <Col span={6}>
-                        <Form.Item label='专业' >
-                            {props.form.getFieldDecorator('major_id', {
-                                initialValue: marjorList[0] ? marjorList[0].mj_id : null,
-                                rules: [{ required: true, message: '请选择专业' }]
-                            })(
-                                <Select placeholder='请选择专业' showSearch optionFilterProp="children">
-                                    {marjorList.map((item, index) => {
-                                        return <Select.Option value={item.mj_id} key={index} all={item}>{item.major_name}</Select.Option>
-                                    })}
-                                </Select>
-                            )}
+                                rules: [{ required: true, message: '请选择记录人' }]
+                            })(<Select placeholder='请选择记录人' showSearch optionFilterProp="children">
+                                {[AppData.userinfo()].map((item, index) => {
+                                    return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
+                                })}
+                            </Select>)}
                         </Form.Item>
                     </Col>
                 </Row>
                 <Row>
-                    <Form.Item label='物品明细' labelCol={{ span: 24 }} wrapperCol={{ span: 24 }}>
+                    <Form.Item label='单据明细' labelCol={{ span: 24 }} wrapperCol={{ span: 24 }}>
                         {props.form.getFieldDecorator('storeList', {
-                            rules: [{ required: true, message: '请添加物品明细' }]
+                            rules: [{ required: true, message: '请添加入库明细' }]
                         })(
                             <>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: -46 }}>
@@ -302,18 +266,15 @@ export default Form.create({ name: 'form' })(props => {
                     <Form.Item label='备注' labelCol={{ span: 24 }} wrapperCol={{ span: 24 }} >
                         {props.form.getFieldDecorator('remark', {
                             rules: [{ required: false }]
-                        })(<Input.TextArea placeholder="备注[小于100字符]" allowClear autoSize={{ minRows: 3, maxRows: 6 }} maxLength={100}></Input.TextArea>)}
+                        })(<Input.TextArea placeholder="退料单备注[小于100字符]" allowClear autoSize={{ minRows: 3, maxRows: 6 }} maxLength={100}></Input.TextArea>)}
                     </Form.Item>
                 </Row>
                 <Row>
-                    {/* <Form.Item wrapperCol={{ span: 24 }}>
-                        <div style={{ textAlign: 'right' }}><Button type="primary" htmlType="submit">提交</Button></div>
-                    </Form.Item> */}
                     <Form.Item wrapperCol={{ span: 24 }}>
                         <div style={{ textAlign: 'right' }}>
-                            <Tooltip title={`${!(AppData.userinfo().permission && (AppData.userinfo().permission.indexOf('0') !== -1 || AppData.userinfo().permission.indexOf('3') !== -1) && AppData.userinfo().major_id_all) ? '需要维修或专工权限和所属专业' : ''}`}>
+                            <Tooltip title={`${!(AppData.userinfo().permission && AppData.userinfo().permission.indexOf('5') !== -1) ? '需要库管权限' : ''}`}>
                                 <Button type="primary" htmlType="submit"
-                                    disabled={!(AppData.userinfo().permission && (AppData.userinfo().permission.indexOf('0') !== -1 || AppData.userinfo().permission.indexOf('3') !== -1) && AppData.userinfo().major_id_all)}
+                                    disabled={!(AppData.userinfo().permission && AppData.userinfo().permission.indexOf('5') !== -1)}
                                 >提交</Button>
                             </Tooltip>
                         </div>

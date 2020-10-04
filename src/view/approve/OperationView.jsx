@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, message, Tag } from 'antd';
+import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, message, Tag, Tooltip } from 'antd';
 import api from '../../http';
 import moment from 'moment'
 import { xiaomeiParseFloat } from '../../util/tool';
@@ -30,7 +30,7 @@ export default props => {
             // console.log('getorderSteplog 结果:', result2.data[0])
             setOrderStepLog(result2.data[0])
         }
-        let result3 = await api.query(`select * from order_workflok where order_type_id = ${props.record.type_id} order by step_number`)
+        let result3 = await api.query(`select * from order_workflok where order_type_id = ${props.record.type_id} and isdelete = 0 order by step_number`)
         if (result3.code === 0) {
             // console.log('getworkFlok 结果:', result3.data[0])
             setWorkflok(result3.data[0])
@@ -44,7 +44,7 @@ export default props => {
     return (
         <Modal
             destroyOnClose
-            width={900}
+            width={1200}
             title='审批处理'
             visible={props.visible}
             onCancel={props.onCancel}
@@ -115,9 +115,11 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
         >
             <Step key='0' title="提交申请" description={<div>
                 <Tag color='green'>已申请</Tag>
-                <div>申请人:{record.user_name || ''}</div>
-                <div>{moment(record.createdAt).format(FORMAT)}</div>
-                <div>{record.remark}</div>
+                <div style={{ fontSize: 10, marginTop: 5 }}>申请人: {<Tag color={'#faad14'}>{record.user_name}</Tag> || '-'}</div>
+                <div style={{ fontSize: 10, color: '#1890ff' }}>{moment(record.createdAt).format(FORMAT)}</div>
+                <Tooltip placement="topLeft" title={record.remark}>
+                    <div style={{ fontSize: 12 }}>{record.remark}</div>
+                </Tooltip>
             </div>} />
             {renderApproveSteps(record, workflok, orderStepLog)}
             <Step key='10' title="完毕" />

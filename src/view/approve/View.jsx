@@ -247,7 +247,7 @@ export default _ => {
             </div>
             <div style={styles.body}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <h3>申请列表</h3>
+                    <h3>申领、申购记录</h3>
                     <div>
                         {selectedRowKeys.length === 0 ? null : (
                             <Button icon='delete' style={styles.button} type='danger' onClick={batchDelete}>批量删除</Button>

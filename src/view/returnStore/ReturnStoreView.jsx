@@ -5,7 +5,7 @@ import moment from 'moment';
 import { translatePurchaseRecordList } from '../../util/tool';
 import HttpApi from '../../http/HttpApi';
 /***
- * 采购物品记录
+ * 退料物品记录
  */
 export default _ => {
     const [isLoading, setIsLoading] = useState(false)
@@ -42,8 +42,8 @@ export default _ => {
         }
         let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_bug_user_id + sql_record_user_id
         // console.log('sql_condition:', sql_condition)
-        let sql = `select pr.*,users1.name as buy_user_name,users2.name as record_user_name from purchase_record as pr
-        left join (select * from users where effective = 1) users1 on users1.id = pr.buy_user_id
+        let sql = `select pr.*,users1.name as return_user_name,users2.name as record_user_name from return_record as pr
+        left join (select * from users where effective = 1) users1 on users1.id = pr.return_user_id
         left join (select * from users where effective = 1) users2 on users2.id = pr.record_user_id
         where pr.isdelete = 0${sql_condition} order by id desc`
         // console.log('sql:', sql)
@@ -74,7 +74,7 @@ export default _ => {
     }, [listData])
     const columns = [
         {
-            title: '采购时间',
+            title: '退料时间',
             dataIndex: 'other.date',
             key: 'other.date',
             width: 180,
@@ -107,7 +107,7 @@ export default _ => {
             }
         },
         {
-            title: '采购单价(元)',
+            title: '退料单价(元)',
             dataIndex: 'price',
             key: 'price',
             render: (text) => {
@@ -115,7 +115,7 @@ export default _ => {
             }
         },
         {
-            title: '采购数量(个)',
+            title: '退料数量(个)',
             dataIndex: 'count',
             key: 'count',
             render: (text) => {
@@ -123,7 +123,7 @@ export default _ => {
             }
         },
         {
-            title: '采购总价(元)',
+            title: '退料总价(元)',
             dataIndex: 'sum_oprice',
             key: 'sum_oprice',
             render: (_, record) => {
@@ -131,7 +131,7 @@ export default _ => {
             }
         },
         {
-            title: '采购人员',
+            title: '退料人员',
             dataIndex: 'other.buy_user_name',
             key: 'other.buy_user_name',
             align: 'center',
@@ -145,11 +145,14 @@ export default _ => {
             width: 100,
         },
         {
-            title: '采购备注',
+            title: '退料备注',
             dataIndex: 'other.remark',
             key: 'other.remark',
             align: 'center',
             width: 100,
+            render: (text) => {
+                return text || '-'
+            }
         },
     ]
     return (<div style={styles.root}>
@@ -160,7 +163,7 @@ export default _ => {
         </div>
         <div style={styles.body}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <h3>采购物品记录</h3>
+                <h3>退料物品记录</h3>
                 <div>
                     <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
                     <Tag color={'#fa541c'} style={{ marginRight: 0 }}>总价格¥: {sum_price}</Tag>
@@ -226,7 +229,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
     }}>
         <Row>
             <Col span={6}>
-                <Form.Item label='采购时间'  {...itemProps}>
+                <Form.Item label='退料时间'  {...itemProps}>
                     {props.form.getFieldDecorator('date_range', {
                         initialValue: [moment().add(0, 'month').startOf('month'), moment().endOf('day')],
                         rules: [{ required: false }]
@@ -275,7 +278,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
         </Row>
         <Row>
             <Col span={6}>
-                <Form.Item label='采购人'  {...itemProps}>
+                <Form.Item label='退料人'  {...itemProps}>
                     {props.form.getFieldDecorator('bug_user_id_list', {
                         rules: [{ required: false }]
                     })(<Select mode='multiple' allowClear placeholder='选择人员-支持名称搜索' showSearch optionFilterProp="children">

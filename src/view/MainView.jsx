@@ -10,12 +10,15 @@ import ApproveView from './approve/View'
 import svgs from '../assets/svgs';
 import { SubMenu } from 'rc-menu';
 import ExportStoreView from './exportStore/ExportStoreView';
-import BackStoreView from './backStore/BackStoreView';
+// import BackStoreView from './backStore/BackStoreView';
 import PurchaseStorageView from './purchaseStorage/PurchaseStorageView';
 import PurchaseStoreView from './purchaseStore/PurchaseStoreView';
 import AppData from '../util/AppData';
 import SelfCenterView from './selfCenter/SelfCenterView';
 import PurchasecheckView from './approve/PurchasecheckView';
+import ReturnStorageView from './returnStorage/ReturnStorageView';
+import ReturncheckView from './approve/ReturncheckView';
+import ReturnStoreView from './returnStore/ReturnStoreView';
 // import CamView from './cam/CamView';
 const { Header, Content, Sider } = Layout;
 export default (props) => {
@@ -68,8 +71,13 @@ export default (props) => {
           </Menu.Item>
           <Menu.Item key={'/main/purchasestorageview'}>
             <Icon type="shopping-cart" />
-            <span className="nav-text">采购单据</span>
+            <span className="nav-text">采购入库单</span>
             <Link to={`${props.match.url}/purchasestorageview`} />
+          </Menu.Item>
+          <Menu.Item key={'/main/returnstorageview'}>
+            <Icon type="shop" />
+            <span className="nav-text">退料入库单</span>
+            <Link to={`${props.match.url}/returnstorageview`} />
           </Menu.Item>
         </SubMenu>
         <SubMenu key="报表统计" title={<span><Icon type="area-chart" /><span>统计</span></span>}>
@@ -88,6 +96,11 @@ export default (props) => {
             <span className="nav-text">退库记录</span>
             <Link to={`${props.match.url}/backstoreview`} />
           </Menu.Item> */}
+          <Menu.Item key={'/main/returnstoreview'}>
+            <Icon type="area-chart" />
+            <span className="nav-text">退料记录</span>
+            <Link to={`${props.match.url}/returnstoreview`} />
+          </Menu.Item>
         </SubMenu>
         {/* <Menu.Item key="/main/departmentview">
           <Icon type="apartment" />
@@ -107,13 +120,18 @@ export default (props) => {
         <SubMenu key={'审批'} title={<span><Icon type="audit" /><span>审批</span></span>}>
           <Menu.Item key={'/main/approve/approveview'}>
             <Icon type="ordered-list" />
-            <span className="nav-text">申请表审批</span>
+            <span className="nav-text">申请单审批</span>
             <Link to={`${props.match.url}/approve/approveview`} />
           </Menu.Item>
           <Menu.Item key={'/main/approve/purchasecheckview'}>
             <Icon type="ordered-list" />
             <span className="nav-text">采购单审计</span>
             <Link to={`${props.match.url}/approve/purchasecheckview`} />
+          </Menu.Item>
+          <Menu.Item key={'/main/approve/returncheckview'}>
+            <Icon type="ordered-list" />
+            <span className="nav-text">退料单审计</span>
+            <Link to={`${props.match.url}/approve/returncheckview`} />
           </Menu.Item>
         </SubMenu>
         <SubMenu key={'设置'} title={<span><Icon type="setting" /><span>设置</span></span>}>
@@ -160,12 +178,16 @@ export default (props) => {
         <Route path={`${props.match.url}/applyview`} component={ApplyView} />
         <Route path={`${props.match.url}/approve/approveview`} component={ApproveView} />
         <Route path={`${props.match.url}/approve/purchasecheckview`} component={PurchasecheckView} />
+        <Route path={`${props.match.url}/approve/returncheckview`} component={ReturncheckView} />
         <Route path={`${props.match.url}/exportstoreview`} component={ExportStoreView} />
         <Route path={`${props.match.url}/purchasetoreview`} component={PurchaseStoreView} />
-        <Route path={`${props.match.url}/backstoreview`} component={BackStoreView} />
+        {/* <Route path={`${props.match.url}/backstoreview`} component={BackStoreView} /> */}
         <Route path={`${props.match.url}/purchasestorageview`} component={PurchaseStorageView} />
+        <Route path={`${props.match.url}/returnstorageview`} component={ReturnStorageView} />
+        <Route path={`${props.match.url}/returnstoreview`} component={ReturnStoreView} />
         <Route path={`${props.match.url}/setting/selfcenterview`} component={SelfCenterView} />
         <Route path={`${props.match.url}/setting/storetag`} component={() => { return <TagView type={0} /> }} />
+
         {/* <Route path={`${props.match.url}/usertag`} component={() => { return <TagView type={1} /> }} /> */}
         {/* <Route path={`${props.match.url}/camview`} component={CamView} /> */}
         {/* <Affix offsetBottom={10}>
