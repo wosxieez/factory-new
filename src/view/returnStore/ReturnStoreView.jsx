@@ -94,6 +94,7 @@ export default _ => {
             title: '流水',
             dataIndex: 'other.code',
             key: 'other.code',
+            width: 120,
             render: (text) => {
                 return <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
             }

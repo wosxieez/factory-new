@@ -75,6 +75,7 @@ export default _ => {
             title: '流水',
             dataIndex: 'order.code',
             key: 'code',
+            width: 120,
             render: (text) => {
                 return <Tag color='blue'>{text}</Tag>
             }
@@ -221,7 +222,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                 </Form.Item>
             </Col>
             <Col span={6}>
-                <Form.Item label='人员'  {...itemProps}>
+                <Form.Item label='领料人'  {...itemProps}>
                     {props.form.getFieldDecorator('user_id_list', {
                         rules: [{ required: false }]
                     })(<Select mode='multiple' allowClear placeholder='选择人员-支持名称搜索' showSearch optionFilterProp="children">
