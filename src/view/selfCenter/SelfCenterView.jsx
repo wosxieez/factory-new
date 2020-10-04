@@ -37,7 +37,7 @@ export default _ => {
                 <Descriptions.Item label="维修权限">可发起申请</Descriptions.Item>
                 <Descriptions.Item label="专工权限">可发起申请，参与【领料】审批流程</Descriptions.Item>
                 <Descriptions.Item label="采购权限">参与【采购】处理流程</Descriptions.Item>
-                <Descriptions.Item label="库管权限">参与【领料】【采购】审批流程，管理物品数量，采购录入</Descriptions.Item>
+                <Descriptions.Item label="库管权限">参与【领料】【采购】审批流程，管理物品【添加、删除、采购录入等】</Descriptions.Item>
                 <Descriptions.Item label="财务权限">参与【采购】审批流程，参与【采购】【领料】的最后审计</Descriptions.Item>
             </Descriptions>
         </div>

@@ -41,7 +41,8 @@ export default _ => {
         let type_sql = allCondition.type_list && allCondition.type_list.length > 0 ? ` and orders.type_id in (${allCondition.type_list.join(',')})` : ''
         let major_sql = allCondition.major_list && allCondition.major_list.length > 0 ? ` and orders.tag_id in (${allCondition.major_list.join(',')})` : ''
         let user_sql = allCondition.create_user_list && allCondition.create_user_list.length > 0 ? ` and orders.create_user in (${allCondition.create_user_list.join(',')})` : ''
-        let condition_sql = code_sql + type_sql + major_sql + date_sql + user_sql + checkStatusSql(allCondition.status_list);
+        let special_sql = allCondition.is_special && allCondition.is_special.length > 0 ? ` and orders.is_special in (${allCondition.is_special.join(',')})` : ''
+        let condition_sql = code_sql + type_sql + major_sql + date_sql + user_sql + special_sql + checkStatusSql(allCondition.status_list);
         // console.log('条件sql:', condition_sql)
         getOrderCount(condition_sql)
         let beginNum = (allCondition.currentPage - 1) * allCondition.currentPageSize
@@ -205,6 +206,21 @@ export default _ => {
                         break
                 }
                 return <div>{<Tag color={color} style={{ marginRight: 0 }}>{result}</Tag> || '/'}</div>
+            }
+        },
+        {
+            title: '情况',
+            dataIndex: 'is_special',
+            align: 'center',
+            width: 80,
+            render: (text, record) => {
+                let result = '正常'
+                let color = 'blue'
+                if (text) {
+                    result = '特殊'
+                    color = 'red'
+                }
+                return <Tag color={color} style={{ marginRight: 0 }}>{result}</Tag>
             }
         },
         {
@@ -445,7 +461,18 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                     </Select>)}
                 </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={6}>
+                <Form.Item label='情况'  {...itemProps}>
+                    {props.form.getFieldDecorator('is_special', {
+                        rules: [{ required: false }]
+                    })(<Select mode='multiple' allowClear placeholder='选择情况-支持名称搜索' showSearch optionFilterProp="children">
+                        {[{ value: 0, des: '正常' }, { value: 1, des: '特殊' }].map((item, index) => {
+                            return <Select.Option value={item.value} key={index} all={item}>{item.des}</Select.Option>
+                        })}
+                    </Select>)}
+                </Form.Item>
+            </Col>
+            <Col span={6}>
                 <div style={{ textAlign: 'right', paddingTop: 3 }}>
                     <Button type="primary" htmlType="submit">查询</Button>
                     <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>

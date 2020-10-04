@@ -210,7 +210,7 @@ export default Form.create({ name: 'form' })(props => {
     return <div style={styles.root}>
         <div style={styles.body}>
             <h3>申领、申购单</h3>
-            <Alert message={'注意！当有需要申领物料和申购物料时，请填写相关申请，完成流程'} type='info' showIcon />
+            <Alert message={'注意！当有需要【申领物料】和【申购物料】时，请填写相关申请，完成流程'} type='info' showIcon />
             <Form  {...itemProps} style={{ marginTop: 16 }} onSubmit={handleSubmit}>
                 <Row>
                     <Col span={6}>

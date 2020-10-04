@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, message, Tag, Tooltip } from 'antd';
+import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, message, Tag, Tooltip, Alert } from 'antd';
 import api from '../../http';
 import moment from 'moment'
 import { xiaomeiParseFloat } from '../../util/tool';
@@ -64,6 +64,17 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
     // console.log('1orderStepLog:', orderStepLog)
     // console.log('1record:', record)
     // console.log('stepNumber:', stepNumber)
+    let alertTitle = null;
+    const { type_id, is_special } = record;
+    if (type_id === 1) { ///申领
+        if (is_special) {
+            alertTitle = <Alert style={{ marginBottom: 10 }} message={'特殊情况：在【如非工作时间】下，相关物料会在领料人扫码盒前出示【领料申请单】的二维码后，认定已出库；后期流程补走时，库管确认后不会再次变更物料数量'} type='warning' showIcon />
+        } else {
+            alertTitle = <Alert style={{ marginBottom: 10 }} message={'正常情况：在【如工作时间】下，相关物料会在库管人员操作确认后，认定已出库'} type='info' showIcon />
+        }
+    } else if (type_id === 3) {///申购
+        alertTitle = <Alert style={{ marginBottom: 10 }} message={'当申购流程库管确认后，不会触发仓库物料变动。一切物料采购入库行为由库管在【采购入库单】模块中进行统一操作，财务也是在【采购单审计】中进行审计'} type='info' showIcon />
+    }
 
     if (!record.content) { return }
     let sum_price = 0;///总价
@@ -101,6 +112,7 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
         }
     }]
     return <div>
+        {alertTitle}
         <Table
             size={'small'}
             bordered
@@ -198,6 +210,7 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                                     //         updateStoreHandler(record)
                                     //     }
                                     // })
+                                    if (record.is_special) { return }///如果 是特殊情况，就不再流程中设计仓库物料变动。要再领料人扫码后直接扣除对应物料的数量
                                     for (let index = 0; index < workflok.length; index++) {
                                         const item = workflok[index];
                                         if (item.step_number === currentWirteStep && item.is_change === 1 && status === 1) {
@@ -268,7 +281,7 @@ async function updateStoreHandler(record) {
         if (record.type_id === 1) {
             element.count = - element.count
         }
-        ///这里-用的是循环调用单次修改接口一次修改一个物品，所以会出现多次返回修改结果；后期接口需要升级。支持批量修改
+        ///这里-用的是循环调用单次修改接口一次修改一个物料，所以会出现多次返回修改结果；后期接口需要升级。支持批量修改
         let result = await api.updateStoreCount({ id: element.store_id, count: element.count })
         if (result.code === 0) {
             message.success(record.type_id === 1 ? '出库成功' : '入库成功', 3);
