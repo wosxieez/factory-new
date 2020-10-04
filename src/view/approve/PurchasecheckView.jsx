@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import api from '../../http'
-import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select } from 'antd'
+import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Radio, Modal, message } from 'antd'
 import moment from 'moment'
 import HttpApi from '../../http/HttpApi';
+import AppData from '../../util/AppData';
 /**
  * 采购信息单--用于财务审计
  */
@@ -11,6 +12,8 @@ export default props => {
     const [sum_count, setSumCount] = useState(0)
     const [isLoading, setIsLoading] = useState(false)
     const [dataSource, setDataSource] = useState([])
+    const [currentItem, setCurrentItem] = useState({})
+    const [isUpdating, setIsUpdating] = useState(false)
 
     const listData = useCallback(async (conditionObj) => {
         setIsLoading(true)
@@ -39,10 +42,15 @@ export default props => {
         if (conditionObj.record_user_id_list) {
             sql_record_user_id = ' and record_user_id in (' + conditionObj.record_user_id_list.join(',') + ')'
         }
-        let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_bug_user_id + sql_record_user_id
-        let sql = `select pr.*,users1.name as buy_user_name,users2.name as record_user_name from purchase_record as pr
+        let sql_check_status = ''
+        if (conditionObj.check_status) {
+            sql_check_status = ' and check_status in (' + conditionObj.check_status.join(',') + ')'
+        }
+        let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_bug_user_id + sql_record_user_id + sql_check_status
+        let sql = `select pr.*,users1.name as buy_user_name,users2.name as record_user_name,users3.name as check_user_name from purchase_record as pr
         left join (select * from users where effective = 1) users1 on users1.id = pr.buy_user_id
         left join (select * from users where effective = 1) users2 on users2.id = pr.record_user_id
+        left join (select * from users where effective = 1) users3 on users3.id = pr.check_user_id
         where pr.isdelete = 0${sql_condition} order by id desc`
         // console.log('sql:', sql)
         let result = await api.query(sql)
@@ -68,7 +76,7 @@ export default props => {
     }, [listData])
 
     const columns = [
-        { title: '时间', dataIndex: 'date', key: 'date', width: 120, align: 'center' },
+        { title: '采购时间', dataIndex: 'date', key: 'date', width: 120, align: 'center' },
         {
             title: '单号',
             dataIndex: 'code_num',
@@ -111,7 +119,7 @@ export default props => {
             dataIndex: 'sum_price',
             key: 'sum_price',
             align: 'center',
-            width: 100,
+            width: 80,
             render: (text) => {
                 return <Tag color={'#fa541c'} style={{ marginRight: 0 }}>{text}</Tag>
             }
@@ -121,20 +129,76 @@ export default props => {
             dataIndex: 'buy_user_name',
             key: 'buy_user_name',
             align: 'center',
-            width: 100,
+            width: 80,
+            render: (text) => {
+                return text || '-'
+            }
         },
         {
             title: '记录人员',
             dataIndex: 'record_user_name',
             key: 'record_user_name',
             align: 'center',
-            width: 100,
+            width: 80,
         },
         {
-            title: '备注',
+            title: '采购备注',
             dataIndex: 'remark',
             align: 'center',
-            width: 140,
+            width: 100,
+            render: (text) => {
+                return <div>{text || '-'}</div>
+            }
+        },
+        {
+            title: '审计状态',
+            dataIndex: 'check_status',
+            align: 'center',
+            width: 80,
+            render: (text) => {
+                let result = '-'
+                let color = '#BFBFBF'
+                switch (text) {
+                    case 0:
+                        result = '未审计'
+                        break;
+                    case 1:
+                        result = '通过'
+                        color = '#52c41a'
+                        break;
+                    case 2:
+                        result = '有误'
+                        color = '#f5222d'
+                        break;
+                    default:
+                        break;
+                }
+                return <Tag style={{ marginRight: 0 }} color={color}>{result}</Tag>
+            }
+        },
+        {
+            title: '审计时间',
+            dataIndex: 'check_time',
+            align: 'center',
+            width: 100,
+            render: (text) => {
+                return <div>{text || '-'}</div>
+            }
+        },
+        {
+            title: '审计人员',
+            dataIndex: 'check_user_name',
+            align: 'center',
+            width: 100,
+            render: (text) => {
+                return <div>{text || '-'}</div>
+            }
+        },
+        {
+            title: '审计说明',
+            dataIndex: 'check_remark',
+            align: 'center',
+            width: 100,
             render: (text) => {
                 return <div>{text || '-'}</div>
             }
@@ -146,17 +210,13 @@ export default props => {
             align: 'center',
             render: (_, record) => {
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                        <Button
-                            type='link'
-                            size='small'
-                            onClick={() => {
-                                // setCurrentItem(record)
-                                // setIsUpdating(true)
-                            }}>
-                            处理
-            </Button>
-                    </div>
+                    <Button
+                        type='link'
+                        size='small'
+                        onClick={() => {
+                            setCurrentItem(record)
+                            setIsUpdating(true)
+                        }}>处理</Button>
                 )
             }
         }
@@ -177,11 +237,27 @@ export default props => {
                         <Tag color={'#fa541c'} style={{ marginRight: 0 }}>总价格¥: {sum_price}</Tag>
                     </div>
                 </div>
+                <HandlerPanel visible={isUpdating} onCancel={() => { setIsUpdating(false) }} onOk={async (data) => {
+                    console.log('data:', data)
+                    let sql = `update purchase_record set 
+                    check_status = ${data.check_status},
+                    check_remark =${data.check_remark ? "'" + data.check_remark + "'" : null},
+                    check_user_id = ${AppData.userinfo().id},
+                    check_time = '${moment().format('YYYY-MM-DD HH:mm:ss')}'
+                    where id = ${currentItem.id}`
+                    let result = await HttpApi.obs({ sql })
+                    if (result.code === 0) {
+                        message.success('操作成功')
+                        listData({})
+                    }
+                    console.log('result:', result)
+                    setIsUpdating(false)
+                }} />
                 <Table
                     loading={isLoading}
                     bordered
                     size='small'
-                    columns={columns}
+                    columns={AppData.userinfo().permission.indexOf('6') !== -1 ? columns : columns.filter((item) => item.title !== '操作')}
                     dataSource={dataSource}
                     pagination={{
                         total: dataSource.length,
@@ -198,6 +274,7 @@ export default props => {
     )
 }
 const Searchfrom = Form.create({ name: 'form' })(props => {
+    const check_status_list = [{ value: 0, des: '未审计' }, { value: 1, des: '通过' }, { value: 2, des: '有误' }]
     const [storeOptionList, setStoreOptionList] = useState([])
     const [userOptionList, setUserOptionList] = useState([])
     const [userOptionList2, setUserOptionList2] = useState([])
@@ -307,6 +384,15 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                 </Form.Item>
             </Col>
             <Col span={6}>
+                <Form.Item label='审计状态' {...itemProps}>
+                    {props.form.getFieldDecorator('check_status', {
+                        rules: [{ required: false }]
+                    })(<Select mode='multiple' allowClear placeholder='选择状态-支持名称搜索' showSearch optionFilterProp="children">
+                        {check_status_list.map((item, index) => {
+                            return <Select.Option value={item.value} key={index} >{item.des}</Select.Option>
+                        })}
+                    </Select>)}
+                </Form.Item>
             </Col>
             <Col span={6}>
                 <div style={{ textAlign: 'right', paddingTop: 3 }}>
@@ -317,6 +403,26 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
         </Row>
     </Form>
 })
+
+function HandlerPanel(props) {
+    const [checkRemark, setCheckRemark] = useState(null)
+    const [checkStatus, setCheckStatus] = useState(1)
+    return <Modal
+        destroyOnClose
+        visible={props.visible}
+        title='财务审计'
+        onCancel={props.onCancel}
+        onOk={() => { props.onOk({ check_remark: checkRemark || null, check_status: checkStatus }) }}
+    >
+        <Radio.Group size='small' value={checkStatus} buttonStyle="solid" onChange={(e) => { setCheckStatus(e.target.value) }}>
+            <Radio.Button value={1}>通过</Radio.Button>
+            <Radio.Button value={2}>有误</Radio.Button>
+        </Radio.Group>
+        <Input.TextArea allowClear style={{ marginTop: 10 }} autoSize={{ minRows: 3, maxRows: 5 }} placeholder='审计说明（选填）' onChange={(e) => {
+            setCheckRemark(e.target.value)
+        }} />
+    </Modal>
+}
 const styles = {
     root: {
         backgroundColor: '#F1F2F5',
