@@ -1,5 +1,5 @@
 export default {
-    version: 'Bate 0.1',
+    version: 'Beta 0.2',
     userinfo: () => {
         let result = {};
         try {

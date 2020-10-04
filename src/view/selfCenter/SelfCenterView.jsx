@@ -27,7 +27,7 @@ export default _ => {
                 <Descriptions.Item label="部门">{AppData.userinfo().level_name}</Descriptions.Item>
                 <Descriptions.Item label="专业">{AppData.userinfo().major_name_all}</Descriptions.Item>
                 <Descriptions.Item label="权限">{AppData.userPermissions().length > 0 ? AppData.userPermissions().map((item, index) => <Tag key={index} color='blue'>{item}</Tag>) : '-'}</Descriptions.Item>
-                <Descriptions.Item label="管理">{AppData.userinfo().isadmin ? <Icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" /> : '-'}</Descriptions.Item>
+                <Descriptions.Item label="管理">{AppData.userinfo().isadmin ? <Icon type="check-circle" theme="twoTone" /> : '-'}</Descriptions.Item>
                 <Descriptions.Item label="备注">{AppData.userinfo().remark || '-'}</Descriptions.Item>
                 <Descriptions.Item label="版本">{<Tag color='blue'>{AppData.version}</Tag>}</Descriptions.Item>
             </Descriptions>
