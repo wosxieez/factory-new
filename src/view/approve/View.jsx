@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, Select, Form } from 'antd'
+import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, Select, Form, Icon } from 'antd'
 import OperationView from './OperationView'
 import api from '../../http'
 import moment from 'moment'
@@ -121,12 +121,18 @@ export default _ => {
             }
         },
         {
-            title: '申请类型',
+            title: '类型',
             dataIndex: 'order_type_name',
-            width: 120,
+            width: 80,
             align: 'center',
-            render: (text, record) => {
-                return <div>{text || '/'}</div>
+            render: (_, record) => {
+                let icon = <Icon type="tool" theme="twoTone" />
+                let text = '申领'
+                if (record.type_id === 3) {
+                    icon = <Icon type="dollar" theme="twoTone" twoToneColor="#fa8c16" />
+                    text = '申购'
+                }
+                return <div>{icon} {text}</div>
             }
         },
         {
