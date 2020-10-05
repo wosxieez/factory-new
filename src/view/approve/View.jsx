@@ -216,8 +216,11 @@ export default _ => {
             render: (text, record) => {
                 let result = '正常'
                 let color = 'blue'
-                if (text) {
+                if (text === 1) {
                     result = '特殊'
+                    color = 'orange'
+                } else if (text === 2) {
+                    result = '特殊--已出库'
                     color = 'red'
                 }
                 return <Tag color={color} style={{ marginRight: 0 }}>{result}</Tag>
