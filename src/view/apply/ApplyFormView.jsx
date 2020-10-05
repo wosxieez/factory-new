@@ -4,6 +4,7 @@ import moment from 'moment';
 import api from '../../http';
 import AppData from '../../util/AppData';
 import HttpApi from '../../http/HttpApi';
+import { checkCurrentTimeIsSpecial } from '../../util/Tool';
 
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 var storeList = [{ key: 0 }]
@@ -175,6 +176,11 @@ export default Form.create({ name: 'form' })(props => {
                     okText: '提交',
                     okType: 'danger',
                     onOk: async function () {
+                        let is_special = 0
+                        let is_special_result = await checkCurrentTimeIsSpecial()
+                        if (is_special_result && values.type_id === 1) { ///在工作时间表之外的 物料申领
+                            is_special = 1
+                        }
                         // console.log('asdasdasd')
                         let tempCodeHeader = ''
                         if (values.type_id === 1) {
@@ -188,7 +194,7 @@ export default Form.create({ name: 'form' })(props => {
                         if (values.remark) {
                             tempRemark = "'" + values.remark + "'"
                         }
-                        let sql = `insert into orders (create_user,tag_id,type_id,content,remark,code,createdAt) values (${values.apply_user_id},${values.major_id},${values.type_id},'${JSON.stringify(values.storeList)}',${tempRemark},'${tempCodeHeader + moment().toDate().getTime()}','${moment().format(FORMAT)} ')`
+                        let sql = `insert into orders (create_user,tag_id,type_id,content,remark,code,createdAt,is_special) values (${values.apply_user_id},${values.major_id},${values.type_id},'${JSON.stringify(values.storeList)}',${tempRemark},'${tempCodeHeader + moment().toDate().getTime()}','${moment().format(FORMAT)}',${is_special})`
                         // console.log('sql:', sql)
                         let result = await api.query(sql)
                         if (result.code === 0) {

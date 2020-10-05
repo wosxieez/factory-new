@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Modal, Form, Input, TreeSelect } from 'antd'
 import api from '../../http'
-import { getJsonTree, filterTag, getDepartmentTree } from '../../util/tool'
+import { getJsonTree, filterTag, getDepartmentTree } from '../../util/Tool'
 
 const AddForm = Form.create({ name: 'form' })(props => {
   const [treeData, setTreeData] = useState([])

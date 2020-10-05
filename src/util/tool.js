@@ -1,3 +1,5 @@
+import moment from 'moment'
+import HttpApi from '../http/HttpApi';
 export const colorList = [{ label: '薄暮', color: '#f5222d' }, { label: '火山', color: '#fa541c' }, { label: '日暮', color: '#fa8c16' }, { label: '金盏花', color: '#faad14' },
 { label: '日出', color: '#fadb14' }, { label: '青柠', color: '#a0d911' }, { label: '极光绿', color: '#52c41a' }, { label: '明青', color: '#13c2c2' },
 { label: '拂晓蓝', color: '#1890ff' }, { label: '极客蓝', color: '#2f54eb' }, { label: '酱紫', color: '#722ed1' }, { label: '法式洋红', color: '#eb2f96' }]
@@ -167,4 +169,27 @@ export function checkPasswordChart(password) {
     }
   }
   return true
+}
+/**
+ *当前时刻是否为特殊时刻--即 不在正常工作时间表中
+ * @export
+ * @returns true 是特殊时刻  false 正常时刻
+ */
+export async function checkCurrentTimeIsSpecial() {
+  let time_list = await HttpApi.getSpecialTime()
+  let flag = true;
+  let current_time = moment();
+  time_list = time_list.filter((element) => { return element.disable === 0 }).map((item) => {
+    item.time_start = moment(current_time.format('YYYY-MM-DD ') + item.time_start).format('YYYY-MM-DD HH:mm:ss')
+    item.time_end = moment(current_time.format('YYYY-MM-DD ') + item.time_end).format('YYYY-MM-DD HH:mm:ss')
+    return item
+  })
+  time_list.forEach((item) => {
+    if (current_time.day() === item.day) {
+      if (current_time >= moment(item.time_start) && current_time <= moment(item.time_end)) {
+        flag = false
+      }
+    }
+  })
+  return flag
 }

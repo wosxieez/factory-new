@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, message, Tag, Tooltip, Alert } from 'antd';
 import api from '../../http';
 import moment from 'moment'
-import { xiaomeiParseFloat } from '../../util/tool';
+import { xiaomeiParseFloat } from '../../util/Tool';
 import AppData from '../../util/AppData'
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 const { Step } = Steps;

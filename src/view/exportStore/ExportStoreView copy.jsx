@@ -3,7 +3,7 @@ import api from '../../http';
 import { Table, Button, Tag, Row, Col, Input, DatePicker, Select } from 'antd';
 import moment from 'moment';
 // import OperationView from '../approve/OperationView';
-import { xiaomeiParseFloat, translateOrderList } from '../../util/tool';
+import { xiaomeiParseFloat, translateOrderList } from '../../util/Tool';
 var allCondition = {}
 let timeout;
 // let currentValue;

@@ -19,6 +19,7 @@ import PurchasecheckView from './approve/PurchasecheckView';
 import ReturnStorageView from './returnStorage/ReturnStorageView';
 import ReturncheckView from './approve/ReturncheckView';
 import ReturnStoreView from './returnStore/ReturnStoreView';
+import SpecialTime from './time/SpecialTime';
 // import CamView from './cam/CamView';
 const { Header, Content, Sider } = Layout;
 export default (props) => {
@@ -145,6 +146,11 @@ export default (props) => {
             <span className="nav-text">物料属性</span>
             <Link to={`${props.match.url}/setting/storetag`} />
           </Menu.Item>
+          <Menu.Item key={'/main/setting/specialtime'}>
+            <Icon type="history" />
+            <span className="nav-text">时间设置</span>
+            <Link to={`${props.match.url}/setting/specialtime`} />
+          </Menu.Item>
           <Menu.Item key={'/main/setting/selfcenterview'}>
             <Icon type="user" />
             <span className="nav-text">个人中心</span>
@@ -187,6 +193,7 @@ export default (props) => {
         <Route path={`${props.match.url}/returnstoreview`} component={ReturnStoreView} />
         <Route path={`${props.match.url}/setting/selfcenterview`} component={SelfCenterView} />
         <Route path={`${props.match.url}/setting/storetag`} component={() => { return <TagView type={0} /> }} />
+        <Route path={`${props.match.url}/setting/specialtime`} component={SpecialTime} />
 
         {/* <Route path={`${props.match.url}/usertag`} component={() => { return <TagView type={1} /> }} /> */}
         {/* <Route path={`${props.match.url}/camview`} component={CamView} /> */}

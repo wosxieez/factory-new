@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Modal, Form, Input, TreeSelect, Select } from 'antd'
 import api from '../../http'
-import { getJsonTree, colorList } from '../../util/tool'
+import { getJsonTree, colorList } from '../../util/Tool'
 const { Option } = Select;
 
 const UpdateForm = Form.create({ name: 'form' })(props => {

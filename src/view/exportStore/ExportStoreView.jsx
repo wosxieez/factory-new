@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useState } from 'react';
 import api from '../../http';
 import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form } from 'antd';
 import moment from 'moment';
-import { translateOrderList } from '../../util/tool';
+import { translateOrderList } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 export default _ => {
     const [isLoading, setIsLoading] = useState(false)

@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 import { Button, Form, Input, message, Icon } from 'antd'
 import HttpApi from '../../http/HttpApi';
-import { checkPasswordChart } from '../../util/tool';
+import { checkPasswordChart } from '../../util/Tool';
 // import api from '../../http/index'
 
 const LoginForm = Form.create({ name: 'form' })(props => {

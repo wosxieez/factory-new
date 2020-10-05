@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useState } from 'react';
 import api from '../../http';
 import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form } from 'antd';
 import moment from 'moment';
-import { translatePurchaseRecordList } from '../../util/tool';
+import { translatePurchaseRecordList } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 /***
  * 采购物品记录

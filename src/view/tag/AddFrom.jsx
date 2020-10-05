@@ -1,6 +1,6 @@
 import React from 'react'
 import { Modal, Form, Input, Select } from 'antd'
-import { colorList } from '../../util/tool';
+import { colorList } from '../../util/Tool';
 const { Option } = Select;
 
 

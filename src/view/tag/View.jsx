@@ -4,7 +4,7 @@ import api from '../../http'
 import { useEffect, useCallback } from 'react'
 import AddForm from './AddFrom'
 import UpdateForm from './UpdateForm'
-import { filterTag } from '../../util/tool';
+import { filterTag } from '../../util/Tool';
 const { confirm } = Modal
 
 export default (props) => {

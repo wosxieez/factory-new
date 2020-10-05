@@ -4,7 +4,7 @@ import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag,
 import moment from 'moment'
 import AddForm from './AddFrom'
 import UpdateForm from './UpdateForm'
-import { getJsonTree, filterTag } from '../../util/tool'
+import { getJsonTree, filterTag } from '../../util/Tool'
 import AppData from '../../util/AppData';
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 var originStoreList
@@ -147,6 +147,7 @@ export default props => {
             <Button
               type='link'
               size='small'
+              icon='form'
               onClick={() => {
                 setCurrentItem(record)
                 setIsUpdating(true)

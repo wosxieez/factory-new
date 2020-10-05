@@ -85,6 +85,25 @@ const HttpApi = {
         }
         return []
     },
+    /***
+     * 获取工作时间区间表
+     */
+    getSpecialTime: async (type_id = 1) => {
+        let sql = `select * from special_time where isdelete = 0`
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return result.data
+        }
+        return []
+    },
+    updateSpecialTime: async (data) => {
+        let sql = `update special_time set time_start = '${data.time_start}', time_end = '${data.time_end}',disable = '${data.disable}' where id = ${data.id}`
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return true
+        }
+        return false
+    },
     getNfc: (params) => {
         return Axios.post(Testuri + 'find_nfc', { ...params, effective: 1 })
     },
