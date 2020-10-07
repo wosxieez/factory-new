@@ -213,6 +213,7 @@ export default props => {
                     <Button
                         type='link'
                         size='small'
+                        icon='form'
                         onClick={() => {
                             setCurrentItem(record)
                             setIsUpdating(true)

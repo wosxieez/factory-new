@@ -41,7 +41,7 @@ export default Form.create({ name: 'form' })(props => {
     const columns = [
         { title: '编号', dataIndex: 'key', width: 50, align: 'center', render: (text) => <div>{text + 1}</div> },
         {
-            title: <div>{starIcon}物品</div>, dataIndex: 'store_id', width: 220, align: 'center', render: (text, record) => {
+            title: <div>{starIcon}物品</div>, dataIndex: 'store_id', width: 400, align: 'center', render: (text, record) => {
                 return <Select placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children" value={text} onChange={(_, option) => { handleSelectChange(option, record.key) }}
                     dropdownRender={menu => (
                         <div>
@@ -58,7 +58,7 @@ export default Form.create({ name: 'form' })(props => {
                     )}>
                     {
                         storeOptionList.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item} disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}>{item.name}</Select.Option>
+                            return <Select.Option value={item.id} key={index} all={item} disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}>{item.name + '--库存' + item.count}</Select.Option>
                         })
                     }
                 </Select >
@@ -74,12 +74,12 @@ export default Form.create({ name: 'form' })(props => {
             }
         },
         {
-            title: <div>{starIcon}单位</div>, dataIndex: 'unit', width: 70, align: 'center', render: (text) => {
+            title: <div>{starIcon}单位</div>, dataIndex: 'unit', width: 60, align: 'center', render: (text) => {
                 return <Input disabled value={text} />
             }
         },
         {
-            title: <div>{starIcon}单价[元]</div>, dataIndex: 'price', width: 130, align: 'center', render: (text, record) => {
+            title: <div>{starIcon}单价[元]</div>, dataIndex: 'price', width: 80, align: 'center', render: (text, record) => {
                 return <InputNumber placeholder='输入价格' value={text} min={0.01} disabled={!record.store_id} onChange={(v) => {
                     let param = { 'key': record.key, 'price': v }
                     changeTableListHandler(param)
@@ -87,7 +87,7 @@ export default Form.create({ name: 'form' })(props => {
             }
         },
         {
-            title: <div>{starIcon}总价[元]</div>, dataIndex: 'sum_price', width: 130, align: 'center', render: (_, record) => {
+            title: <div>{starIcon}总价[元]</div>, dataIndex: 'sum_price', width: 80, align: 'center', render: (_, record) => {
                 let sum_price = parseFloat((record.count * record.price || 0).toFixed(2))
                 return <InputNumber disabled value={sum_price ? sum_price : ''}></InputNumber>
             }

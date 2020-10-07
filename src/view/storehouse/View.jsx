@@ -103,7 +103,7 @@ export default props => {
       title: '数量',
       dataIndex: 'count',
       align: 'center',
-      width: 140,
+      width: 100,
       render: (text, record) => {
         let unit = record.unit ? record.unit : '个'
         return <div>{text + ' ' + unit || ''}</div>
@@ -113,7 +113,7 @@ export default props => {
       title: '参考单价【元】',
       dataIndex: 'oprice',
       align: 'center',
-      width: 140,
+      width: 120,
       render: (text) => {
         return <div>{text}</div>
       }
