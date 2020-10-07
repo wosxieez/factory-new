@@ -127,7 +127,7 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
         >
             <Step key='0' title="提交申请" description={<div>
                 <Tag color='green'>已申请</Tag>
-                <div style={{ fontSize: 10, marginTop: 5 }}>申请人: {<Tag color={'#faad14'}>{record.user_name}</Tag> || '-'}</div>
+                <Tag color={'#faad14'}>{record.user_name}</Tag>
                 <div style={{ fontSize: 10, color: '#1890ff' }}>{moment(record.createdAt).format(FORMAT)}</div>
                 <Tooltip placement="topLeft" title={record.remark}>
                     <div style={{ fontSize: 12 }}>{record.remark}</div>
@@ -243,8 +243,8 @@ function renderApproveSteps(record, workflok, orderStepLog) {
         return <Step key={index + 1} title={item.name}
             description={item.stepLog && item.stepLog.length > 0 ? item.stepLog.map((element, index) => <div key={index}>
                 {element.status === 1 ? <Tag color='green'>已通过</Tag> : (element.status === 0 ? <Tag color='red'>已拒绝</Tag> : <Tag color='blue'>正在处理</Tag>)}
-                <div>处理人:{element.user_name || ''}</div>
-                <div>{moment(element.createdAt).format(FORMAT)}</div>
+                <Tag>{element.user_name || '-'}</Tag>
+                <div style={{ fontSize: 10, color: '#1890ff' }}>{moment(element.createdAt).format(FORMAT)}</div>
                 <div>{element.remark}</div>
             </div>) : null}
         />
