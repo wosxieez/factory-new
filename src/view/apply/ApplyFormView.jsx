@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Row, Col, Tooltip, Alert } from 'antd';
 import moment from 'moment';
 import api from '../../http';
-import AppData from '../../util/AppData';
+import { userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 import { checkCurrentTimeIsSpecial } from '../../util/Tool';
 
@@ -13,7 +13,7 @@ const starIcon = <span style={{ color: 'red' }}>* </span>
  * 申请单界面
  */
 export default Form.create({ name: 'form' })(props => {
-    // console.log('AppData.userinfo:', AppData.userinfo())
+    // console.log('AppData.userinfo:', userinfo())
     const [storeOptionList, setStoreOptionList] = useState([])
     const [orderTypeList, setOrderTypeList] = useState([])
     const [marjorList, setMajorList] = useState([])
@@ -27,7 +27,7 @@ export default Form.create({ name: 'form' })(props => {
         let response_store = await api.listAllStore()
         ///查询现有的 那些处于待审核 和 审核中的 申请。得到对应的物品的id 和 count -- 对现有的store 数据进行相减
         const response_order = await api.query(
-            `select * from orders where isdelete = 0 and status in (0,1) and type_id = 1`
+            `select * from orders where isdelete = 0 and status in (0,1) and type_id = 1 and is_special != 2` ///考虑到 那些还没有出库的特殊领料申请
         )
         if (response_order.code === 0 && response_order.data[0].length > 0) {
             let orderList = response_order.data[0]
@@ -248,11 +248,11 @@ export default Form.create({ name: 'form' })(props => {
                     <Col span={6}>
                         <Form.Item label='申请人' >
                             {props.form.getFieldDecorator('apply_user_id', {
-                                initialValue: AppData.userinfo().id,
+                                initialValue: userinfo().id,
                                 rules: [{ required: true, message: '请选择申请人' }]
                             })(
                                 <Select disabled>
-                                    {[AppData.userinfo()].map((item, index) => {
+                                    {[userinfo()].map((item, index) => {
                                         return <Select.Option value={item.id} key={index}>{item.name}</Select.Option>
                                     })}
                                 </Select>
@@ -317,9 +317,9 @@ export default Form.create({ name: 'form' })(props => {
                     </Form.Item> */}
                     <Form.Item wrapperCol={{ span: 24 }}>
                         <div style={{ textAlign: 'right' }}>
-                            <Tooltip title={`${!(AppData.userinfo().permission && (AppData.userinfo().permission.indexOf('0') !== -1 || AppData.userinfo().permission.indexOf('3') !== -1) && AppData.userinfo().major_id_all) ? '需要维修或专工权限和所属专业' : ''}`}>
+                            <Tooltip title={`${!(userinfo().permission && (userinfo().permission.indexOf('0') !== -1 || userinfo().permission.indexOf('3') !== -1) && userinfo().major_id_all) ? '需要维修或专工权限和所属专业' : ''}`}>
                                 <Button type="primary" htmlType="submit"
-                                    disabled={!(AppData.userinfo().permission && (AppData.userinfo().permission.indexOf('0') !== -1 || AppData.userinfo().permission.indexOf('3') !== -1) && AppData.userinfo().major_id_all)}
+                                    disabled={!(userinfo().permission && (userinfo().permission.indexOf('0') !== -1 || userinfo().permission.indexOf('3') !== -1) && userinfo().major_id_all)}
                                 >提交</Button>
                             </Tooltip>
                         </div>

@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { Route, Link } from 'react-router-dom'
-import { Layout, Menu, Icon, Modal, Avatar, Dropdown } from 'antd';
+import { Layout, Menu, Icon, Modal, Avatar, Dropdown, Input, Form, message } from 'antd';
 import NewDptAndUser from './newDptAndUser/View'
 import TagView from './tag/View'
 import StoreHouseView from './storehouse/View'
@@ -13,17 +13,19 @@ import ExportStoreView from './exportStore/ExportStoreView';
 // import BackStoreView from './backStore/BackStoreView';
 import PurchaseStorageView from './purchaseStorage/PurchaseStorageView';
 import PurchaseStoreView from './purchaseStore/PurchaseStoreView';
-import AppData from '../util/AppData';
 import SelfCenterView from './selfCenter/SelfCenterView';
 import PurchasecheckView from './approve/PurchasecheckView';
 import ReturnStorageView from './returnStorage/ReturnStorageView';
 import ReturncheckView from './approve/ReturncheckView';
 import ReturnStoreView from './returnStore/ReturnStoreView';
 import SpecialTime from './time/SpecialTime';
+import { AppDataContext } from '../redux/AppRedux'
+import { userinfo } from '../util/Tool';
 // import CamView from './cam/CamView';
 const { Header, Content, Sider } = Layout;
 export default (props) => {
   const [collapsed, setCollapsed] = useState(false)
+  const [iswarehouseManager] = useState(userinfo().permission && userinfo().permission.indexOf('5') !== -1)
   const menu = (
     <Menu onClick={(target) => {
       switch (target.key) {
@@ -172,9 +174,12 @@ export default (props) => {
             type={collapsed ? 'menu-unfold' : 'menu-fold'}
             onClick={() => { setCollapsed(!collapsed) }}
           />
-          <Dropdown overlay={menu} trigger={['click']}>
-            <Avatar style={{ marginRight: 20, backgroundColor: '#1890ff', cursor: 'pointer' }} shape='square' size={36}>{AppData.userinfo().name}</Avatar>
-          </Dropdown>
+          <div style={{ display: 'flex', flexDirection: 'row', marginTop: iswarehouseManager ? 24 : 0 }}>
+            {iswarehouseManager ? <QrcodeInput {...props} /> : null}
+            <Dropdown overlay={menu} trigger={['click']}>
+              <Avatar style={{ marginRight: 20, backgroundColor: '#1890ff', cursor: 'pointer' }} shape='square' size={36}>{userinfo().name}</Avatar>
+            </Dropdown>
+          </div>
         </div>
       </Header>
       <Content style={{ margin: '16px 16px 0', overflow: 'initial', height: '100vh' }}>
@@ -207,6 +212,31 @@ export default (props) => {
   </Layout>
 }
 
+const QrcodeInput = Form.create({ name: 'form' })(props => {
+  const { appDispatch } = useContext(AppDataContext)
+  let timeout;
+  return <Form style={{ marginRight: 10 }}>
+    <Form.Item>
+      {props.form.getFieldDecorator('code', {
+        rules: [{ required: false }]
+      })(
+        <Input style={{ width: 200 }} placeholder={'领料单二维码'} autoFocus allowClear onPressEnter={(e) => {
+          if (e.target.value && e.target.value.length === 15) {
+            appDispatch({ type: 'currentcode', data: e.target.value })
+            props.history.push('/main/approve/approveview')
+          } else {
+            message.error('数值不符合规范')
+          }
+          if (timeout) { clearTimeout(timeout) }
+          timeout = setTimeout(() => {
+            props.form.resetFields()
+            appDispatch({ type: 'currentcode', data: '' })
+          }, 10000)
+        }} />
+      )}
+    </Form.Item>
+  </Form>
+})
 
 const styles = {
   logo: {

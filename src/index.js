@@ -7,11 +7,14 @@ import zh_CN from 'antd/lib/locale-provider/zh_CN'
 import moment from 'moment'
 import 'moment/locale/zh-cn'
 import './http/index'
+import AppRedux from './redux/AppRedux'
 
 moment.locale('zh-cn')
 ReactDOM.render(
   <ConfigProvider locale={zh_CN}>
-    <App />
+    <AppRedux>
+      <App />
+    </AppRedux>
   </ConfigProvider>,
   document.getElementById('root')
 )

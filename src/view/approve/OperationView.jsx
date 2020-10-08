@@ -3,7 +3,7 @@ import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, mes
 import api from '../../http';
 import moment from 'moment'
 import { xiaomeiParseFloat } from '../../util/Tool';
-import AppData from '../../util/AppData'
+import { userinfo } from '../../util/Tool';
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 const { Step } = Steps;
 
@@ -216,9 +216,6 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                                         if (item.step_number === currentWirteStep && item.is_change === 1 && status === 1) {
                                             console.log('库管确认---仓库变动')
                                             console.log('record:', record)
-                                            let sql3 = `update orders set in_out_time='${moment().format(FORMAT)}' where id = ${record.id}`
-                                            await api.query(sql3)
-                                            // api.updateStore()
                                             updateStoreHandler(record)
                                         }
                                     }
@@ -251,7 +248,7 @@ function renderApproveSteps(record, workflok, orderStepLog) {
     })
 }
 function shouldRenderCurrentPanel(record, workflok) {
-    const hasPermission = AppData.userinfo().permission;
+    const hasPermission = userinfo().permission;
     let flag = false
     workflok.forEach((item) => {
         if (item.step_number === record.step_number && hasPermission.indexOf(String(item.assginee_id)) !== -1) {
@@ -269,7 +266,9 @@ function getCurrentStepName(record, workflok) {
     })
     return result
 }
-async function updateStoreHandler(record) {
+export async function updateStoreHandler(record) {
+    let sql3 = `update orders set in_out_time='${moment().format(FORMAT)}' where id = ${record.id}`
+    await api.query(sql3)
     let tempList = [];
     let contentList = JSON.parse(record.content)
     contentList.forEach((element) => {
@@ -288,6 +287,8 @@ async function updateStoreHandler(record) {
         }
         console.log('库品数量修改结果：', result)
     }
+    console.log('出库完毕')
+    return true
 }
 const styles = {
     marginTop: {

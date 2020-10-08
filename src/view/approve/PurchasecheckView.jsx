@@ -3,7 +3,8 @@ import api from '../../http'
 import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Radio, Modal, message } from 'antd'
 import moment from 'moment'
 import HttpApi from '../../http/HttpApi';
-import AppData from '../../util/AppData';
+import { userinfo } from '../../util/Tool';
+
 /**
  * 采购入库单记录--用于财务审计
  */
@@ -243,7 +244,7 @@ export default props => {
                     let sql = `update purchase_record set 
                     check_status = ${data.check_status},
                     check_remark =${data.check_remark ? "'" + data.check_remark + "'" : null},
-                    check_user_id = ${AppData.userinfo().id},
+                    check_user_id = ${userinfo().id},
                     check_time = '${moment().format('YYYY-MM-DD HH:mm:ss')}'
                     where id = ${currentItem.id}`
                     let result = await HttpApi.obs({ sql })
@@ -258,7 +259,7 @@ export default props => {
                     loading={isLoading}
                     bordered
                     size='small'
-                    columns={AppData.userinfo().permission.indexOf('6') !== -1 ? columns : columns.filter((item) => item.title !== '操作')}
+                    columns={userinfo().permission.indexOf('6') !== -1 ? columns : columns.filter((item) => item.title !== '操作')}
                     dataSource={dataSource}
                     pagination={{
                         total: dataSource.length,

@@ -5,7 +5,7 @@ import moment from 'moment'
 import AddForm from './AddFrom'
 import UpdateForm from './UpdateForm'
 import { getJsonTree, filterTag } from '../../util/Tool'
-import AppData from '../../util/AppData';
+import { userinfo } from '../../util/Tool';
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 var originStoreList
 /**
@@ -199,7 +199,7 @@ export default props => {
               )}
           </div>
         </div>
-        {AppData.userinfo().isadmin ?
+        {userinfo().isadmin ?
           <Alert
             style={styles.marginTop}
             message={
@@ -224,10 +224,10 @@ export default props => {
         <Table
           loading={isLoading}
           style={styles.marginTop}
-          rowSelection={AppData.userinfo().isadmin || (AppData.userinfo().permission && AppData.userinfo().permission.indexOf(String(5)) !== -1) ? rowSelection : null}
+          rowSelection={userinfo().isadmin || (userinfo().permission && userinfo().permission.indexOf(String(5)) !== -1) ? rowSelection : null}
           size='small'
           bordered
-          columns={AppData.userinfo().isadmin || (AppData.userinfo().permission && AppData.userinfo().permission.indexOf(String(5)) !== -1) ?
+          columns={userinfo().isadmin || (userinfo().permission && userinfo().permission.indexOf(String(5)) !== -1) ?
             columns : columns.filter((item) => item.title !== '操作')}
           dataSource={storeList}
           pagination={{

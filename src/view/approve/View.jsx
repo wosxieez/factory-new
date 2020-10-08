@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useContext } from 'react'
 import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, Select, Form, Icon } from 'antd'
-import OperationView from './OperationView'
+import OperationView, { updateStoreHandler } from './OperationView'
 import api from '../../http'
 import moment from 'moment'
 import HttpApi from '../../http/HttpApi';
-import AppData from '../../util/AppData';
+import { userinfo } from '../../util/Tool';
+
+import { AppDataContext } from '../../redux/AppRedux'
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
 var allCondition = { code: null, type_list: [], major_list: [], create_user_list: [], date_range: [moment().add(0, 'month').startOf('month').format(FORMAT), moment().endOf('day').format(FORMAT)], status_list: [], currentPage: 1, currentPageSize: 10 }; const statusOptions = [{ value: 1, type_and_step: [{ type: 1, step: 1 }, { type: 2, step: 1 }], des: '专工确认中', permission: 0 },
@@ -16,6 +18,7 @@ var allCondition = { code: null, type_list: [], major_list: [], create_user_list
  * 待审批的申请列表
  */
 export default _ => {
+    const { appState } = useContext(AppDataContext)
     const [isLoading, setIsLoading] = useState(false)
     const [operationVisible, setOperationVisible] = useState(false)
     const [orderList, setOrdersList] = useState([])
@@ -24,6 +27,40 @@ export default _ => {
     const [selectedRows, setSelectedRows] = useState([])
     const [listCount, setListCount] = useState(0)///数据总共查询到多少条
     const [defaultStatus, setDefaultStatus] = useState([])
+    const getNewCode = useCallback(async () => {
+        if (appState.currentcode) {
+            let sql = `select orders.*,order_type.order_name as order_type_name ,majors.name as tag_name,users.name as user_name,order_workflok.name as order_workflok_name from orders 
+            left join (select * from order_type where isdelete = 0) order_type on orders.type_id = order_type.id
+            left join (select * from majors where effective = 1) majors on orders.tag_id = majors.id
+            left join (select * from users where effective = 1) users on orders.create_user = users.id
+            left join (select * from order_workflok where isdelete = 0) order_workflok on order_workflok.step_number = orders.step_number and order_workflok.order_type_id = orders.type_id
+            where orders.isdelete = 0 and orders.code = '${appState.currentcode}'`
+            let result = await api.query(sql)
+            if (result.code === 0) {
+                result.data = result.data[0]
+                if (result.data.length === 1) {
+                    // console.log('result.data[0]:', result.data[0])
+                    setCurrentItem(result.data[0])
+                    setOperationVisible(true)
+                    if (result.data[0].is_special === 1) { ///如果是特殊情况，那么直接算作出库。并将该订单的is_special改成 2 【特殊-已出库】
+                        console.log('是特殊情况直接开始算出库操作')
+                        let flag = await updateStoreHandler(result.data[0])
+                        if (flag) {
+                            console.log('全部自动出库成功')
+                            let sql = `update orders set is_special = 2 where id = ${result.data[0].id}`
+                            let result2 = await api.query(sql)
+                            if (result2.code === 0) {
+                                message.success('特殊时段申请-自助出库成功')
+                                setTimeout(() => {
+                                    setOperationVisible(false)
+                                }, 10000)
+                            }
+                        }
+                    } else { console.log('正常情况-走库管人工操作审核') }
+                }
+            }
+        }
+    }, [appState.currentcode])
     const getOrderCount = useCallback(async (condition_sql = '') => {
         let sql = `select count(id) count from orders where isdelete = 0 ${condition_sql}`
         let result = await api.query(sql)
@@ -66,7 +103,7 @@ export default _ => {
     }, [getOrderCount])
     const getDefaultStatusSelect = useCallback(() => {
         let copyStatusOptions = JSON.parse(JSON.stringify(statusOptions));
-        let afterFilter = copyStatusOptions.filter((item) => { return AppData.userinfo().permission.indexOf(String(item.permission)) !== -1 })
+        let afterFilter = copyStatusOptions.filter((item) => { return userinfo().permission.indexOf(String(item.permission)) !== -1 })
         let defaultValues = afterFilter.map((item) => { return item.value })
         allCondition.status_list = afterFilter;
         setDefaultStatus(defaultValues)
@@ -74,7 +111,8 @@ export default _ => {
     useEffect(() => {
         getDefaultStatusSelect() ///先根据个人的权限 设定默认选中的 当前状态；再将状态设定到 查询条件对象中
         listOrders()
-    }, [listOrders, getDefaultStatusSelect])
+        getNewCode()
+    }, [listOrders, getDefaultStatusSelect, getNewCode])
 
     const batchDelete = useCallback(() => {
         Modal.confirm({
@@ -279,7 +317,7 @@ export default _ => {
                         )}
                     </div>
                 </div>
-                {AppData.userinfo().isadmin ?
+                {userinfo().isadmin ?
                     <Alert
                         style={styles.marginTop}
                         message={
@@ -297,7 +335,7 @@ export default _ => {
                 <Table
                     loading={isLoading}
                     style={styles.marginTop}
-                    rowSelection={AppData.userinfo().isadmin ? rowSelection : null}
+                    rowSelection={userinfo().isadmin ? rowSelection : null}
                     size='small'
                     bordered
                     columns={columns}

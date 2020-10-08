@@ -33,7 +33,7 @@ export default _ => {
         // console.log('sql_condition:', sql_condition)
         let sql = `select orders.*,users.name as user_name from orders
         left join (select * from users where effective = 1) users on orders.create_user = users.id
-        where orders.isdelete = 0 and orders.status in (2,3) and orders.type_id = 1 ${sql_condition}
+        where orders.isdelete = 0 and (orders.status in (2,3) or orders.is_special = 2) and orders.type_id = 1 ${sql_condition}
         order by in_out_time desc`
         // console.log('sql:', sql)
         let result = await api.query(sql)

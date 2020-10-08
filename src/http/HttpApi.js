@@ -1,5 +1,5 @@
 import Axios from 'axios'
-import AppData from '../util/AppData';
+import { userinfo } from '../util/Tool';
 // import Qs from 'qs'
 
 export const Testuri = 'http://ixiaomu.cn:3010/'///小木服务器数据库 3008正式 3010测试
@@ -46,7 +46,7 @@ const HttpApi = {
         return []
     },
     getCurrentUserMajor: async () => {
-        let user_id = AppData.userinfo().id
+        let user_id = userinfo().id
         let sql = `select user_map_major.*,majors.name as major_name from user_map_major
         left join (select * from majors where effective = 1) majors on majors.id = user_map_major.mj_id
         where user_map_major.user_id = ${user_id} and user_map_major.effective = 1`

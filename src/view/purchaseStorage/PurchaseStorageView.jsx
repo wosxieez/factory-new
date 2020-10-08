@@ -4,7 +4,7 @@ import moment from 'moment';
 import api from '../../http';
 import AddForm from '../storehouse/AddFrom';
 import HttpApi from '../../http/HttpApi';
-import AppData from '../../util/AppData';
+import { userinfo } from '../../util/Tool';
 
 var storeList = [{ key: 0 }]
 const starIcon = <span style={{ color: 'red' }}>* </span>
@@ -260,10 +260,10 @@ export default Form.create({ name: 'form' })(props => {
                     <Col span={6}>
                         <Form.Item label='记录人' >
                             {props.form.getFieldDecorator('record_user_id', {
-                                initialValue: AppData.userinfo().id,
+                                initialValue: userinfo().id,
                                 rules: [{ required: true, message: '请选择记录人' }]
                             })(<Select placeholder='请选择记录人' showSearch optionFilterProp="children">
-                                {[AppData.userinfo()].map((item, index) => {
+                                {[userinfo()].map((item, index) => {
                                     return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
                                 })}
                             </Select>)}
@@ -310,9 +310,9 @@ export default Form.create({ name: 'form' })(props => {
                 <Row>
                     <Form.Item wrapperCol={{ span: 24 }}>
                         <div style={{ textAlign: 'right' }}>
-                            <Tooltip title={`${!(AppData.userinfo().permission && AppData.userinfo().permission.indexOf('5') !== -1) ? '需要库管权限' : ''}`}>
+                            <Tooltip title={`${!(userinfo().permission && userinfo().permission.indexOf('5') !== -1) ? '需要库管权限' : ''}`}>
                                 <Button type="primary" htmlType="submit"
-                                    disabled={!(AppData.userinfo().permission && AppData.userinfo().permission.indexOf('5') !== -1)}
+                                    disabled={!(userinfo().permission && userinfo().permission.indexOf('5') !== -1)}
                                 >提交</Button>
                             </Tooltip>
                         </div>

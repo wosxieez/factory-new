@@ -1,8 +1,10 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useContext } from 'react'
 import { Descriptions, Icon, Tag } from 'antd';
-import AppData from '../../util/AppData';
+import { userinfo, userPermissions } from '../../util/Tool';
 import api from '../../http';
+import { AppDataContext } from '../../redux/AppRedux';
 export default _ => {
+    const { appState } = useContext(AppDataContext)
     const [flok, setFolk] = useState([])
     const getFlok = useCallback(async () => {
         let sql = `select order_type.order_name,order_workflok.* from order_type 
@@ -22,14 +24,14 @@ export default _ => {
     return <div style={styles.root}>
         <div style={styles.body}>
             <Descriptions title="个人信息" bordered size='small' column={2}>
-                <Descriptions.Item label="姓名">{AppData.userinfo().name}</Descriptions.Item>
-                <Descriptions.Item label="账号">{AppData.userinfo().username}</Descriptions.Item>
-                <Descriptions.Item label="部门">{AppData.userinfo().level_name}</Descriptions.Item>
-                <Descriptions.Item label="专业">{AppData.userinfo().major_name_all}</Descriptions.Item>
-                <Descriptions.Item label="权限">{AppData.userPermissions().length > 0 ? AppData.userPermissions().map((item, index) => <Tag key={index} color='blue'>{item}</Tag>) : '-'}</Descriptions.Item>
-                <Descriptions.Item label="管理">{AppData.userinfo().isadmin ? <Icon type="check-circle" theme="twoTone" /> : '-'}</Descriptions.Item>
-                <Descriptions.Item label="备注">{AppData.userinfo().remark || '-'}</Descriptions.Item>
-                <Descriptions.Item label="版本">{<Tag color='blue'>{AppData.version}</Tag>}</Descriptions.Item>
+                <Descriptions.Item label="姓名">{userinfo().name}</Descriptions.Item>
+                <Descriptions.Item label="账号">{userinfo().username}</Descriptions.Item>
+                <Descriptions.Item label="部门">{userinfo().level_name}</Descriptions.Item>
+                <Descriptions.Item label="专业">{userinfo().major_name_all}</Descriptions.Item>
+                <Descriptions.Item label="权限">{userPermissions().length > 0 ? userPermissions().map((item, index) => <Tag key={index} color='blue'>{item}</Tag>) : '-'}</Descriptions.Item>
+                <Descriptions.Item label="管理">{userinfo().isadmin ? <Icon type="check-circle" theme="twoTone" /> : '-'}</Descriptions.Item>
+                <Descriptions.Item label="备注">{userinfo().remark || '-'}</Descriptions.Item>
+                <Descriptions.Item label="版本">{<Tag color='blue'>{appState.version}</Tag>}</Descriptions.Item>
             </Descriptions>
         </div>
         <div style={styles.body}>
