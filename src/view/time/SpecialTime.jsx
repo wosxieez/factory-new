@@ -59,7 +59,7 @@ export default () => {
     }]
     return <div style={styles.root}>
         <div style={styles.body}>
-            <Alert style={styles.marginBottom} message={'仓库正常运转时间表设定：非时间段内提交的领料申请会被自动标记为【特殊】状态'} type='info' showIcon />
+            <Alert style={styles.marginBottom} message={'仓库正常运转时段表设定：非时间段内提交的领料申请会被自动标记为【特殊】状态'} type='info' showIcon />
             <Table
                 size='small'
                 bordered

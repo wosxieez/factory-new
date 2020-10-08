@@ -150,7 +150,7 @@ export default (props) => {
           </Menu.Item>
           <Menu.Item key={'/main/setting/specialtime'}>
             <Icon type="history" />
-            <span className="nav-text">时间设置</span>
+            <span className="nav-text">时段设置</span>
             <Link to={`${props.match.url}/setting/specialtime`} />
           </Menu.Item>
           <Menu.Item key={'/main/setting/selfcenterview'}>

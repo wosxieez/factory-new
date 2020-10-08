@@ -42,8 +42,8 @@ export default _ => {
                     // console.log('result.data[0]:', result.data[0])
                     setCurrentItem(result.data[0])
                     setOperationVisible(true)
-                    if (result.data[0].is_special === 1) { ///如果是特殊情况，那么直接算作出库。并将该订单的is_special改成 2 【特殊-已出库】
-                        console.log('是特殊情况直接开始算出库操作')
+                    if (result.data[0].is_special === 1) { ///如果是特殊时段，那么直接算作出库。并将该订单的is_special改成 2 【特殊-已出库】
+                        console.log('是特殊时段直接开始算出库操作')
                         let flag = await updateStoreHandler(result.data[0])
                         if (flag) {
                             console.log('全部自动出库成功')
@@ -56,7 +56,7 @@ export default _ => {
                                 }, 10000)
                             }
                         }
-                    } else { console.log('正常情况-走库管人工操作审核') }
+                    } else { console.log('正常时段-走库管人工操作审核') }
                 }
             }
         }
@@ -253,7 +253,7 @@ export default _ => {
             }
         },
         {
-            title: '情况',
+            title: '时段',
             dataIndex: 'is_special',
             align: 'center',
             width: 80,
@@ -509,10 +509,10 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                 </Form.Item>
             </Col>
             <Col span={6}>
-                <Form.Item label='情况'  {...itemProps}>
+                <Form.Item label='时段'  {...itemProps}>
                     {props.form.getFieldDecorator('is_special', {
                         rules: [{ required: false }]
-                    })(<Select mode='multiple' allowClear placeholder='选择情况-支持名称搜索' showSearch optionFilterProp="children">
+                    })(<Select mode='multiple' allowClear placeholder='选择时段-支持名称搜索' showSearch optionFilterProp="children">
                         {[{ value: 0, des: '正常' }, { value: 1, des: '特殊' }].map((item, index) => {
                             return <Select.Option value={item.value} key={index} all={item}>{item.des}</Select.Option>
                         })}

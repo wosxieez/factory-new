@@ -178,7 +178,7 @@ export default Form.create({ name: 'form' })(props => {
                     onOk: async function () {
                         let is_special = 0
                         let is_special_result = await checkCurrentTimeIsSpecial()
-                        if (is_special_result && values.type_id === 1) { ///在工作时间表之外的 物料申领
+                        if (is_special_result && values.type_id === 1) { ///在工作时段表之外的 物料申领
                             is_special = 1
                         }
                         // console.log('asdasdasd')

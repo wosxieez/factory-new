@@ -171,7 +171,7 @@ export function checkPasswordChart(password) {
   return true
 }
 /**
- *当前时刻是否为特殊时刻--即 不在正常工作时间表中
+ *当前时刻是否为特殊时刻--即 不在正常工作时段表中
  * @export
  * @returns true 是特殊时刻  false 正常时刻
  */
