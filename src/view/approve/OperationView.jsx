@@ -240,7 +240,7 @@ function renderApproveSteps(record, workflok, orderStepLog) {
         return <Step key={index + 1} title={item.name}
             description={item.stepLog && item.stepLog.length > 0 ? item.stepLog.map((element, index) => <div key={index}>
                 {element.status === 1 ? <Tag color='green'>已通过</Tag> : (element.status === 0 ? <Tag color='red'>已拒绝</Tag> : <Tag color='blue'>正在处理</Tag>)}
-                <Tag>{element.user_name || '-'}</Tag>
+                <Tag color={'#faad14'}>{element.user_name || '-'}</Tag>
                 <div style={{ fontSize: 10, color: '#1890ff' }}>{moment(element.createdAt).format(FORMAT)}</div>
                 <div>{element.remark}</div>
             </div>) : null}
