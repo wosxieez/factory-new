@@ -147,7 +147,7 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                     <Col span={18}>
                         <Radio.Group value={status} buttonStyle="solid" onChange={(e) => { setStatus(e.target.value) }}>
                             <Radio.Button value={1}>通过</Radio.Button>
-                            <Radio.Button disabled={record.status === 2} value={0}>拒绝</Radio.Button>
+                            <Radio.Button disabled={record.status === 2 || record.is_special !== 0} value={0}>拒绝</Radio.Button>
                             <Radio.Button value={2}>正在处理</Radio.Button>
                         </Radio.Group>
                     </Col>
