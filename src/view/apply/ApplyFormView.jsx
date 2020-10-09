@@ -171,7 +171,7 @@ export default Form.create({ name: 'form' })(props => {
                 }
                 values.storeList = afterFilter;
                 Modal.confirm({
-                    title: `确认要提交这些采购信息入库吗？`,
+                    title: `确认要提交这些${selectOrderType === 1 ? '申领' : '申购'}信息吗？`,
                     content: '请自行确保所选的信息的准确性',
                     okText: '提交',
                     okType: 'danger',
@@ -206,7 +206,7 @@ export default Form.create({ name: 'form' })(props => {
                 })
             }
         });
-    }, [props.form, resetHandler])
+    }, [props.form, resetHandler, selectOrderType])
 
     useEffect(() => {
         listAllStore()
