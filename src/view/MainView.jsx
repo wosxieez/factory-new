@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { Route, Link } from 'react-router-dom'
 import { Layout, Menu, Icon, Modal, Avatar, Dropdown, Input, Form, message } from 'antd';
 import NewDptAndUser from './newDptAndUser/View'
@@ -21,6 +21,8 @@ import ReturnStoreView from './returnStore/ReturnStoreView';
 import SpecialTime from './time/SpecialTime';
 import { AppDataContext } from '../redux/AppRedux'
 import { userinfo } from '../util/Tool';
+const weather = <div id="tp-weather-widget"></div>
+
 // import CamView from './cam/CamView';
 const { Header, Content, Sider } = Layout;
 export default (props) => {
@@ -59,6 +61,9 @@ export default (props) => {
         </Menu.Item>
     </Menu>
   );
+  useEffect(() => {
+    console.log('main useEffect')
+  }, [])
   return <Layout>
     <Sider style={styles.side} width='180' trigger={null} collapsible collapsed={collapsed}>
       <div style={styles.logo} >
@@ -169,11 +174,14 @@ export default (props) => {
     <Layout style={{ marginLeft: collapsed ? 80 : 180 }} >
       <Header style={{ backgroundColor: '#FFF', zIndex: 10, width: '100%', height: 64, padding: 0, borderBottomStyle: 'solid', borderBottomWidth: 1, borderBottomColor: '#e8e8e8', }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', height: '100%' }}>
-          <Icon
-            style={styles.trigger}
-            type={collapsed ? 'menu-unfold' : 'menu-fold'}
-            onClick={() => { setCollapsed(!collapsed) }}
-          />
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+            <Icon
+              style={styles.trigger}
+              type={collapsed ? 'menu-unfold' : 'menu-fold'}
+              onClick={() => { setCollapsed(!collapsed) }}
+            />
+            {weather}
+          </div>
           <div style={{ display: 'flex', flexDirection: 'row', marginTop: iswarehouseManager ? 24 : 0 }}>
             {iswarehouseManager ? <QrcodeInput {...props} /> : null}
             <Dropdown overlay={menu} trigger={['click']}>
@@ -251,6 +259,7 @@ const styles = {
   },
   trigger: {
     marginLeft: 10,
+    marginRight: 20,
     fontSize: "20px",
   },
   titleIcon: {

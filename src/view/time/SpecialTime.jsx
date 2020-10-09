@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Table, Alert, Button, Modal, Form, TimePicker, Switch, message } from 'antd';
 import HttpApi from '../../http/HttpApi';
 import moment from 'moment';
+import { userinfo } from '../../util/Tool';
 const today = moment().format('YYYY-MM-DD ')
 const format = 'HH:mm'
 export default () => {
@@ -61,9 +62,9 @@ export default () => {
         <div style={styles.body}>
             <Alert style={styles.marginBottom} message={'仓库正常运转时段表设定：非时间段内提交的领料申请会被自动标记为【特殊】状态'} type='info' showIcon />
             <Table
+                columns={userinfo().isadmin ? columns : columns.filter((item) => item.title !== '操作')}
                 size='small'
                 bordered
-                columns={columns}
                 dataSource={data}
             />
             <SettingPanel
