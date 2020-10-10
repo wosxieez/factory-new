@@ -31,6 +31,9 @@ const LoginForm = Form.create({ name: 'form' })(props => {
                     localStorage.setItem('user', JSON.stringify(response[0]))
                     // props.history.push('/main/storeview')
                     props.history.replace('/main/storeview')
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 100);
                 } else {
                     message.error('账号或密码可能错误')
                 }
