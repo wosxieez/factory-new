@@ -129,14 +129,14 @@ export default Form.create({ name: 'form' })(props => {
             }
             return item
         })
-        // storeList = afterInsert;
+        storeList = afterInsert;
         props.form.setFieldsValue({ storeList: afterInsert })
         calculSumCountAndPrice()
     }, [props.form, calculSumCountAndPrice])
 
     const handleSelectChange = useCallback((option, key) => {
         const selectObj = option.props.all;
-        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'o_count': selectObj.count, 'o_price': selectObj.oprice, 'remark': selectObj.remark, 'max_count': selectObj.count }
+        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'max_count': selectObj.count }
         changeTableListHandler(param)
     }, [changeTableListHandler])
 
@@ -194,7 +194,7 @@ export default Form.create({ name: 'form' })(props => {
                         if (values.remark) {
                             tempRemark = "'" + values.remark + "'"
                         }
-                        let sql = `insert into orders (create_user,tag_id,type_id,content,remark,code,createdAt,is_special) values (${values.apply_user_id},${values.major_id},${values.type_id},'${JSON.stringify(values.storeList)}',${tempRemark},'${tempCodeHeader + moment().toDate().getTime()}','${moment().format(FORMAT)}',${is_special})`
+                        let sql = `insert into orders (create_user,tag_id,type_id,content,remark,code,createdAt,is_special) values (${values.apply_user_id},${values.major_id},${values.type_id},'${JSON.stringify(values.storeList)}',${tempRemark},'${moment().toDate().getTime() + tempCodeHeader}','${moment().format(FORMAT)}',${is_special})`
                         // console.log('sql:', sql)
                         let result = await api.query(sql)
                         if (result.code === 0) {
