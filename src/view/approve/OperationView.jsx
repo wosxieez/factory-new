@@ -80,11 +80,11 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
     let sum_price = 0;///总价
     let sum_count = 0;///总件数
     JSON.parse(record.content).forEach((item) => {
-        sum_price = sum_price + item.count * item.avg_price;
+        sum_price = sum_price + item.count * item.price;
         sum_count = sum_count + item.count;
     })
     let tempList = JSON.parse(record.content);
-    tempList.push({ store_name: '总计', count: sum_count, o_price: sum_price, isSum: true })
+    tempList.push({ store_name: '总计', count: sum_count, price: sum_price, isSum: true })
     let data = tempList.map((item, index) => { item.key = index; return item })
     const columns = [{
         title: '物料', dataIndex: 'store_name',
@@ -103,7 +103,7 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
             return text
         }
     }, {
-        title: '单价【元】', dataIndex: 'o_price',
+        title: '单价【元】', dataIndex: 'price',
         render: (text, record) => {
             if (record.isSum) {
                 return <Tag color={'red'}>{xiaomeiParseFloat(text)}</Tag>
@@ -154,10 +154,10 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                 </Row>
                 <Row style={styles.marginTop}>
                     <Col span={3}>
-                        说明:
+                        备注:
                     </Col>
                     <Col span={18}>
-                        <Input.TextArea rows={4} placeholder='说明缘由' onChange={(e) => { setRemark(e.target.value) }} />
+                        <Input.TextArea rows={4} placeholder='备注选填' onChange={(e) => { setRemark(e.target.value) }} />
                     </Col>
                 </Row>
                 <Row style={styles.marginTop}>

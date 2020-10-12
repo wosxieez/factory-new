@@ -122,14 +122,14 @@ export default Form.create({ name: 'form' })(props => {
         let afterInsert = storeList.map((item) => {
             if (item.key === param.key) {
                 item = { ...item, ...param }
-                let all_count = item.o_count + item.count
-                let all_price = parseFloat(((item.o_price || 0) * item.o_count + item.price * item.count).toFixed(2))
-                let avg_price = parseFloat((all_price / all_count).toFixed(2))
-                item = { ...item, all_count, all_price, avg_price }
+                // let all_count = item.o_count + item.count
+                // let all_price = parseFloat(((item.o_price || 0) * item.o_count + item.price * item.count).toFixed(2))
+                // let avg_price = parseFloat((all_price / all_count).toFixed(2))
+                // item = { ...item, all_count, all_price, avg_price } ///all_count, all_price, avg_price 在采购中有用，在申请领料单中没用
             }
             return item
         })
-        storeList = afterInsert;
+        // storeList = afterInsert;
         props.form.setFieldsValue({ storeList: afterInsert })
         calculSumCountAndPrice()
     }, [props.form, calculSumCountAndPrice])
