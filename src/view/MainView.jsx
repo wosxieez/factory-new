@@ -229,7 +229,7 @@ const QrcodeInput = Form.create({ name: 'form' })(props => {
         rules: [{ required: false }]
       })(
         <Input style={{ width: 200 }} placeholder={'领料单二维码'} autoFocus allowClear onPressEnter={(e) => {
-          if (e.target.value && e.target.value.length === 15) {
+          if (e.target.value && e.target.value.length === 14) {
             appDispatch({ type: 'currentcode', data: e.target.value })
             props.history.push('/main/approve/approveview')
           } else {

@@ -184,17 +184,17 @@ export default Form.create({ name: 'form' })(props => {
                         // console.log('asdasdasd')
                         let tempCodeHeader = ''
                         if (values.type_id === 1) {
-                            tempCodeHeader = 'SL'
+                            tempCodeHeader = '1'
                         } else if (values.type_id === 2) {
-                            tempCodeHeader = 'ST'
+                            tempCodeHeader = '2'
                         } else {
-                            tempCodeHeader = 'SG'
+                            tempCodeHeader = '3'
                         }
                         let tempRemark = null;
                         if (values.remark) {
                             tempRemark = "'" + values.remark + "'"
                         }
-                        let sql = `insert into orders (create_user,tag_id,type_id,content,remark,code,createdAt,is_special) values (${values.apply_user_id},${values.major_id},${values.type_id},'${JSON.stringify(values.storeList)}',${tempRemark},'${moment().toDate().getTime() + tempCodeHeader}','${moment().format(FORMAT)}',${is_special})`
+                        let sql = `insert into orders (create_user,tag_id,type_id,content,remark,code,createdAt,is_special) values (${values.apply_user_id},${values.major_id},${values.type_id},'${JSON.stringify(values.storeList)}',${tempRemark},'${tempCodeHeader + moment().toDate().getTime()}','${moment().format(FORMAT)}',${is_special})`
                         // console.log('sql:', sql)
                         let result = await api.query(sql)
                         if (result.code === 0) {
