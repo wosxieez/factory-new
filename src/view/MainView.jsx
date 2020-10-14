@@ -21,6 +21,7 @@ import ReturnStoreView from './returnStore/ReturnStoreView';
 import SpecialTime from './time/SpecialTime';
 import { AppDataContext } from '../redux/AppRedux'
 import { userinfo } from '../util/Tool';
+import HttpApi from '../http/HttpApi';
 const weather = <div id="tp-weather-widget"></div>
 
 // import CamView from './cam/CamView';
@@ -232,6 +233,8 @@ const QrcodeInput = Form.create({ name: 'form' })(props => {
           if (e.target.value && e.target.value.length === 14) {
             appDispatch({ type: 'currentcode', data: e.target.value })
             props.history.push('/main/approve/approveview')
+            let sql = `insert into order_search_list (order_code) VALUES ('${e.target.value}')`
+            HttpApi.obs({ sql })
           } else {
             message.error('数值不符合规范')
           }
