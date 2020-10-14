@@ -190,7 +190,7 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                                                 order_status = 2
                                             }
                                         })
-                                    } else if (status === 0) {///如果选择了 拒绝 那么 该条申请完成 order 的状态要改成 3 终止
+                                    } else if (status === 0) {///如果选择了 拒绝 那么 该条申请完成 order 的状态要改成 4 终止
                                         order_status = 4
                                     } else if (status === 2) {///选择了 正在处理
                                         order_status = 1

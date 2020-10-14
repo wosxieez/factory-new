@@ -9,7 +9,8 @@ import { userinfo } from '../../util/Tool';
 import { AppDataContext } from '../../redux/AppRedux'
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
-var allCondition = { code: null, type_list: [], major_list: [], create_user_list: [], date_range: [moment().add(0, 'month').startOf('month').format(FORMAT), moment().endOf('day').format(FORMAT)], status_list: [], currentPage: 1, currentPageSize: 10 }; const statusOptions = [{ value: 1, type_and_step: [{ type: 1, step: 1 }, { type: 2, step: 1 }], des: '专工确认中', permission: 0 },
+var allCondition = { code: null, type_list: [], major_list: [], create_user_list: [], date_range: [moment().add(0, 'month').startOf('month').format(FORMAT), moment().endOf('day').format(FORMAT)], status_list: [], currentPage: 1, currentPageSize: 10 };
+const statusOptions = [{ value: 1, type_and_step: [{ type: 1, step: 1 }, { type: 2, step: 1 }], des: '专工确认中', permission: 0 },
 { value: 2, type_and_step: [{ type: 1, step: 2 }, { type: 2, step: 2 }, { type: 3, step: 3 }], des: '库管确认中', permission: 5 },
 { value: 3, type_and_step: [{ type: 3, step: 1 }], des: '财务采购确认中', permission: 6 },
 { value: 4, type_and_step: [{ type: 1, step: 3 }, { type: 2, step: 3 }], des: '财务审计中', permission: 6 },

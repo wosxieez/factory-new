@@ -90,8 +90,8 @@ export default _ => {
         },
         {
             title: '单价(元)',
-            dataIndex: 'store.avg_price',
-            key: 'avg_price',
+            dataIndex: 'store.price',
+            key: 'price',
             render: (text) => {
                 return <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
             }
@@ -109,9 +109,9 @@ export default _ => {
             dataIndex: 'store',
             key: 'sum_oprice',
             render: (_, record) => {
-                const avg_price = record.store.avg_price
+                const price = record.store.price
                 const count = record.store.count
-                return <Tag color='#fa541c' style={{ marginRight: 0 }}>{parseFloat(avg_price * count).toFixed(2)}</Tag>
+                return <Tag color='#fa541c' style={{ marginRight: 0 }}>{parseFloat(price * count).toFixed(2)}</Tag>
             }
         },
         {
