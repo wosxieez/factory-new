@@ -10,11 +10,13 @@ import { AppDataContext } from '../../redux/AppRedux'
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
 var allCondition = { code: null, type_list: [], major_list: [], create_user_list: [], date_range: [moment().add(0, 'month').startOf('month').format(FORMAT), moment().endOf('day').format(FORMAT)], status_list: [], currentPage: 1, currentPageSize: 10 };
-const statusOptions = [{ value: 1, type_and_step: [{ type: 1, step: 1 }, { type: 2, step: 1 }], des: '专工确认中', permission: 0 },
-{ value: 2, type_and_step: [{ type: 1, step: 2 }, { type: 2, step: 2 }, { type: 3, step: 3 }], des: '库管确认中', permission: 5 },
+const statusOptions = [{ value: 1, type_and_step: [{ type: 1, step: 1 }, { type: 2, step: 1 }], des: '领料审批中', permission: 0 },
+{ value: 2, type_and_step: [{ type: 1, step: 2 }, { type: 2, step: 2 }, { type: 3, step: 3 }], des: '待领料中', permission: 5 },
 { value: 3, type_and_step: [{ type: 3, step: 1 }], des: '财务采购确认中', permission: 6 },
 { value: 4, type_and_step: [{ type: 1, step: 3 }, { type: 2, step: 3 }], des: '财务审计中', permission: 6 },
-{ value: 5, type_and_step: [{ type: 3, step: 2 }], des: '采购处理', permission: 4 }]
+{ value: 5, type_and_step: [{ type: 3, step: 2 }], des: '采购处理', permission: 4 },
+{ value: 6, des: '完毕' },
+{ value: 7, des: '拒绝' }]
 /**
  * 待审批的申请列表
  */
@@ -106,7 +108,9 @@ export default _ => {
         let copyStatusOptions = JSON.parse(JSON.stringify(statusOptions));
         let afterFilter = copyStatusOptions.filter((item) => { return userinfo().permission.indexOf(String(item.permission)) !== -1 })
         let defaultValues = afterFilter.map((item) => { return item.value })
+        let major_list = userinfo().major_id_all ? userinfo().major_id_all.split(',').map((item) => parseInt(item)) : []///设置固定的专业
         allCondition.status_list = afterFilter;
+        allCondition.major_list = major_list;
         setDefaultStatus(defaultValues)
     }, [])
     useEffect(() => {
@@ -298,9 +302,9 @@ export default _ => {
             <div style={styles.header}>
                 <Searchfrom defaultData={{ status: defaultStatus }} startSearch={(conditionsValue) => {
                     let tempList = [];
-                    if (conditionsValue.curent_status && conditionsValue.curent_status.length > 0) {
+                    if (conditionsValue.current_status && conditionsValue.current_status.length > 0) {
                         statusOptions.forEach((item) => {
-                            conditionsValue.curent_status.forEach((value) => {
+                            conditionsValue.current_status.forEach((value) => {
                                 if (item.value === value) { tempList.push(item) }
                             })
                         })
@@ -384,6 +388,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
     const [userOptionList, setUserOptionList] = useState([])
     const [typeOptions, setTypeOptions] = useState([])///类型选项数据
     const [majorOptions, setMajorOptions] = useState([])
+    const [defaultMajor] = useState(userinfo().major_id_all ? userinfo().major_id_all.split(',').map((item) => parseInt(item)) : [])
 
     const getType = useCallback(async () => {
         let sql = `select * from order_type where isdelete = 0`
@@ -476,8 +481,9 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
             <Col span={6}>
                 <Form.Item label='专业' {...itemProps}>
                     {props.form.getFieldDecorator('major_list', {
+                        initialValue: defaultMajor,
                         rules: [{ required: false }]
-                    })(<Select mode='multiple' allowClear placeholder='选择专业-支持名称搜索' showSearch optionFilterProp="children">
+                    })(<Select disabled mode='multiple' allowClear showSearch optionFilterProp="children">
                         {majorOptions.map((item, index) => {
                             return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
                         })}
@@ -499,7 +505,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
             </Col>
             <Col span={6}>
                 <Form.Item label='当前状态'  {...itemProps}>
-                    {props.form.getFieldDecorator('curent_status', {
+                    {props.form.getFieldDecorator('current_status', {
                         initialValue: props.defaultData.status,
                         rules: [{ required: false }]
                     })(<Select mode='multiple' allowClear placeholder='选择当前状态-支持名称搜索' showSearch optionFilterProp="children">
@@ -534,10 +540,16 @@ function checkStatusSql(tempList) {
     if (tempList.length === 0) { return '' }
     let sql = []
     tempList.forEach((item) => {
-        const type_and_step = item.type_and_step;
-        type_and_step.forEach((element) => {
-            sql.push(` (orders.type_id = ${element.type} and orders.step_number = ${element.step}) `)
-        })
+        if (item.value < 6) {
+            const type_and_step = item.type_and_step;
+            type_and_step.forEach((element) => {
+                sql.push(` (orders.type_id = ${element.type} and orders.step_number = ${element.step}) `)
+            })
+        } else if (item.value === 6) { ///完毕
+            sql.push(` (orders.status = 3) `)
+        } else if (item.value === 7) { ///拒绝
+            sql.push(` (orders.status = 4) `)
+        }
     })
     if (sql.length === 0) {
         return ''

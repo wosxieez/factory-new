@@ -53,7 +53,7 @@ export default (props) => {
     }}>
       {iswarehouseManager ?
         [<Menu.Item key="x">
-          <a href="http://60.174.196.158:12345/subscreen/" target="_blank"><Icon type="desktop" style={{ marginRight: 5, marginTop: 5 }} />
+          <a href="http://60.174.196.158:12345/subscreen/" rel="noopener noreferrer" target="_blank"><Icon type="desktop" style={{ marginRight: 5, marginTop: 5 }} />
             <span>大屏显示</span>
           </a>
         </Menu.Item>,
