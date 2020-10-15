@@ -17,6 +17,7 @@ export default Form.create({ name: 'form' })(props => {
     const [sumCount, setSumCount] = useState(0)
     const [sumPrice, setSumPrice] = useState(0)
     const [isAdding, setIsAdding] = useState(false)
+    const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.indexOf('5') !== -1)
     const addForm = useRef()
     const listAllStore = useCallback(async () => {
         let result = await api.listAllStore()
@@ -52,7 +53,7 @@ export default Form.create({ name: 'form' })(props => {
                                 onMouseDown={e => e.preventDefault()}
                                 onClick={() => { setIsAdding(true) }}
                             >
-                                <Button size='small' type='danger' style={{ width: '100%' }} icon='plus'>创建物品</Button>
+                                <Button disabled={!isStorehouseManager} size='small' type='danger' style={{ width: '100%' }} icon='plus'>创建物品</Button>
                             </div>
                         </div >
                     )}>

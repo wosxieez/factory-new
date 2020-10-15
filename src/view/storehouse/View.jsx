@@ -21,6 +21,7 @@ export default props => {
   const [currentItem, setCurrentItem] = useState({})
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [selectedRows, setSelectedRows] = useState([])
+  const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.indexOf('5') !== -1)
   const listAllStore = useCallback(async () => {
     setIsLoading(true)
     setSelectedRowKeys([])
@@ -182,7 +183,7 @@ export default props => {
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <h3>物料管理</h3>
           <div>
-            {selectedRowKeys.length === 0 ? (
+            {isStorehouseManager ? (selectedRowKeys.length === 0 ? (
               <Button
                 style={styles.button}
                 type='primary'
@@ -196,10 +197,10 @@ export default props => {
                 <Button style={styles.button} type='danger' onClick={batchDelete}>
                   批量删除
               </Button>
-              )}
+              )) : null}
           </div>
         </div>
-        {userinfo().isadmin ?
+        {isStorehouseManager ?
           <Alert
             style={styles.marginTop}
             message={
@@ -224,10 +225,10 @@ export default props => {
         <Table
           loading={isLoading}
           style={styles.marginTop}
-          rowSelection={userinfo().isadmin || (userinfo().permission && userinfo().permission.indexOf(String(5)) !== -1) ? rowSelection : null}
+          rowSelection={isStorehouseManager ? rowSelection : null}
           size='small'
           bordered
-          columns={userinfo().isadmin || (userinfo().permission && userinfo().permission.indexOf(String(5)) !== -1) ?
+          columns={isStorehouseManager ?
             columns : columns.filter((item) => item.title !== '操作')}
           dataSource={storeList}
           pagination={{

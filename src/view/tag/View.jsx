@@ -4,7 +4,7 @@ import api from '../../http'
 import { useEffect, useCallback } from 'react'
 import AddForm from './AddFrom'
 import UpdateForm from './UpdateForm'
-import { filterTag } from '../../util/Tool';
+import { filterTag, userinfo } from '../../util/Tool';
 const { confirm } = Modal
 
 export default (props) => {
@@ -17,6 +17,7 @@ export default (props) => {
   const [Tags, setTags] = useState([])
   const [listIsLoading, setListIsLoading] = useState(false)
   const [currentItem, setCurrentItem] = useState({})
+  const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.indexOf('5') !== -1)
 
   const listData = useCallback(async () => {
     setListIsLoading(true)
@@ -92,7 +93,6 @@ export default (props) => {
                 onClick={e => {
                   setTags([])
                 }}>
-                {/* {localStorage.getItem('cname')} */}
                 物料属性
               </Button>
             </Breadcrumb.Item>
@@ -111,12 +111,13 @@ export default (props) => {
           </Breadcrumb>
         </Col>
         <Col span={2} style={{ textAlign: 'right' }}>
-          <Button
-            style={styles.button}
-            size='small'
-            type='primary'
-            icon={'plus'}
-            onClick={setIsAdding.bind(this, true)}>新增</Button>
+          {isStorehouseManager ?
+            <Button
+              style={styles.button}
+              size='small'
+              type='primary'
+              icon={'plus'}
+              onClick={setIsAdding.bind(this, true)}>新增</Button> : null}
         </Col>
       </Row>
       <List
@@ -134,39 +135,40 @@ export default (props) => {
                 title={item.name}
                 description={item.remark}
               />
-              <div style={styles.icon_more}>
-                <Dropdown
-                  overlay={
-                    <Menu
-                      style={{ width: 120, textAlign: 'center' }}
-                      onClick={e => {
-                        if (e.key === '2') {
-                          deleteTag(item)
-                        } else {
-                          setCurrentItem(item)
-                          setIsUpdating(true)
-                        }
-                      }}>
-                      <Menu.Item key='1'>
-                        <span style={{ color: '#1890ff' }}>
-                          <Icon type='edit' />
-                          修改
+              {isStorehouseManager ?
+                <div style={styles.icon_more}>
+                  <Dropdown
+                    overlay={
+                      <Menu
+                        style={{ width: 120, textAlign: 'center' }}
+                        onClick={e => {
+                          if (e.key === '2') {
+                            deleteTag(item)
+                          } else {
+                            setCurrentItem(item)
+                            setIsUpdating(true)
+                          }
+                        }}>
+                        <Menu.Item key='1'>
+                          <span style={{ color: '#1890ff' }}>
+                            <Icon type='edit' />
+                            修改
                         </span>
-                      </Menu.Item>
-                      <Menu.Divider />
-                      <Menu.Item key='2'>
-                        <span style={{ color: '#f5222d' }}>
-                          <Icon type='delete' />
-                          删除
+                        </Menu.Item>
+                        <Menu.Divider />
+                        <Menu.Item key='2'>
+                          <span style={{ color: '#f5222d' }}>
+                            <Icon type='delete' />
+                            删除
                         </span>
-                      </Menu.Item>
-                    </Menu>
-                  }
-                  placement='bottomRight'
-                  trigger={['click']}>
-                  <Icon type='more' style={styles.icon_more2} />
-                </Dropdown>
-              </div>
+                        </Menu.Item>
+                      </Menu>
+                    }
+                    placement='bottomRight'
+                    trigger={['click']}>
+                    <Icon type='more' style={styles.icon_more2} />
+                  </Dropdown>
+                </div> : null}
             </List.Item>
           )
         }}

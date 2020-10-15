@@ -10,6 +10,7 @@ export default () => {
     const [data, setData] = useState([])
     const [currentItem, setCurrentItem] = useState({})
     const [operationVisible, setOperationVisible] = useState(false)
+    const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.indexOf('5') !== -1)
     const getData = useCallback(async () => {
         let result = await HttpApi.getSpecialTime()
         setData(result.map((item, index) => { item.key = index; return item }))
@@ -62,7 +63,7 @@ export default () => {
         <div style={styles.body}>
             <Alert style={styles.marginBottom} message={'仓库正常运转时段表设定：非时间段内提交的领料申请会被自动标记为【特殊】状态'} type='info' showIcon />
             <Table
-                columns={userinfo().isadmin ? columns : columns.filter((item) => item.title !== '操作')}
+                columns={isStorehouseManager ? columns : columns.filter((item) => item.title !== '操作')}
                 size='small'
                 bordered
                 dataSource={data}
