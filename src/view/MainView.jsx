@@ -51,15 +51,23 @@ export default (props) => {
           break;
       }
     }}>
+      {iswarehouseManager ?
+        [<Menu.Item key="x">
+          <a href="http://60.174.196.158:12345/subscreen/" target="_blank"><Icon type="desktop" style={{ marginRight: 5, marginTop: 5 }} />
+            <span>大屏显示</span>
+          </a>
+        </Menu.Item>,
+        <Menu.Divider key="y" />]
+        : null}
       <Menu.Item key="1">
         <Icon type="user" />
-        个人中心
+        <span>个人中心</span>
       </Menu.Item>
       <Menu.Divider />
       <Menu.Item key="2">
         <Icon type="poweroff" />
-        退出登录
-        </Menu.Item>
+        <span>退出登录</span>
+      </Menu.Item>
     </Menu>
   );
   useEffect(() => {

@@ -17,6 +17,14 @@ const HttpApi = {
             return Axios.post(Testuri + 'obs', params, f1, f2)
         }
     },
+    updateOrderSearchList: async (code) => {
+        let sql = `update order_search_list set is_read = 1 where order_code = '${code}'`
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return true
+        }
+        return false
+    },
     getOrderUserList: async () => {
         let sql = `select distinct create_user,users.name as user_name from orders
         left join (select * from users where effective = 1) users on users.id = orders.create_user 

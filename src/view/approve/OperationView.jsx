@@ -4,6 +4,8 @@ import api from '../../http';
 import moment from 'moment'
 import { xiaomeiParseFloat } from '../../util/Tool';
 import { userinfo } from '../../util/Tool';
+import '../../css/styles.css'
+import HttpApi from '../../http/HttpApi';
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 const { Step } = Steps;
 
@@ -43,11 +45,15 @@ export default props => {
 
     return (
         <Modal
+            maskClosable={false}
             destroyOnClose
             width={1200}
-            title='审批处理'
+            title={`审批处理【${props.record.code}】`}
             visible={props.visible}
-            onCancel={props.onCancel}
+            onCancel={async () => {
+                props.onCancel()
+                await HttpApi.updateOrderSearchList(record.code)
+            }}
             footer={null}
         >
             {RenderDetail(record, workflok, orderStepLog, getOrderData, props)}
@@ -68,9 +74,9 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
     const { type_id, is_special } = record;
     if (type_id === 1) { ///申领
         if (is_special) {
-            alertTitle = <Alert style={{ marginBottom: 10 }} message={'特殊时段：在【如非工作时间】下，相关物料会在领料人扫码盒前出示【领料申请单】的二维码后，认定已出库；后期流程补走时，库管确认后不会再次变更物料数量'} type='warning' showIcon />
+            alertTitle = <Alert style={{ marginBottom: 10 }} message={'特殊时段：相关物料会在领料人扫码盒前出示【领料申请单】的二维码后，认定已出库；后期流程补走时，库管确认后不会再次变更物料数量'} type='warning' showIcon />
         } else {
-            alertTitle = <Alert style={{ marginBottom: 10 }} message={'正常时段：在【如工作时间】下，相关物料会在库管人员操作确认后，认定已出库'} type='info' showIcon />
+            alertTitle = <Alert style={{ marginBottom: 10 }} message={'正常时段：相关物料会在库管人员操作确认后，认定已出库'} type='info' showIcon />
         }
     } else if (type_id === 3) {///申购
         alertTitle = <Alert style={{ marginBottom: 10 }} message={'当申购流程库管确认后，不会触发仓库物料变动。一切物料采购入库行为由库管在【采购入库单】模块中进行统一操作，财务也是在【采购单审计】中进行审计'} type='info' showIcon />
@@ -115,6 +121,16 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
         {alertTitle}
         <Table
             size={'small'}
+            rowClassName={(record, index) => {
+                if (index < data.length - 1) {
+                    if (index % 2 !== 0) {
+                        return 'row'
+                    }
+                    else { return '' }
+                } else {
+                    return 'lastrow'
+                }
+            }}
             bordered
             columns={columns}
             dataSource={data}
