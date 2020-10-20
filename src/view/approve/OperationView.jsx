@@ -129,8 +129,8 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
 
     return <div>
         {alertTitle}
-        <Row>
-            <Col span={20}>
+        <Row gutter={16}>
+            <Col span={18}>
                 <Table
                     size={'small'}
                     rowClassName={(record, index) => {
@@ -149,7 +149,7 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                     pagination={false}
                 />
             </Col>
-            <Col span={4}>
+            <Col span={6}>
                 <Descriptions bordered size="large" column={1} >
                     <Descriptions.Item label={<div >{'抓拍照片'}</div>}>{
                         renderImg()
