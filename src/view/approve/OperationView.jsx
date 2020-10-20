@@ -17,7 +17,7 @@ export default props => {
 
     const getOrderData = useCallback(async () => {
         if (!props.record.id) { return }
-        let result = await api.query(`select orders.*,order_type.order_name as order_type_name ,tags.name as tag_name,users.name as user_name,faces.* from orders 
+        let result = await api.query(`select orders.*,order_type.order_name as order_type_name,tags.name as tag_name,users.name as user_name,faces.gid,faces.sid,faces.did,faces.uid,faces.fid from orders 
         left join (select * from order_type where isdelete = 0) order_type on orders.type_id = order_type.id
         left join (select * from tags where isdelete = 0) tags on orders.tag_id = tags.id
         left join (select * from users where effective = 1) users on orders.create_user = users.id
@@ -234,7 +234,6 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                                     }
                                     // console.log('step_number_next:', step_number_next)
                                     let sql2 = `update orders set status=${order_status},step_number=${step_number_next} where id = ${record.id}`
-                                    // console.log('sql2:', sql2)
                                     // return;
                                     let result2 = await api.query(sql2)
                                     if (result2.code === 0) { message.success('审批成功', 3); getOrderData(); props.refreshTableData() }
