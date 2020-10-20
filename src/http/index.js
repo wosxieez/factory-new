@@ -58,6 +58,8 @@ const api = {
     axios.post(SERVER_URL + 'removeUser', { id }, { headers: { token: localStorage.getItem('token') } }),
   /**************************************************仓库*******************************************************/
   addStore: store => axios.post(SERVER_URL + 'addStore', store, { headers: { token: localStorage.getItem('token') } }),
+  findStore: params =>
+    axios.post(SERVER_URL + 'findStore', params, { headers: { token: localStorage.getItem('token') } }),
   listStore: params =>
     axios.post(SERVER_URL + 'listStore', params, { headers: { token: localStorage.getItem('token') } }),
   listAllStore: tid =>

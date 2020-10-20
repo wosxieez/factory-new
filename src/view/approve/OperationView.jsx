@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, message, Tag, Tooltip, Alert, Descriptions } from 'antd';
 import api from '../../http';
 import moment from 'moment'
-import { xiaomeiParseFloat } from '../../util/Tool';
+// import { xiaomeiParseFloat } from '../../util/Tool';
 import { userinfo } from '../../util/Tool';
 import '../../css/styles.css'
 import HttpApi from '../../http/HttpApi';
@@ -25,6 +25,18 @@ export default props => {
         where orders.isdelete = 0 and orders.id = ${props.record.id} `)
         if (result.code === 0) {
             // console.log('getOrderData 结果:', result.data[0][0])
+            let content_list = JSON.parse(result.data[0][0].content)
+            let response_store = await api.findStore(content_list.map((item) => item.store_id))
+            if (response_store.code === 0) {
+                content_list.forEach((item) => {
+                    response_store.data.forEach((ele) => {
+                        if (item.store_id === ele.id) {
+                            item.tags = ele.tags
+                        }
+                    })
+                })
+            }
+            result.data[0][0].content = JSON.stringify(content_list)
             setRecord(result.data[0][0]);
         }
         let result2 = await api.query(`select order_step_log.*,users.name as user_name from order_step_log 
@@ -117,13 +129,22 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
             }
             return text
         }
-    }, {
-        title: '单价【元】', dataIndex: 'price',
+    },
+    // {
+    //     title: '单价【元】', dataIndex: 'price',
+    //     render: (text, record) => {
+    //         if (record.isSum) {
+    //             return <Tag color={'red'}>{xiaomeiParseFloat(text)}</Tag>
+    //         }
+    //         return text
+    //     }
+    // },
+    {
+        title: '属性', dataIndex: 'tags',
         render: (text, record) => {
-            if (record.isSum) {
-                return <Tag color={'red'}>{xiaomeiParseFloat(text)}</Tag>
-            }
-            return text
+            return text ? text.map((item, index) => {
+                return <Tag key={index} color={item.color}>{item.name}</Tag>
+            }) : null
         }
     }]
 
