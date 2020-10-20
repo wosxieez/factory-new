@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, message, Tag, Tooltip, Alert } from 'antd';
+import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, message, Tag, Tooltip, Alert, Descriptions } from 'antd';
 import api from '../../http';
 import moment from 'moment'
 import { xiaomeiParseFloat } from '../../util/Tool';
@@ -14,12 +14,14 @@ export default props => {
     const [record, setRecord] = useState(props.record || {})
     const [workflok, setWorkflok] = useState([])
     const [orderStepLog, setOrderStepLog] = useState([])
+
     const getOrderData = useCallback(async () => {
         if (!props.record.id) { return }
-        let result = await api.query(`select orders.*,order_type.order_name as order_type_name ,tags.name as tag_name,users.name as user_name from orders 
+        let result = await api.query(`select orders.*,order_type.order_name as order_type_name ,tags.name as tag_name,users.name as user_name,faces.* from orders 
         left join (select * from order_type where isdelete = 0) order_type on orders.type_id = order_type.id
         left join (select * from tags where isdelete = 0) tags on orders.tag_id = tags.id
         left join (select * from users where effective = 1) users on orders.create_user = users.id
+        left join faces on faces.id = orders.capture_id
         where orders.isdelete = 0 and orders.id = ${props.record.id} `)
         if (result.code === 0) {
             // console.log('getOrderData 结果:', result.data[0][0])
@@ -65,6 +67,13 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
     const [user] = useState(localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : {})
     const [remark, setRemark] = useState('')
     const [status, setStatus] = useState(1)
+    const renderImg = useCallback(() => {
+        if (!record.gid || !record.sid || !record.did || !record.uid || !record.fid) {
+            return '-'
+        }
+        const imgUrl = 'https://xiaomei-face.oss-cn-hangzhou.aliyuncs.com/' + record.gid + '/' + record.sid + '/' + record.did + '/' + record.uid + '/' + record.fid + '.png'
+        return <img style={{ width: 50, height: 50 }} src={imgUrl} alt='' />
+    }, [record])
     // const [stepNumber, setStepNumber] = useState(record.step_number)
     // console.log('1workflok:', workflok)
     // console.log('1orderStepLog:', orderStepLog)
@@ -117,25 +126,37 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
             return text
         }
     }]
+
     return <div>
         {alertTitle}
-        <Table
-            size={'small'}
-            rowClassName={(record, index) => {
-                if (index < data.length - 1) {
-                    if (index % 2 !== 0) {
-                        return 'row'
-                    }
-                    else { return '' }
-                } else {
-                    return 'lastrow'
-                }
-            }}
-            bordered
-            columns={columns}
-            dataSource={data}
-            pagination={false}
-        />
+        <Row>
+            <Col span={20}>
+                <Table
+                    size={'small'}
+                    rowClassName={(record, index) => {
+                        if (index < data.length - 1) {
+                            if (index % 2 !== 0) {
+                                return 'row'
+                            }
+                            else { return '' }
+                        } else {
+                            return 'lastrow'
+                        }
+                    }}
+                    bordered
+                    columns={columns}
+                    dataSource={data}
+                    pagination={false}
+                />
+            </Col>
+            <Col span={4}>
+                <Descriptions bordered size="large" column={1} >
+                    <Descriptions.Item label={<div >{'抓拍照片'}</div>}>{
+                        renderImg()
+                    }</Descriptions.Item>
+                </Descriptions>
+            </Col>
+        </Row>
         <h3 style={styles.marginTop}>当前进度</h3>
         <Steps style={styles.marginTop}
             current={record.step_number}
