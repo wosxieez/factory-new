@@ -7,8 +7,8 @@ export default props => {
     <div style={styles.root}>
       <div style={styles.left}>
         <Row>
-          <Col span={6}>{svgs.loginTitle(40, 40)}</Col>
-          <Col span={18}><div style={styles.title}>Welcome</div><div style={styles.subTitle}>使用你的账号和密码登陆</div></Col>
+          <Col span={10}>{svgs.loginTitle(100, 100)}</Col>
+          <Col span={14}><div style={{ marginTop: 20 }}><div style={styles.title}>Welcome</div><div style={styles.subTitle}>欢迎使用智能库管系统</div></div></Col>
         </Row>
         <LoginForm {...props} />
       </div>
@@ -35,7 +35,8 @@ const styles = {
     fontStyle: 'oblique'
   },
   subTitle: {
-    color: '#CCCCCC'
+    color: '#CCCCCC',
+    fontStyle: 'oblique'
   },
   marginTop: {
     marginTop: 16,
