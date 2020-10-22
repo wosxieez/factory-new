@@ -1,20 +1,32 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useContext } from 'react'
 import api from '../../http'
 import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Radio, Modal, message } from 'antd'
 import moment from 'moment'
 import HttpApi from '../../http/HttpApi';
 import { userinfo } from '../../util/Tool';
-
+import { AppDataContext } from '../../redux/AppRedux';
+export async function getCountCG(condition_sql) {
+    let sql = `select count(id) count from purchase_record where isdelete = 0${condition_sql} `
+    let result = await api.query(sql)
+    if (result.code === 0) {
+        return result.data[0][0]['count']
+    } else {
+        return 0
+    }
+}
 /**
  * 采购入库单记录--用于财务审计
  */
 export default props => {
+    const [hasPermission6] = useState(userinfo().permission && userinfo().permission.indexOf('6') !== -1)
+    const { appDispatch } = useContext(AppDataContext)
     const [sum_price, setSumPrice] = useState(0)
     const [sum_count, setSumCount] = useState(0)
     const [isLoading, setIsLoading] = useState(false)
     const [dataSource, setDataSource] = useState([])
     const [currentItem, setCurrentItem] = useState({})
     const [isUpdating, setIsUpdating] = useState(false)
+    const [count, setCount] = useState(false)
 
     const listData = useCallback(async (conditionObj) => {
         setIsLoading(true)
@@ -54,6 +66,9 @@ export default props => {
         left join (select * from users where effective = 1) users3 on users3.id = pr.check_user_id
         where pr.isdelete = 0${sql_condition} order by id desc`
         // console.log('sql:', sql)
+        let result_count = await getCountCG(sql_condition)
+        setCount(result_count)
+        if (hasPermission6) { appDispatch({ type: 'purchasecount', data: result_count }) }
         let result = await api.query(sql)
         if (result.code === 0) {
             let tempSumcount = 0;
@@ -71,9 +86,9 @@ export default props => {
             setSumPrice(tempSumprice.toFixed(2))
         }
         setIsLoading(false)
-    }, [])
+    }, [appDispatch, hasPermission6])
     useEffect(() => {
-        listData({})
+        listData({ check_status: [0] })
     }, [listData])
 
     const columns = [
@@ -250,7 +265,7 @@ export default props => {
                     let result = await HttpApi.obs({ sql })
                     if (result.code === 0) {
                         message.success('操作成功')
-                        listData({})
+                        listData({ check_status: [0] })
                     }
                     // console.log('result:', result)
                     setIsUpdating(false)
@@ -262,9 +277,9 @@ export default props => {
                     columns={userinfo().permission.indexOf('6') !== -1 ? columns : columns.filter((item) => item.title !== '操作')}
                     dataSource={dataSource}
                     pagination={{
-                        total: dataSource.length,
+                        total: count,
                         showTotal: () => {
-                            return <div>共{dataSource.length}条记录</div>
+                            return <div>共{count}条记录</div>
                         },
                         showSizeChanger: true,
                         showQuickJumper: true,
@@ -388,6 +403,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
             <Col span={6}>
                 <Form.Item label='审计状态' {...itemProps}>
                     {props.form.getFieldDecorator('check_status', {
+                        initialValue: [0],
                         rules: [{ required: false }]
                     })(<Select mode='multiple' allowClear placeholder='选择状态-支持名称搜索' showSearch optionFilterProp="children">
                         {check_status_list.map((item, index) => {

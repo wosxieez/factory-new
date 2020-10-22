@@ -5,23 +5,38 @@ import api from '../../http'
 import moment from 'moment'
 import HttpApi from '../../http/HttpApi';
 import { userinfo } from '../../util/Tool';
-
 import { AppDataContext } from '../../redux/AppRedux'
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
-
 var allCondition = { code: null, type_list: [], major_list: [], create_user_list: [], date_range: [moment().add(0, 'month').startOf('month').format(FORMAT), moment().endOf('day').format(FORMAT)], status_list: [], currentPage: 1, currentPageSize: 10 };
-const statusOptions = [{ value: 1, type_and_step: [{ type: 1, step: 1 }, { type: 2, step: 1 }], des: '领料审批中', permission: 0 },
+export const statusOptions = [{ value: 1, type_and_step: [{ type: 1, step: 1 }, { type: 2, step: 1 }], des: '领料审批中', permission: 0 },
 { value: 2, type_and_step: [{ type: 1, step: 2 }, { type: 2, step: 2 }, { type: 3, step: 3 }], des: '待领料中', permission: 5 },
 { value: 3, type_and_step: [{ type: 3, step: 1 }], des: '财务采购确认中', permission: 6 },
 { value: 4, type_and_step: [{ type: 1, step: 3 }, { type: 2, step: 3 }], des: '财务审计中', permission: 6 },
 { value: 5, type_and_step: [{ type: 3, step: 2 }], des: '采购处理', permission: 4 },
 { value: 6, des: '完毕' },
 { value: 7, des: '拒绝' }]
+export async function getOrderCount(condition_sql = '') {
+    let sql = `select count(id) count from orders where isdelete = 0 ${condition_sql}`
+    let result = await api.query(sql)
+    if (result.code === 0) {
+        let data = result.data[0]
+        return data[0].count
+    } else {
+        return 0
+    }
+}
 /**
  * 待审批的申请列表
  */
 export default _ => {
-    const { appState } = useContext(AppDataContext)
+    const [hasPermission0] = useState(userinfo().permission && userinfo().permission.indexOf('0') !== -1)
+    // const [hasPermission1] = useState(userinfo().permission && userinfo().permission.indexOf('1') !== -1)
+    const [hasPermission2] = useState(userinfo().permission && userinfo().permission.indexOf('2') !== -1)
+    // const [hasPermission3] = useState(userinfo().permission && userinfo().permission.indexOf('3') !== -1)
+    const [hasPermission4] = useState(userinfo().permission && userinfo().permission.indexOf('4') !== -1)
+    const [hasPermission5] = useState(userinfo().permission && userinfo().permission.indexOf('5') !== -1)
+    const [hasPermission6] = useState(userinfo().permission && userinfo().permission.indexOf('6') !== -1)
+    const { appState, appDispatch } = useContext(AppDataContext)
     const [isLoading, setIsLoading] = useState(false)
     const [operationVisible, setOperationVisible] = useState(false)
     const [orderList, setOrdersList] = useState([])
@@ -64,14 +79,6 @@ export default _ => {
             }
         }
     }, [appState.currentcode])
-    const getOrderCount = useCallback(async (condition_sql = '') => {
-        let sql = `select count(id) count from orders where isdelete = 0 ${condition_sql}`
-        let result = await api.query(sql)
-        if (result.code === 0) {
-            let data = result.data[0]
-            setListCount(data[0].count)
-        }
-    }, [])
     const listOrders = useCallback(async () => {
         setIsLoading(true)
         setSelectedRowKeys([])
@@ -84,7 +91,6 @@ export default _ => {
         let special_sql = allCondition.is_special && allCondition.is_special.length > 0 ? ` and orders.is_special in (${allCondition.is_special.join(',')})` : ''
         let condition_sql = code_sql + type_sql + major_sql + date_sql + user_sql + special_sql + checkStatusSql(allCondition.status_list);
         // console.log('条件sql:', condition_sql)
-        getOrderCount(condition_sql)
         let beginNum = (allCondition.currentPage - 1) * allCondition.currentPageSize
         let sql = `select orders.*,order_type.order_name as order_type_name ,majors.name as tag_name,users.name as user_name,order_workflok.name as order_workflok_name from orders 
         left join (select * from order_type where isdelete = 0) order_type on orders.type_id = order_type.id
@@ -92,9 +98,11 @@ export default _ => {
         left join (select * from users where effective = 1) users on orders.create_user = users.id
         left join (select * from order_workflok where isdelete = 0) order_workflok on order_workflok.step_number = orders.step_number and order_workflok.order_type_id = orders.type_id
         where orders.isdelete = 0 ${condition_sql}
-        order by orders.id desc limit ${beginNum},${allCondition.currentPageSize}
-        `
+        order by orders.id desc limit ${beginNum},${allCondition.currentPageSize}`
         // console.log('sql:', sql)
+        let count_result = await getOrderCount(condition_sql)
+        setListCount(count_result)
+        if (hasPermission0 || hasPermission2 || hasPermission4 || hasPermission5 || hasPermission6) { appDispatch({ type: 'approvecount', data: count_result }) }
         let result = await api.query(sql)
         if (result.code === 0) {
             result.data = result.data[0]
@@ -103,7 +111,7 @@ export default _ => {
             setOrdersList(originOrdersList)
         }
         setIsLoading(false)
-    }, [getOrderCount])
+    }, [appDispatch, hasPermission0, hasPermission2, hasPermission4, hasPermission5, hasPermission6])
     const getDefaultStatusSelect = useCallback(() => {
         let copyStatusOptions = JSON.parse(JSON.stringify(statusOptions));
         let afterFilter = copyStatusOptions.filter((item) => { return userinfo().permission.indexOf(String(item.permission)) !== -1 })
@@ -536,7 +544,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
     </Form>
 })
 
-function checkStatusSql(tempList) {
+export function checkStatusSql(tempList) {
     if (tempList.length === 0) { return '' }
     let sql = []
     tempList.forEach((item) => {
