@@ -211,7 +211,7 @@ export default _ => {
                     <Button icon="download" size='small' type='link' style={{ padding: 0, marginLeft: 10, marginTop: -6 }} onClick={() => {
                         Modal.confirm({
                             title: `确认导出当前页面中查询到的所有数据吗？`,
-                            content: '请自行确保所选的信息的准确性',
+                            content: '请自行确保所选的信息的准确性；数据会保存为【退料记录文件】的Excel文件',
                             okText: '确定',
                             okType: 'danger',
                             onOk: exportHandler
