@@ -1,9 +1,12 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import api from '../../http';
-import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form } from 'antd';
+import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message } from 'antd';
 import moment from 'moment';
 import { translatePurchaseRecordList } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
+import ExportJsonExcel from 'js-export-excel'
+
+var date_range;
 /***
  * 退料物品记录
  */
@@ -15,7 +18,7 @@ export default _ => {
 
     const listData = useCallback(async (conditionObj) => {
         setIsLoading(true)
-        let date_range = conditionObj.date_range || [moment().add(0, 'month').startOf('month').format('YYYY-MM-DD HH:mm:ss'), moment().endOf('day').format('YYYY-MM-DD HH:mm:ss')]
+        date_range = conditionObj.date_range || [moment().add(0, 'month').startOf('month').format('YYYY-MM-DD HH:mm:ss'), moment().endOf('day').format('YYYY-MM-DD HH:mm:ss')]
         let sql_date = ` and date >= '${date_range[0]}' and date <= '${date_range[1]}'`
         let sql_store_id = ''
         if (conditionObj.store_id_list) {
@@ -68,6 +71,37 @@ export default _ => {
         }
         setIsLoading(false)
     }, [])
+    const exportHandler = useCallback(() => {
+        console.log('dataSource:', dataSource)
+        let new_list = dataSource.map((item) => {
+            let data = {};
+            data.date = item.other.date;
+            data.code_num = item.other.code_num || '-'
+            data.code = item.other.code;
+            data.store_name = item.store_name;
+            data.price = String(item.price);
+            data.count = String(item.count);
+            data.unit = item.unit;
+            data.sum_oprice = parseFloat(item.price * item.count).toFixed(2);
+            data.return_user_name = item.other.return_user_name || '-';
+            data.record_user_name = item.other.record_user_name || '-';
+            data.remark = item.other.remark;
+            return data
+        })
+        if (new_list.length === 0) { message.warn('没有相关数据-可供导出'); return }
+        var option = {};
+        option.fileName = "退料记录文件";
+        option.datas = [
+            {
+                sheetData: new_list,
+                sheetName: `退料记录`,
+                sheetFilter: ["date", "code_num", "code", "store_name", "price", "count", "unit", "sum_oprice", "return_user_name", "record_user_name", "remark"],
+                sheetHeader: ["退料时间", "单号", "流水", "物品", "退料单价(元)", "退料数量", "单位", "退料总价(元)", "退料人员", "记录人员", "退料备注"],
+                columnWidths: [8, 5, 8, 10, 5, 5, 3, 5, 5, 5, 5],
+            }
+        ];
+        new ExportJsonExcel(option).saveExcel(); //保存
+    }, [dataSource])
     ////////////////
     useEffect(() => {
         listData({});
@@ -116,7 +150,7 @@ export default _ => {
             }
         },
         {
-            title: '退料数量(个)',
+            title: '退料数量',
             dataIndex: 'count',
             key: 'count',
             render: (text) => {
@@ -124,17 +158,25 @@ export default _ => {
             }
         },
         {
+            title: '单位',
+            dataIndex: 'unit',
+            key: 'unit',
+            render: (text) => {
+                return <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
+            }
+        },
+        {
             title: '退料总价(元)',
-            dataIndex: 'sum_oprice',
-            key: 'sum_oprice',
+            dataIndex: 'sum_price',
+            key: 'sum_price',
             render: (_, record) => {
                 return <Tag color='#fa541c' style={{ marginRight: 0 }}>{parseFloat((record.count * record.price || 0).toFixed(2))}</Tag>
             }
         },
         {
             title: '退料人员',
-            dataIndex: 'other.buy_user_name',
-            key: 'other.buy_user_name',
+            dataIndex: 'other.return_user_name',
+            key: 'other.return_user_name',
             align: 'center',
             width: 100,
         },
@@ -164,7 +206,18 @@ export default _ => {
         </div>
         <div style={styles.body}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <h3>退料物品记录</h3>
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                    <h3>退料物品记录</h3>
+                    <Button icon="download" size='small' type='link' style={{ padding: 0, marginLeft: 10, marginTop: -6 }} onClick={() => {
+                        Modal.confirm({
+                            title: `确认导出当前页面中查询到的所有数据吗？`,
+                            content: '请自行确保所选的信息的准确性',
+                            okText: '确定',
+                            okType: 'danger',
+                            onOk: exportHandler
+                        })
+                    }} />
+                </div>
                 <div>
                     <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
                     <Tag color={'#fa541c'} style={{ marginRight: 0 }}>总价格¥: {sum_price}</Tag>

@@ -1,7 +1,7 @@
 import React, { useReducer } from 'react'
 
 const initialState = {
-    version: 'Beta 0.4',
+    version: 'Beta 0.5',
     currentcode: '', // 推送id
 }
 function reducer(state, action) {
