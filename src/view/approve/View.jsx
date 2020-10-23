@@ -45,7 +45,7 @@ export default _ => {
     const [selectedRows, setSelectedRows] = useState([])
     const [listCount, setListCount] = useState(0)///数据总共查询到多少条
     const [defaultStatus, setDefaultStatus] = useState([])
-    const [isTop, setIsTop] = useState(false)
+    const [isTop, setIsTop] = useState(true)
     const getNewCode = useCallback(async () => {
         if (appState.currentcode) {
             let sql = `select orders.*,order_type.order_name as order_type_name ,majors.name as tag_name,users.name as user_name,order_workflok.name as order_workflok_name from orders 
@@ -326,7 +326,7 @@ export default _ => {
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                         <h3>申领、申购记录</h3>
-                        <Tooltip title={isTop ? '恢复默认排序' : '特殊时段置顶'}>
+                        <Tooltip title={isTop ? '时间排序' : '特殊时段置顶'}>
                             <Button icon={`${isTop ? 'vertical-align-middle' : 'vertical-align-top'}`} size='small' type='link' style={{ padding: 0, marginLeft: 10, marginTop: -6 }} onClick={() => {
                                 setIsTop(!isTop)
                             }} />
