@@ -34,7 +34,7 @@ export default (props) => {
   const [collapsed, setCollapsed] = useState(false)
   const [hasPermission0] = useState(userinfo().permission && userinfo().permission.indexOf('0') !== -1)
   // const [hasPermission1] = useState(userinfo().permission && userinfo().permission.indexOf('1') !== -1)
-  const [hasPermission2] = useState(userinfo().permission && userinfo().permission.indexOf('2') !== -1)
+  // const [hasPermission2] = useState(userinfo().permission && userinfo().permission.indexOf('2') !== -1)
   // const [hasPermission3] = useState(userinfo().permission && userinfo().permission.indexOf('3') !== -1)
   const [hasPermission4] = useState(userinfo().permission && userinfo().permission.indexOf('4') !== -1)
   const [hasPermission5] = useState(userinfo().permission && userinfo().permission.indexOf('5') !== -1)
@@ -85,7 +85,7 @@ export default (props) => {
     ///审批部分 有相关权限才会显示，如果只是维修就不会显示count
     let startOfM = moment().startOf('month').format(FORMAT)
     let endOfD = moment().endOf('day').format(FORMAT)
-    if (hasPermission0 || hasPermission2 || hasPermission4 || hasPermission5 || hasPermission6) {
+    if (hasPermission0 || hasPermission4 || hasPermission5 || hasPermission6) {
       let allCondition = {};
       let copyStatusOptions = JSON.parse(JSON.stringify(statusOptions));
       let afterFilter = copyStatusOptions.filter((item) => { return userinfo().permission.indexOf(String(item.permission)) !== -1 })
@@ -112,7 +112,7 @@ export default (props) => {
       let result_count_tl = await getCountRT(sql_tl)
       appDispatch({ type: 'returncount', data: result_count_tl })
     }
-  }, [appDispatch, hasPermission0, hasPermission2, hasPermission4, hasPermission5, hasPermission6])
+  }, [appDispatch, hasPermission0, hasPermission4, hasPermission5, hasPermission6])
   useEffect(() => {
     console.log('main useEffect')
     doSomething()

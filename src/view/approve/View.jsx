@@ -31,7 +31,7 @@ export async function getOrderCount(condition_sql = '') {
 export default _ => {
     const [hasPermission0] = useState(userinfo().permission && userinfo().permission.indexOf('0') !== -1)
     // const [hasPermission1] = useState(userinfo().permission && userinfo().permission.indexOf('1') !== -1)
-    const [hasPermission2] = useState(userinfo().permission && userinfo().permission.indexOf('2') !== -1)
+    // const [hasPermission2] = useState(userinfo().permission && userinfo().permission.indexOf('2') !== -1)
     // const [hasPermission3] = useState(userinfo().permission && userinfo().permission.indexOf('3') !== -1)
     const [hasPermission4] = useState(userinfo().permission && userinfo().permission.indexOf('4') !== -1)
     const [hasPermission5] = useState(userinfo().permission && userinfo().permission.indexOf('5') !== -1)
@@ -103,7 +103,7 @@ export default _ => {
         ${special_top_sql} limit ${beginNum},${allCondition.currentPageSize}`
         let count_result = await getOrderCount(condition_sql)
         setListCount(count_result)
-        if (hasPermission0 || hasPermission2 || hasPermission4 || hasPermission5 || hasPermission6) { appDispatch({ type: 'approvecount', data: count_result }) }
+        if (hasPermission0 || hasPermission4 || hasPermission5 || hasPermission6) { appDispatch({ type: 'approvecount', data: count_result }) }
         let result = await api.query(sql)
         if (result.code === 0) {
             result.data = result.data[0]
@@ -112,7 +112,7 @@ export default _ => {
             setOrdersList(originOrdersList)
         }
         setIsLoading(false)
-    }, [appDispatch, hasPermission0, hasPermission2, hasPermission4, hasPermission5, hasPermission6, isTop])
+    }, [appDispatch, hasPermission0, hasPermission4, hasPermission5, hasPermission6, isTop])
     const getDefaultStatusSelect = useCallback(() => {
         let copyStatusOptions = JSON.parse(JSON.stringify(statusOptions));
         let afterFilter = copyStatusOptions.filter((item) => { return userinfo().permission.indexOf(String(item.permission)) !== -1 })
