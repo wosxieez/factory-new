@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react'
-import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, Select, Form, Icon } from 'antd'
+import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, Select, Form, Icon, Tooltip } from 'antd'
 import OperationView, { updateStoreHandler } from './OperationView'
 import api from '../../http'
 import moment from 'moment'
@@ -45,6 +45,7 @@ export default _ => {
     const [selectedRows, setSelectedRows] = useState([])
     const [listCount, setListCount] = useState(0)///数据总共查询到多少条
     const [defaultStatus, setDefaultStatus] = useState([])
+    const [isTop, setIsTop] = useState(false)
     const getNewCode = useCallback(async () => {
         if (appState.currentcode) {
             let sql = `select orders.*,order_type.order_name as order_type_name ,majors.name as tag_name,users.name as user_name,order_workflok.name as order_workflok_name from orders 
@@ -83,6 +84,7 @@ export default _ => {
         setIsLoading(true)
         setSelectedRowKeys([])
         setSelectedRows([])
+        let special_top_sql = isTop ? 'order by orders.is_special desc,orders.id desc' : 'order by orders.id desc'
         let date_sql = allCondition.date_range.length > 0 ? ` and orders.createdAt>'${allCondition.date_range[0]}' and orders.createdAt<'${allCondition.date_range[1]}'` : ''
         let code_sql = allCondition.code ? ` and orders.code like '%${allCondition.code}%'` : ''
         let type_sql = allCondition.type_list && allCondition.type_list.length > 0 ? ` and orders.type_id in (${allCondition.type_list.join(',')})` : ''
@@ -98,8 +100,7 @@ export default _ => {
         left join (select * from users where effective = 1) users on orders.create_user = users.id
         left join (select * from order_workflok where isdelete = 0) order_workflok on order_workflok.step_number = orders.step_number and order_workflok.order_type_id = orders.type_id
         where orders.isdelete = 0 ${condition_sql}
-        order by orders.id desc limit ${beginNum},${allCondition.currentPageSize}`
-        // console.log('sql:', sql)
+        ${special_top_sql} limit ${beginNum},${allCondition.currentPageSize}`
         let count_result = await getOrderCount(condition_sql)
         setListCount(count_result)
         if (hasPermission0 || hasPermission2 || hasPermission4 || hasPermission5 || hasPermission6) { appDispatch({ type: 'approvecount', data: count_result }) }
@@ -111,7 +112,7 @@ export default _ => {
             setOrdersList(originOrdersList)
         }
         setIsLoading(false)
-    }, [appDispatch, hasPermission0, hasPermission2, hasPermission4, hasPermission5, hasPermission6])
+    }, [appDispatch, hasPermission0, hasPermission2, hasPermission4, hasPermission5, hasPermission6, isTop])
     const getDefaultStatusSelect = useCallback(() => {
         let copyStatusOptions = JSON.parse(JSON.stringify(statusOptions));
         let afterFilter = copyStatusOptions.filter((item) => { return userinfo().permission.indexOf(String(item.permission)) !== -1 })
@@ -323,7 +324,14 @@ export default _ => {
             </div>
             <div style={styles.body}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <h3>申领、申购记录</h3>
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                        <h3>申领、申购记录</h3>
+                        <Tooltip title={isTop ? '恢复默认排序' : '特殊时段置顶'}>
+                            <Button icon={`${isTop ? 'vertical-align-middle' : 'vertical-align-top'}`} size='small' type='link' style={{ padding: 0, marginLeft: 10, marginTop: -6 }} onClick={() => {
+                                setIsTop(!isTop)
+                            }} />
+                        </Tooltip>
+                    </div>
                     <div>
                         {selectedRowKeys.length === 0 ? null : (
                             <Button icon='delete' style={styles.button} type='danger' onClick={batchDelete}>批量删除</Button>
@@ -528,7 +536,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                     {props.form.getFieldDecorator('is_special', {
                         rules: [{ required: false }]
                     })(<Select mode='multiple' allowClear placeholder='选择时段-支持名称搜索' showSearch optionFilterProp="children">
-                        {[{ value: 0, des: '正常' }, { value: 1, des: '特殊' }].map((item, index) => {
+                        {[{ value: 0, des: '正常' }, { value: 1, des: '特殊' }, { value: 2, des: '特殊已出库' }].map((item, index) => {
                             return <Select.Option value={item.value} key={index} all={item}>{item.des}</Select.Option>
                         })}
                     </Select>)}
