@@ -17,7 +17,7 @@ export default Form.create({ name: 'form' })(props => {
     const [sumCount, setSumCount] = useState(0)
     const [sumPrice, setSumPrice] = useState(0)
     const [isAdding, setIsAdding] = useState(false)
-    const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.indexOf('5') !== -1)
+    const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1)
     const addForm = useRef()
     const listAllStore = useCallback(async () => {
         let result = await api.listAllStore()
@@ -311,9 +311,9 @@ export default Form.create({ name: 'form' })(props => {
                 <Row>
                     <Form.Item wrapperCol={{ span: 24 }}>
                         <div style={{ textAlign: 'right' }}>
-                            <Tooltip title={`${!(userinfo().permission && userinfo().permission.indexOf('5') !== -1) ? '需要库管权限' : ''}`}>
+                            <Tooltip title={`${!(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1) ? '需要库管权限' : ''}`}>
                                 <Button type="primary" htmlType="submit"
-                                    disabled={!(userinfo().permission && userinfo().permission.indexOf('5') !== -1)}
+                                    disabled={!(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1)}
                                 >提交</Button>
                             </Tooltip>
                         </div>

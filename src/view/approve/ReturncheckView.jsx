@@ -18,7 +18,7 @@ export async function getCountRT(condition_sql) {
  * 退料入库单记录--用于财务审计
  */
 export default props => {
-    const [hasPermission6] = useState(userinfo().permission && userinfo().permission.indexOf('6') !== -1)
+    const [hasPermission6] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('6') !== -1)
     const { appDispatch } = useContext(AppDataContext)
     const [sum_price, setSumPrice] = useState(0)
     const [sum_count, setSumCount] = useState(0)
@@ -274,7 +274,7 @@ export default props => {
                     loading={isLoading}
                     bordered
                     size='small'
-                    columns={userinfo().permission.indexOf('6') !== -1 ? columns : columns.filter((item) => item.title !== '操作')}
+                    columns={userinfo().permission.split(',').indexOf('6') !== -1 ? columns : columns.filter((item) => item.title !== '操作')}
                     dataSource={dataSource}
                     pagination={{
                         total: count,

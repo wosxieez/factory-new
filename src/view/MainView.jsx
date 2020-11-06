@@ -32,13 +32,13 @@ export default (props) => {
   ///权限。0专工,1运行,2消费审批(财务),3维修权限,4采购权限,5库管,6仓库财务
   const { appState, appDispatch } = useContext(AppDataContext)
   const [collapsed, setCollapsed] = useState(false)
-  const [hasPermission0] = useState(userinfo().permission && userinfo().permission.indexOf('0') !== -1)
-  // const [hasPermission1] = useState(userinfo().permission && userinfo().permission.indexOf('1') !== -1)
-  // const [hasPermission2] = useState(userinfo().permission && userinfo().permission.indexOf('2') !== -1)
-  // const [hasPermission3] = useState(userinfo().permission && userinfo().permission.indexOf('3') !== -1)
-  const [hasPermission4] = useState(userinfo().permission && userinfo().permission.indexOf('4') !== -1)
-  const [hasPermission5] = useState(userinfo().permission && userinfo().permission.indexOf('5') !== -1)
-  const [hasPermission6] = useState(userinfo().permission && userinfo().permission.indexOf('6') !== -1)
+  const [hasPermission0] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('0') !== -1)
+  // const [hasPermission1] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('1') !== -1)
+  // const [hasPermission2] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('2') !== -1)
+  // const [hasPermission3] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('3') !== -1)
+  const [hasPermission4] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('4') !== -1)
+  const [hasPermission5] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1)
+  const [hasPermission6] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('6') !== -1)
 
   const menu = (
     <Menu onClick={(target) => {
@@ -88,7 +88,7 @@ export default (props) => {
     if (hasPermission0 || hasPermission4 || hasPermission5 || hasPermission6) {
       let allCondition = {};
       let copyStatusOptions = JSON.parse(JSON.stringify(statusOptions));
-      let afterFilter = copyStatusOptions.filter((item) => { return userinfo().permission.indexOf(String(item.permission)) !== -1 })
+      let afterFilter = copyStatusOptions.filter((item) => { return userinfo().permission.split(',').indexOf(String(item.permission)) !== -1 })
       let major_list = userinfo().major_id_all ? userinfo().major_id_all.split(',').map((item) => parseInt(item)) : []///设置固定的专业
       allCondition.status_list = afterFilter
       allCondition.major_list = major_list

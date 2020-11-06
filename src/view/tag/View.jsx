@@ -17,7 +17,7 @@ export default (props) => {
   const [Tags, setTags] = useState([])
   const [listIsLoading, setListIsLoading] = useState(false)
   const [currentItem, setCurrentItem] = useState({})
-  const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.indexOf('5') !== -1)
+  const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1)
 
   const listData = useCallback(async () => {
     setListIsLoading(true)

@@ -29,13 +29,13 @@ export async function getOrderCount(condition_sql = '') {
  * 待审批的申请列表
  */
 export default _ => {
-    const [hasPermission0] = useState(userinfo().permission && userinfo().permission.indexOf('0') !== -1)
-    // const [hasPermission1] = useState(userinfo().permission && userinfo().permission.indexOf('1') !== -1)
-    // const [hasPermission2] = useState(userinfo().permission && userinfo().permission.indexOf('2') !== -1)
-    // const [hasPermission3] = useState(userinfo().permission && userinfo().permission.indexOf('3') !== -1)
-    const [hasPermission4] = useState(userinfo().permission && userinfo().permission.indexOf('4') !== -1)
-    const [hasPermission5] = useState(userinfo().permission && userinfo().permission.indexOf('5') !== -1)
-    const [hasPermission6] = useState(userinfo().permission && userinfo().permission.indexOf('6') !== -1)
+    const [hasPermission0] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('0') !== -1)
+    // const [hasPermission1] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('1') !== -1)
+    // const [hasPermission2] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('2') !== -1)
+    // const [hasPermission3] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('3') !== -1)
+    const [hasPermission4] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('4') !== -1)
+    const [hasPermission5] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1)
+    const [hasPermission6] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('6') !== -1)
     const { appState, appDispatch } = useContext(AppDataContext)
     const [isLoading, setIsLoading] = useState(false)
     const [operationVisible, setOperationVisible] = useState(false)
@@ -115,7 +115,7 @@ export default _ => {
     }, [appDispatch, hasPermission0, hasPermission4, hasPermission5, hasPermission6, isTop])
     const getDefaultStatusSelect = useCallback(() => {
         let copyStatusOptions = JSON.parse(JSON.stringify(statusOptions));
-        let afterFilter = copyStatusOptions.filter((item) => { return userinfo().permission.indexOf(String(item.permission)) !== -1 })
+        let afterFilter = copyStatusOptions.filter((item) => { return userinfo().permission.split(',').indexOf(String(item.permission)) !== -1 })
         let defaultValues = afterFilter.map((item) => { return item.value })
         let major_list = userinfo().major_id_all ? userinfo().major_id_all.split(',').map((item) => parseInt(item)) : []///设置固定的专业
         allCondition.status_list = afterFilter;

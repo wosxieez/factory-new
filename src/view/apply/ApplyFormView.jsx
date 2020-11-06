@@ -317,9 +317,9 @@ export default Form.create({ name: 'form' })(props => {
                     </Form.Item> */}
                     <Form.Item wrapperCol={{ span: 24 }}>
                         <div style={{ textAlign: 'right' }}>
-                            <Tooltip title={`${!(userinfo().permission && (userinfo().permission.indexOf('0') !== -1 || userinfo().permission.indexOf('3') !== -1) && userinfo().major_id_all) ? '需要维修或专工权限和所属专业' : ''}`}>
+                            <Tooltip title={`${!(userinfo().permission && (userinfo().permission.split(',').indexOf('0') !== -1 || userinfo().permission.split(',').indexOf('3') !== -1) && userinfo().major_id_all) ? '需要维修或专工权限和所属专业' : ''}`}>
                                 <Button type="primary" htmlType="submit"
-                                    disabled={!(userinfo().permission && (userinfo().permission.indexOf('0') !== -1 || userinfo().permission.indexOf('3') !== -1) && userinfo().major_id_all)}
+                                    disabled={!(userinfo().permission && (userinfo().permission.split(',').indexOf('0') !== -1 || userinfo().permission.split(',').indexOf('3') !== -1) && userinfo().major_id_all)}
                                 >提交</Button>
                             </Tooltip>
                         </div>

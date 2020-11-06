@@ -31,7 +31,6 @@ const LoginForm = Form.create({ name: 'form' })(props => {
                     const user = response[0]
                     let role_list = await HttpApi.getUserRole(user.id)
                     let tempObj = {};
-                    role_list = [];
                     tempObj['role_id_all'] = role_list.map((item) => item.id).join(',')
                     tempObj['role_name_all'] = role_list.map((item) => item.des).join(',')
                     tempObj['role_value_all'] = role_list.map((item) => item.value).join(',')///用role 替代 permission 

@@ -10,7 +10,7 @@ export default () => {
     const [data, setData] = useState([])
     const [currentItem, setCurrentItem] = useState({})
     const [operationVisible, setOperationVisible] = useState(false)
-    const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.indexOf('5') !== -1)
+    const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1)
     const getData = useCallback(async () => {
         let result = await HttpApi.getSpecialTime()
         setData(result.map((item, index) => { item.key = index; return item }))

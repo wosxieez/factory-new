@@ -21,7 +21,7 @@ export default props => {
   const [currentItem, setCurrentItem] = useState({})
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [selectedRows, setSelectedRows] = useState([])
-  const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.indexOf('5') !== -1)
+  const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1)
   const listAllStore = useCallback(async () => {
     setIsLoading(true)
     setSelectedRowKeys([])
@@ -196,7 +196,7 @@ export default props => {
             ) : (
                 <Button style={styles.button} type='danger' onClick={batchDelete}>
                   批量删除
-              </Button>
+                </Button>
               )) : null}
           </div>
         </div>
