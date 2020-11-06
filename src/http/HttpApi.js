@@ -53,6 +53,16 @@ const HttpApi = {
         }
         return []
     },
+    getUserRole: async (user_id) => {
+        let sql = `select roles.id,roles.value,roles.des from role_map_user
+          left join roles on roles.id = role_map_user.role_id
+          where user_id = ${user_id} and effective = 1`
+        let result_role = await HttpApi.obs({ sql })
+        if (result_role.code === 0) {
+            return result_role.data
+        }
+        return []
+    },
     getCurrentUserMajor: async () => {
         let user_id = userinfo().id
         let sql = `select user_map_major.*,majors.name as major_name from user_map_major

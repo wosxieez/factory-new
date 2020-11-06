@@ -28,8 +28,16 @@ const LoginForm = Form.create({ name: 'form' })(props => {
                 ///新的根据工厂数据库中的用户数据表
                 let response = await HttpApi.getUserList(values.username, values.password);
                 if (response.length > 0) {
-                    localStorage.setItem('user', JSON.stringify(response[0]))
-                    // props.history.push('/main/storeview')
+                    const user = response[0]
+                    let role_list = await HttpApi.getUserRole(user.id)
+                    let tempObj = {};
+                    role_list = [];
+                    tempObj['role_id_all'] = role_list.map((item) => item.id).join(',')
+                    tempObj['role_name_all'] = role_list.map((item) => item.des).join(',')
+                    tempObj['role_value_all'] = role_list.map((item) => item.value).join(',')///用role 替代 permission 
+                    tempObj['permission'] = role_list.map((item) => item.value).join(',')
+                    const new_user = { ...user, ...tempObj }
+                    localStorage.setItem('user', JSON.stringify(new_user))
                     props.history.replace('/main/storeview')
                     setTimeout(() => {
                         window.location.reload();
