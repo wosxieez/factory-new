@@ -5,10 +5,11 @@ import { getJsonTree, filterTag } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 const { Option } = Select;
 
-const AddForm = Form.create({ name: 'form' })((props) => {
+const AddFromRFID = Form.create({ name: 'form' })((props) => {
   // console.log('props.initData.count:', props.initData.count)
   const [treeData, setTreeData] = useState([])
   const [shelfList, setShelfList] = useState([])
+  const [rfidList, setRfidLIST] = useState([])
   const listData = useCallback(async () => {
     let result = await api.listAllTag()
     if (result.code === 0) {
@@ -20,6 +21,8 @@ const AddForm = Form.create({ name: 'form' })((props) => {
     }
     let res_shelf = await HttpApi.getNfcShelfList();
     setShelfList(res_shelf)
+    let res_rfid = await HttpApi.getRfidList({ hasBinded: false });
+    setRfidLIST(res_rfid)
   }, [])
   useEffect(() => {
     listData();
@@ -33,18 +36,26 @@ const AddForm = Form.create({ name: 'form' })((props) => {
             rules: [{ required: true, message: '请输入名称' }]
           })(<Input placeholder='请输入名称' />)}
         </Form.Item>
-        {props.initData && props.initData.count === 0 ? null :
-          <Form.Item label='数量' >
-            {props.form.getFieldDecorator('count', {
-              initialValue: props.initData && props.initData.count === 0 ? 0 : 1,
-              rules: [{ required: true, message: '请输入数量' }]
-            })(<InputNumber placeholder='请输入数量' min={0} style={{ width: '100%' }} />)}
-          </Form.Item>}
         <Form.Item label='单位' >
           {props.form.getFieldDecorator('unit', {
             initialValue: '个',
             rules: [{ required: true, message: '请输入单位' }]
           })(<Input placeholder='请输入单位' style={{ width: '100%' }} />)}
+        </Form.Item>
+        <Form.Item label='RFID' >
+          {props.form.getFieldDecorator('rfids', {
+            rules: [{ required: true, message: '请关联上对应的RFID' }]
+          })(<Select
+            showSearch
+            optionFilterProp="children"
+            mode="multiple"
+            style={{ width: '100%' }}
+            placeholder="请选择RFID标签"
+          >
+            {rfidList.map((item, index) => {
+              return <Option key={index} value={item.id}>{item.name}</Option>
+            })}
+          </Select>)}
         </Form.Item>
         <Form.Item label='单价[元]' >
           {props.form.getFieldDecorator('oprice', {
@@ -94,4 +105,4 @@ const AddForm = Form.create({ name: 'form' })((props) => {
   )
 })
 
-export default AddForm
+export default AddFromRFID

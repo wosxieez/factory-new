@@ -152,5 +152,34 @@ const HttpApi = {
     deleteUser: (id) => {
         return Axios.post(Testuri + 'update_user', { query: { id }, update: { effective: 0 } })
     },
+    getNfcShelfList: async () => {
+        let sql = `select * from nfc_shelfs where isdelete = 0 order by id desc`
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return result.data
+        }
+        return []
+    },
+    getRfidList: async ({ hasBinded, isAll }) => {
+        let sql = `select * from rfids where isdelete = 0 and is_out = 0 and store_id is ${hasBinded ? 'not' : ''} null`
+        if (isAll) {
+            sql = `select rfids.*,stores.name as store_name from rfids 
+            left join (select * from stores where isdelete = 0) stores on stores.id = rfids.store_id
+            where rfids.isdelete = 0 and rfids.is_out = 0`
+        }
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return result.data
+        }
+        return []
+    },
+    bindRfidToStore: async ({ rfids, store_id }) => {
+        let sql = `update rfids set store_id = ${store_id} where id in (${rfids.join(',')})`
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return true
+        }
+        return false
+    },
 }
 export default HttpApi

@@ -5,7 +5,7 @@ import api from '../../http';
 import AddForm from '../storehouse/AddFrom';
 import HttpApi from '../../http/HttpApi';
 import { userinfo } from '../../util/Tool';
-
+const { Option } = Select;
 var storeList = [{ key: 0 }]
 const starIcon = <span style={{ color: 'red' }}>* </span>
 /**
@@ -42,7 +42,7 @@ export default Form.create({ name: 'form' })(props => {
     const columns = [
         { title: '编号', dataIndex: 'key', width: 50, align: 'center', render: (text) => <div>{text + 1}</div> },
         {
-            title: <div>{starIcon}物品</div>, dataIndex: 'store_id', width: 400, align: 'center', render: (text, record) => {
+            title: <div>{starIcon}物品</div>, dataIndex: 'store_id', width: 200, align: 'center', render: (text, record) => {
                 return <Select placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children" value={text} onChange={(_, option) => { handleSelectChange(option, record.key) }}
                     dropdownRender={menu => (
                         <div>
@@ -67,6 +67,13 @@ export default Form.create({ name: 'form' })(props => {
         },
         {
             title: <div>{starIcon}数量</div>, dataIndex: 'count', width: 80, align: 'center', render: (text, record) => {
+                ///如果是大件，要关联rfid的就不显示数字输入框，要动态生成select选择器
+                if (record.has_rfid) {
+                    return <RFIDSelectPanel storeList={storeList} callbackSelectRfidlist={(select_rfidlist) => {
+                        // console.log('select_rfidlist:', select_rfidlist)
+                        handlerSelectChangeRFID(record.key, select_rfidlist)
+                    }} />
+                }
                 return <InputNumber placeholder='输入数量' precision={0} value={text} min={1} disabled={!record.store_id} onChange={(v) => {
                     if (!v) { v = 1 }
                     let param = { 'key': record.key, 'count': v }
@@ -74,6 +81,11 @@ export default Form.create({ name: 'form' })(props => {
                 }}></InputNumber>
             }
         },
+        // {
+        //     title: <div>{starIcon}RFID</div>, dataIndex: 'has_rfid', width: 60, align: 'center', render: (text, record) => {
+        //         return <Input disabled value={text} />
+        //     }
+        // },
         {
             title: <div>{starIcon}单位</div>, dataIndex: 'unit', width: 60, align: 'center', render: (text) => {
                 return <Input disabled value={text} />
@@ -93,14 +105,14 @@ export default Form.create({ name: 'form' })(props => {
                 return <InputNumber disabled value={sum_price ? sum_price : ''}></InputNumber>
             }
         },
-        {
-            title: '物品备注', dataIndex: 'remark', align: 'center', render: (text, record) => {
-                return <Input value={text} allowClear disabled={!record.store_id} onChange={(e) => {
-                    let param = { 'key': record.key, 'remark': e.target.value }
-                    changeTableListHandler(param)
-                }}></Input>
-            }
-        },
+        // {
+        //     title: '物品备注', dataIndex: 'remark', align: 'center', render: (text, record) => {
+        //         return <Input value={text} allowClear disabled={!record.store_id} onChange={(e) => {
+        //             let param = { 'key': record.key, 'remark': e.target.value }
+        //             changeTableListHandler(param)
+        //         }}></Input>
+        //     }
+        // },
         {
             title: '操作', dataIndex: 'action', width: 100, align: 'center', render: (_, record) => {
                 return <Button size='small' type='danger' icon='delete' onClick={() => {
@@ -141,13 +153,23 @@ export default Form.create({ name: 'form' })(props => {
         props.form.setFieldsValue({ storeList: afterInsert })
         calculSumCountAndPrice()
     }, [props.form, calculSumCountAndPrice])
-
+    ///生成物品对象
     const handleSelectChange = useCallback((option, key) => {
         const selectObj = option.props.all;
-        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'o_count': selectObj.count, 'o_price': selectObj.oprice, 'remark': selectObj.remark }
+        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': selectObj.has_rfid ? 0 : 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'o_count': selectObj.count, 'o_price': selectObj.oprice, 'remark': selectObj.remark, has_rfid: selectObj.has_rfid ? 1 : 0, rfid_list: [] }
         changeTableListHandler(param)
     }, [changeTableListHandler])
-
+    ///对大件物品进行，rfid的关联
+    const handlerSelectChangeRFID = useCallback((key, rfidlist) => {
+        console.log('key,rfidlist:', key, rfidlist)
+        storeList.forEach((item) => {
+            if (item.key === key) {
+                item.rfid_list = rfidlist
+                item.count = rfidlist.length
+            }
+        })
+        props.form.setFieldsValue({ storeList })
+    }, [props.form])
     const resetHandler = useCallback(() => {
         props.form.resetFields();
         storeList = [{ key: 0 }]
@@ -214,7 +236,16 @@ export default Form.create({ name: 'form' })(props => {
                     okText: '提交',
                     okType: 'danger',
                     onOk: async function () {
-                        updateStoreAndrecordHandler(values)
+                        let storeItemDontSelectRFID = false
+                        values.storeList.forEach((item) => {
+                            if (item.count === 0) { storeItemDontSelectRFID = true; }
+                        })
+                        if (storeItemDontSelectRFID) {
+                            message.error('请给物品补充数量');
+                        } else {
+                            // console.log('values:', values)
+                            updateStoreAndrecordHandler(values)
+                        }
                     },
                 })
             }
@@ -378,4 +409,29 @@ const styles = {
 //     justify: 'space-around',
 //     align: 'middle'
 // }
-
+/**
+ *
+ *
+ * @returns
+ */
+function RFIDSelectPanel({ callbackSelectRfidlist, storeList }) {
+    const [selectRfidlist, setSelectRfidlist] = useState([])
+    return <div >
+        <Select
+            showSearch
+            optionFilterProp="children"
+            mode="multiple"
+            style={{ width: '100%' }}
+            placeholder="请选择RFID标签"
+            value={selectRfidlist}
+            onChange={(v) => {
+                setSelectRfidlist(v)
+                callbackSelectRfidlist(v)
+            }}
+        >
+            {[1, 2].map((item, index) => {
+                return <Option key={item} value={item}>{item}</Option>
+            })}
+        </Select>
+    </div>
+}

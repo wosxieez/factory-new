@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react'
+import React, { useState, useContext, useEffect, useCallback } from 'react'
 import { Route, Link } from 'react-router-dom'
 import { Layout, Menu, Icon, Modal, Avatar, Dropdown, Input, Form, message, Badge } from 'antd';
 import NewDptAndUser from './newDptAndUser/View'
@@ -23,7 +23,7 @@ import { AppDataContext } from '../redux/AppRedux'
 import { userinfo } from '../util/Tool';
 import HttpApi from '../http/HttpApi';
 import moment from 'moment'
-import { useCallback } from 'react';
+// import RfidView from './rfid/RfidView';
 const weather = <div id="tp-weather-widget"></div>
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 // import CamView from './cam/CamView';
@@ -208,6 +208,11 @@ export default (props) => {
             <span className="nav-text">用户标签</span>
             <Link to={`${props.match.url}/usertag`} />
           </Menu.Item> */}
+          {/* <Menu.Item key={'/main/setting/rfid'}>
+            <Icon type="tags" />
+            <span className="nav-text">RFID</span>
+            <Link to={`${props.match.url}/setting/rfid`} />
+          </Menu.Item> */}
           <Menu.Item key={'/main/setting/storetag'}>
             <Icon type="tags" />
             <span className="nav-text">物料属性</span>
@@ -267,6 +272,7 @@ export default (props) => {
         <Route path={`${props.match.url}/setting/selfcenterview`} component={SelfCenterView} />
         <Route path={`${props.match.url}/setting/storetag`} component={() => { return <TagView type={0} /> }} />
         <Route path={`${props.match.url}/setting/specialtime`} component={SpecialTime} />
+        {/* <Route path={`${props.match.url}/setting/rfid`} component={RfidView} /> */}
 
         {/* <Route path={`${props.match.url}/usertag`} component={() => { return <TagView type={1} /> }} /> */}
         {/* <Route path={`${props.match.url}/camview`} component={CamView} /> */}

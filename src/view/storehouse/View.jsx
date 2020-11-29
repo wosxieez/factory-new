@@ -6,8 +6,12 @@ import AddForm from './AddFrom'
 import UpdateForm from './UpdateForm'
 import { getJsonTree, filterTag } from '../../util/Tool'
 import { userinfo } from '../../util/Tool';
+import HttpApi from '../../http/HttpApi'
+import AddFromRFID from './AddFromRFID'
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 var originStoreList
+var rfidList = [];
+// const tooltipTxt = '小件如螺丝等不需要rfid标签的物品直接填写数量；大件如电脑等需要绑定rfid标签'
 /**
  * 库品信息表单
  */
@@ -15,7 +19,9 @@ export default props => {
   const [isLoading, setIsLoading] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [isAddingRFID, setIsAddingRFID] = useState(false)
   const addForm = useRef()
+  const addFormRFID = useRef()
   const updateForm = useRef()
   const [storeList, setStoreList] = useState([])
   const [currentItem, setCurrentItem] = useState({})
@@ -26,11 +32,23 @@ export default props => {
     setIsLoading(true)
     setSelectedRowKeys([])
     setSelectedRows([])
+    ///获取所有rfid。【理解为贴有rfid的大件】对应的store。就表示该大件的类型。如store 电脑 ; rfid 戴尔01 ...
+    let res_rfid = await HttpApi.getRfidList({ hasBinded: true });
+    if (res_rfid.length > 0) { rfidList = res_rfid }
+    ///获取所有store
     let result = await api.listAllStore()
     if (result.code === 0) {
       originStoreList = result.data.map((item, index) => { item.key = index; return item }).reverse()
+      originStoreList.forEach((store) => {
+        store.subList = [];
+        rfidList.forEach((storeSub) => {
+          if (store.id === storeSub.store_id) { store.subList.push(storeSub) }
+        })
+      })
       setStoreList(originStoreList)
     }
+
+
     setIsLoading(false)
   }, [])
   useEffect(() => {
@@ -40,14 +58,25 @@ export default props => {
     async data => {
       const response = await api.addStore(data)
       if (response.code === 0) {
-        setIsAdding(false)
-        listAllStore()
-      }
+        if (data['has_rfid'] === 1) {
+          ///如果是大件，要拿到返回结果。id，作为rfid的store_id参数进行更新。
+          const store_id = response.data.id
+          const rfids = data['rfids']
+          let res_bind = await HttpApi.bindRfidToStore({ rfids, store_id })
+          if (res_bind) { setIsAddingRFID(false); listAllStore(); message.success('添加成功1') }
+          else { message.error('添加失败1') }
+        } else {
+          setIsAdding(false)
+          listAllStore()
+          message.success('添加成功2')
+        }
+      } else { message.error('添加失败2') }
     },
     [listAllStore]
   )
   const updateData = useCallback(
     async data => {
+      if (!data.nfc_shelf_id) { data.nfc_shelf_id = null }
       let result = await api.updateStore({ id: currentItem.id, ...data })
       if (result.code === 0) {
         message.success('修改成功', 3)
@@ -97,7 +126,20 @@ export default props => {
             </Tag>
           ))
         }
+        if (!text) { return '-' }
         return <div>{tagList}</div>
+      }
+    },
+    {
+      title: '货架',
+      dataIndex: 'nfc_shelf',
+      render: (text) => {
+        if (text) {
+          return <Tag color='blue'>
+            {text.name}
+          </Tag>
+        }
+        return <div>-</div>
       }
     },
     {
@@ -110,6 +152,17 @@ export default props => {
         return <div>{text + ' ' + unit || ''}</div>
       }
     },
+    // {
+    //   title: '明细',
+    //   dataIndex: 'subList',
+    //   width: 100,
+    //   render: (text, record) => {
+    //     if (text.length > 0) {
+    //       return text.map((item, index) => { return <Tag color='tomato' key={index}>{item.name + '【' + item.rfid_code + '】'}</Tag> })
+    //     }
+    //     return <div>{'-'}</div>
+    //   }
+    // },
     {
       title: '参考单价【元】',
       dataIndex: 'oprice',
@@ -131,10 +184,9 @@ export default props => {
     {
       title: '备注',
       dataIndex: 'remark',
-      align: 'center',
       width: 140,
       render: (text) => {
-        return <div>{text || ''}</div>
+        return <div>{text || '-'}</div>
       }
     },
     {
@@ -169,8 +221,10 @@ export default props => {
           let result = []
           if (JSON.stringify(conditionsValue) === '{}') {
             result = await api.listAllStore()
+            console.log('result123:', result)
           } else {
             result = await api.listStore(conditionsValue)
+            console.log('result456:', result)
           }
           if (result.code === 0) {
             let tempList = result.data.map((item, index) => { item.key = index; return item }).reverse()
@@ -184,15 +238,29 @@ export default props => {
           <h3>物料管理</h3>
           <div>
             {isStorehouseManager ? (selectedRowKeys.length === 0 ? (
-              <Button
-                style={styles.button}
-                type='primary'
-                icon={'plus'}
-                onClick={() => {
-                  setIsAdding(true)
-                }}>
-                新增
+              <>
+                {/* <Tooltip title={tooltipTxt}>
+                  <Icon type="question-circle" />
+                </Tooltip> */}
+                <Button
+                  style={styles.button}
+                  type='primary'
+                  icon={'plus'}
+                  onClick={() => {
+                    setIsAdding(true)
+                  }}>
+                  物品
               </Button>
+                {/* <Button
+                  style={styles.button}
+                  type='primary'
+                  icon={'plus'}
+                  onClick={() => {
+                    setIsAddingRFID(true)
+                  }}>
+                  大件
+            </Button> */}
+              </>
             ) : (
                 <Button style={styles.button} type='danger' onClick={batchDelete}>
                   批量删除
@@ -254,6 +322,25 @@ export default props => {
               if (!error) {
                 addData(data)
                 addForm.current.resetFields()
+              }
+            })
+          }}
+        />
+        <AddFromRFID
+          ref={addFormRFID}
+          title='新增大件'
+          visible={isAddingRFID}
+          onCancel={() => {
+            addFormRFID.current.resetFields()
+            setIsAddingRFID(false)
+          }}
+          onOk={() => {
+            addFormRFID.current.validateFields(async (error, data) => {
+              if (!error) {
+                data['has_rfid'] = 1;
+                data['count'] = data['rfids'].length
+                addData(data)
+                addFormRFID.current.resetFields()
               }
             })
           }}

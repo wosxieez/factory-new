@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Modal, Form, Input, TreeSelect, InputNumber } from 'antd'
+import { Modal, Form, Input, TreeSelect, InputNumber, Select } from 'antd'
 import api from '../../http';
 import { getJsonTree, filterTag } from '../../util/Tool';
+import HttpApi from '../../http/HttpApi';
+const { Option } = Select;
 
 const AddForm = Form.create({ name: 'form' })((props) => {
     const [treeData, setTreeData] = useState([])
+    const [shelfList, setShelfList] = useState([])
     const listData = useCallback(async () => {
         let result = await api.listAllTag()
         if (result.code === 0) {
@@ -12,6 +15,8 @@ const AddForm = Form.create({ name: 'form' })((props) => {
             let treeResult = result.data.map((item) => { return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name } })
             setTreeData(getJsonTree(treeResult, 0))
         }
+        let res_shelf = await HttpApi.getNfcShelfList();
+        setShelfList(res_shelf)
     }, [])
     useEffect(() => {
         listData();
@@ -64,6 +69,22 @@ const AddForm = Form.create({ name: 'form' })((props) => {
                             // treeCheckable={true}
                             showCheckedStrategy={TreeSelect.SHOW_PARENT}
                         />)}
+                </Form.Item>
+                <Form.Item label='货架' >
+                    {props.form.getFieldDecorator('nfc_shelf_id', {
+                        initialValue: props.data.nfc_shelf_id || null,
+                        rules: [{ required: false }]
+                    })(<Select style={{ width: '100%' }}
+                        placeholder="支持搜索"
+                        allowClear
+                        showSearch
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                            option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
+                    >
+                        {shelfList.map((item, index) => { return <Option key={index} value={item.id}>{item.name}</Option> })}
+                    </Select>)}
                 </Form.Item>
                 <Form.Item label='备注'>{props.form.getFieldDecorator('remark', { initialValue: props.data.remark })(<Input.TextArea rows={4} placeholder='选填' />)}</Form.Item>
             </Form>
