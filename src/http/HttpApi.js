@@ -181,5 +181,39 @@ const HttpApi = {
         }
         return false
     },
+    getNFCShelflist: async (condition = {}) => {
+        let sql_name = ''
+        if (condition && condition.name) {
+            sql_name = ` and nfc_shelfs.name like  '%${condition.name}%'`
+        }
+        let sql_tag_id = ''
+        if (condition && condition.tag_id) {
+            sql_tag_id = ` and nfc_shelfs.tag_id in (${condition.tag_id.join(',')})`
+        }
+        let sql = `select nfc_shelfs.*,tags.name as tag_name from nfc_shelfs 
+        left join (select * from tags where isdelete = 0) tags on tags.id = nfc_shelfs.tag_id
+        where nfc_shelfs.isdelete = 0 ${sql_name} ${sql_tag_id} order by nfc_shelfs.id desc`
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return result.data
+        }
+        return []
+    },
+    updateNfcShelf: async ({ code, name, tagId }) => {
+        let sql = `update nfc_shelfs set name = '${name}', tag_id = ${tagId} where code = '${code}'`
+        let res = await HttpApi.obs({ sql })
+        if (res.code === 0) {
+            return true
+        }
+        return false
+    },
+    deleteNfcShelf: async ({ id }) => {
+        let sql = `update nfc_shelfs set isdelete = 1 where id = '${id}'`
+        let res = await HttpApi.obs({ sql })
+        if (res.code === 0) {
+            return true
+        }
+        return false
+    },
 }
 export default HttpApi

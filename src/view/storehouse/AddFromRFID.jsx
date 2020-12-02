@@ -84,7 +84,7 @@ const AddFromRFID = Form.create({ name: 'form' })((props) => {
               showCheckedStrategy={TreeSelect.SHOW_PARENT}
             />)}
         </Form.Item>
-        <Form.Item label='货架' >
+        <Form.Item label='NFC' >
           {props.form.getFieldDecorator('nfc_shelf_id', {
             rules: [{ required: false }]
           })(<Select style={{ width: '100%' }}

@@ -70,7 +70,7 @@ const AddForm = Form.create({ name: 'form' })((props) => {
                             showCheckedStrategy={TreeSelect.SHOW_PARENT}
                         />)}
                 </Form.Item>
-                <Form.Item label='货架' >
+                <Form.Item label='NFC' >
                     {props.form.getFieldDecorator('nfc_shelf_id', {
                         initialValue: props.data.nfc_shelf_id || null,
                         rules: [{ required: false }]

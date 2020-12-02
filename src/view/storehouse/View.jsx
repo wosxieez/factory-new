@@ -47,8 +47,6 @@ export default props => {
       })
       setStoreList(originStoreList)
     }
-
-
     setIsLoading(false)
   }, [])
   useEffect(() => {
@@ -131,7 +129,7 @@ export default props => {
       }
     },
     {
-      title: '货架',
+      title: 'NFC',
       dataIndex: 'nfc_shelf',
       render: (text) => {
         if (text) {

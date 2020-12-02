@@ -23,6 +23,7 @@ import { AppDataContext } from '../redux/AppRedux'
 import { userinfo } from '../util/Tool';
 import HttpApi from '../http/HttpApi';
 import moment from 'moment'
+import NFCShelfs from './nfcShelf/NFCShelfs';
 // import RfidView from './rfid/RfidView';
 const weather = <div id="tp-weather-widget"></div>
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
@@ -213,6 +214,11 @@ export default (props) => {
             <span className="nav-text">RFID</span>
             <Link to={`${props.match.url}/setting/rfid`} />
           </Menu.Item> */}
+          <Menu.Item key={'/main/setting/nfc'}>
+            <Icon type="credit-card" />
+            <span className="nav-text">NFC</span>
+            <Link to={`${props.match.url}/setting/nfc`} />
+          </Menu.Item>
           <Menu.Item key={'/main/setting/storetag'}>
             <Icon type="tags" />
             <span className="nav-text">物料属性</span>
@@ -272,6 +278,7 @@ export default (props) => {
         <Route path={`${props.match.url}/setting/selfcenterview`} component={SelfCenterView} />
         <Route path={`${props.match.url}/setting/storetag`} component={() => { return <TagView type={0} /> }} />
         <Route path={`${props.match.url}/setting/specialtime`} component={SpecialTime} />
+        <Route path={`${props.match.url}/setting/nfc`} component={NFCShelfs} />
         {/* <Route path={`${props.match.url}/setting/rfid`} component={RfidView} /> */}
 
         {/* <Route path={`${props.match.url}/usertag`} component={() => { return <TagView type={1} /> }} /> */}
