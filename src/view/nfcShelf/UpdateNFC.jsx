@@ -50,11 +50,17 @@ function UpdateNFCForm(props) {
     var data = props.data;
     const { getFieldDecorator } = props.form
     return <Form>
+        <Form.Item label="编号" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }}>
+            {getFieldDecorator('num', {
+                initialValue: data ? data.num : null,
+                rules: [{ required: true, message: '请输入编号' }]
+            })(<Input placeholder='请输入编号'></Input>)}
+        </Form.Item>
         <Form.Item label="名称" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }}>
             {getFieldDecorator('name', {
                 initialValue: data ? data.name : null,
                 rules: [{ required: true, message: '请输入名称' }]
-            })(<Input></Input>)}
+            })(<Input placeholder='请输入名称'></Input>)}
         </Form.Item>
         <Form.Item label="区域" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }}>
             {getFieldDecorator('tag_id', {
@@ -69,6 +75,12 @@ function UpdateNFCForm(props) {
                 placeholder="请选择区域"
                 showCheckedStrategy={TreeSelect.SHOW_PARENT}
             />)}
+        </Form.Item>
+        <Form.Item label="型号" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }}>
+            {getFieldDecorator('model', {
+                initialValue: data ? data.model : null,
+                rules: [{ required: false, message: '请输入型号' }]
+            })(<Input placeholder='请输入型号【选填】'></Input>)}
         </Form.Item>
     </Form>
 }

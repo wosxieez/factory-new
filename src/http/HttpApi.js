@@ -190,17 +190,25 @@ const HttpApi = {
         if (condition && condition.tag_id) {
             sql_tag_id = ` and nfc_shelfs.tag_id in (${condition.tag_id.join(',')})`
         }
+        let sql_num = ''
+        if (condition && condition.num) {
+            sql_num = ` and nfc_shelfs.num like  '%${condition.num}%'`
+        }
+        let sql_model = ''
+        if (condition && condition.model) {
+            sql_model = ` and nfc_shelfs.model like  '%${condition.model}%'`
+        }
         let sql = `select nfc_shelfs.*,tags.name as tag_name from nfc_shelfs 
         left join (select * from tags where isdelete = 0) tags on tags.id = nfc_shelfs.tag_id
-        where nfc_shelfs.isdelete = 0 ${sql_name} ${sql_tag_id} order by nfc_shelfs.id desc`
+        where nfc_shelfs.isdelete = 0 ${sql_name}${sql_tag_id}${sql_model}${sql_num} order by nfc_shelfs.id desc`
         let result = await HttpApi.obs({ sql })
         if (result.code === 0) {
             return result.data
         }
         return []
     },
-    updateNfcShelf: async ({ code, name, tagId }) => {
-        let sql = `update nfc_shelfs set name = '${name}', tag_id = ${tagId} where code = '${code}'`
+    updateNfcShelf: async ({ code, name, tagId, model, num }) => {
+        let sql = `update nfc_shelfs set name = '${name}', tag_id = ${tagId} ,model = ${model ? "'" + model + "'" : null},num = ${num ? "'" + num + "'" : null} where code = '${code}'`
         let res = await HttpApi.obs({ sql })
         if (res.code === 0) {
             return true

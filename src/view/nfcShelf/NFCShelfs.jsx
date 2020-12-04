@@ -15,7 +15,7 @@ export default () => {
         setNfclist(tempList)
     }, [])
     const updateHandler = useCallback(async (values) => {
-        let res = await HttpApi.updateNfcShelf({ code: currentItem.code, name: values.name, tagId: values.tag_id })
+        let res = await HttpApi.updateNfcShelf({ code: currentItem.code, name: values.name, tagId: values.tag_id, model: values.model, num: values.num })
         if (res) { message.success('修改成功'); init(); } else { message.error('修改失败') }
         setVisible(false)
     }, [currentItem.code, init])
@@ -30,7 +30,19 @@ export default () => {
     const columns = [
         { title: 'NFC编码', dataIndex: 'code', key: 'code' },
         {
+            title: '编号', dataIndex: 'num', key: 'num',
+            render: (text, record) => {
+                return text || '-'
+            }
+        },
+        {
             title: 'NFC名称', dataIndex: 'name', key: 'name',
+            render: (text, record) => {
+                return text || '-'
+            }
+        },
+        {
+            title: '型号', dataIndex: 'model', key: 'model',
             render: (text, record) => {
                 return text || '-'
             }
@@ -117,6 +129,27 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
     }}>
         <Row>
             <Col span={6}>
+                <Form.Item label='编号' {...itemProps}>
+                    {props.form.getFieldDecorator('num', {
+                        rules: [{ required: false }]
+                    })(<Input allowClear placeholder="请输入编号" />)}
+                </Form.Item>
+            </Col>
+            <Col span={6}>
+                <Form.Item label='名称' {...itemProps}>
+                    {props.form.getFieldDecorator('name', {
+                        rules: [{ required: false }]
+                    })(<Input allowClear placeholder="请输入名称" />)}
+                </Form.Item>
+            </Col>
+            <Col span={6}>
+                <Form.Item label='型号' {...itemProps}>
+                    {props.form.getFieldDecorator('model', {
+                        rules: [{ required: false }]
+                    })(<Input allowClear placeholder="请输入型号" />)}
+                </Form.Item>
+            </Col>
+            <Col span={6}>
                 <Form.Item label='区域' {...itemProps}>
                     {props.form.getFieldDecorator('tag_id', {
                         rules: [{ required: false }]
@@ -133,17 +166,12 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                     />)}
                 </Form.Item>
             </Col>
-            <Col span={6}>
-                <Form.Item label='名称' {...itemProps}>
-                    {props.form.getFieldDecorator('name', {
-                        rules: [{ required: false }]
-                    })(<Input allowClear placeholder="请输入名称" />)}
-                </Form.Item>
-            </Col>
-            <Col span={12}>
-                <div style={{ textAlign: 'right', paddingTop: 3 }}>
-                    <Button type="primary" htmlType="submit">查询</Button>
-                    <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>
+        </Row>
+        <Row>
+            <Col span={24}>
+                <div style={{ textAlign: 'right' }}>
+                    <Button icon='search' type="primary" htmlType="submit">查询</Button>
+                    <Button icon='redo' style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>
                 </div>
             </Col>
         </Row>
@@ -157,7 +185,7 @@ const styles = {
     },
     header: {
         backgroundColor: '#FFFFFF',
-        padding: '24px 24px 0px 24px',
+        padding: '24px 24px 24px 24px',
     },
     body: {
         backgroundColor: '#FFFFFF',
