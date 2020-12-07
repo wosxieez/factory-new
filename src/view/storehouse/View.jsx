@@ -110,7 +110,7 @@ export default props => {
     }
   }
   const columns = [
-    { title: '编号', dataIndex: 'no', width: 120, align: 'center' },
+    // { title: '编号', dataIndex: 'no', width: 120, align: 'center' },
     { title: '名称', dataIndex: 'name', width: 120, align: 'center' },
     {
       title: '属性',
@@ -129,8 +129,9 @@ export default props => {
       }
     },
     {
-      title: 'NFC',
+      title: '货架NFC',
       dataIndex: 'nfc_shelf',
+      key: 'nfc_shelf_name',
       render: (text) => {
         if (text) {
           return <Tag color='blue'>
@@ -140,6 +141,20 @@ export default props => {
         return <div>-</div>
       }
     },
+    // {
+    //   title: '编号',
+    //   dataIndex: 'nfc_shelf',
+    //   key: 'nfc_shelf_num',
+    //   render: (text) => {
+    //     console.log('text:', text)
+    //     if (text) {
+    //       return <Tag color='blue'>
+    //         {text.num}
+    //       </Tag>
+    //     }
+    //     return <div>-</div>
+    //   }
+    // },
     {
       title: '数量',
       dataIndex: 'count',

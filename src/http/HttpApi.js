@@ -153,7 +153,9 @@ const HttpApi = {
         return Axios.post(Testuri + 'update_user', { query: { id }, update: { effective: 0 } })
     },
     getNfcShelfList: async () => {
-        let sql = `select * from nfc_shelfs where isdelete = 0 order by id desc`
+        let sql = `select nfc_shelfs.*,tags.name as tag_name from nfc_shelfs
+        left join (select * from tags where isdelete = 0) tags on tags.id = nfc_shelfs.tag_id
+        where nfc_shelfs.isdelete = 0 order by id desc`
         let result = await HttpApi.obs({ sql })
         if (result.code === 0) {
             return result.data

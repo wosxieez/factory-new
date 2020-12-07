@@ -13,7 +13,9 @@ const AddForm = Form.create({ name: 'form' })((props) => {
         if (result.code === 0) {
             result.data = filterTag(result.data, 0)
             let treeResult = result.data.map((item) => { return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name } })
-            setTreeData(getJsonTree(treeResult, 0))
+            let temp = getJsonTree(treeResult, 0);
+            let afterFilter = temp.filter((item) => item.value !== 1)
+            setTreeData(afterFilter)
         }
         let res_shelf = await HttpApi.getNfcShelfList();
         setShelfList(res_shelf)
@@ -70,7 +72,7 @@ const AddForm = Form.create({ name: 'form' })((props) => {
                             showCheckedStrategy={TreeSelect.SHOW_PARENT}
                         />)}
                 </Form.Item>
-                <Form.Item label='NFC' >
+                <Form.Item label='货架NFC' >
                     {props.form.getFieldDecorator('nfc_shelf_id', {
                         initialValue: props.data.nfc_shelf_id || null,
                         rules: [{ required: false }]
@@ -83,7 +85,8 @@ const AddForm = Form.create({ name: 'form' })((props) => {
                             option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                         }
                     >
-                        {shelfList.map((item, index) => { return <Option key={index} value={item.id}>{item.name}</Option> })}
+                        {/* {shelfList.map((item, index) => { return <Option key={index} value={item.id}>{item.name}</Option> })} */}
+                        {shelfList.map((item, index) => { return <Option key={index} value={item.id}>{(item.num ? item.num + '-' : '') + item.name + (item.model ? '-' + item.model : '') + '-' + item.tag_name}</Option> })}
                     </Select>)}
                 </Form.Item>
                 <Form.Item label='备注'>{props.form.getFieldDecorator('remark', { initialValue: props.data.remark })(<Input.TextArea rows={4} placeholder='选填' />)}</Form.Item>
