@@ -24,7 +24,7 @@ import { userinfo } from '../util/Tool';
 import HttpApi from '../http/HttpApi';
 import moment from 'moment'
 import NFCShelfs from './nfcShelf/NFCShelfs';
-// import RfidView from './rfid/RfidView';
+import RfidView from './rfid/RfidView';
 const weather = <div id="tp-weather-widget"></div>
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 // import CamView from './cam/CamView';
@@ -40,7 +40,6 @@ export default (props) => {
   const [hasPermission4] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('4') !== -1)
   const [hasPermission5] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1)
   const [hasPermission6] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('6') !== -1)
-
   const menu = (
     <Menu onClick={(target) => {
       switch (target.key) {
@@ -209,11 +208,11 @@ export default (props) => {
             <span className="nav-text">用户标签</span>
             <Link to={`${props.match.url}/usertag`} />
           </Menu.Item> */}
-          {/* <Menu.Item key={'/main/setting/rfid'}>
+          <Menu.Item key={'/main/setting/rfid'}>
             <Icon type="tags" />
             <span className="nav-text">RFID</span>
             <Link to={`${props.match.url}/setting/rfid`} />
-          </Menu.Item> */}
+          </Menu.Item>
           <Menu.Item key={'/main/setting/nfc'}>
             <Icon type="credit-card" />
             <span className="nav-text">NFC</span>
@@ -279,7 +278,7 @@ export default (props) => {
         <Route path={`${props.match.url}/setting/storetag`} component={() => { return <TagView type={0} /> }} />
         <Route path={`${props.match.url}/setting/specialtime`} component={SpecialTime} />
         <Route path={`${props.match.url}/setting/nfc`} component={NFCShelfs} />
-        {/* <Route path={`${props.match.url}/setting/rfid`} component={RfidView} /> */}
+        <Route path={`${props.match.url}/setting/rfid`} component={RfidView} />
 
         {/* <Route path={`${props.match.url}/usertag`} component={() => { return <TagView type={1} /> }} /> */}
         {/* <Route path={`${props.match.url}/camview`} component={CamView} /> */}

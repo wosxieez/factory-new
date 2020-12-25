@@ -10,6 +10,7 @@ const AddForm = Form.create({ name: 'form' })((props) => {
   const [treeData, setTreeData] = useState([])
   const [shelfList, setShelfList] = useState([])
   const listData = useCallback(async () => {
+    if (!props.visible) { return }
     let result = await api.listAllTag()
     if (result.code === 0) {
       result.data = filterTag(result.data, 0)
@@ -22,13 +23,13 @@ const AddForm = Form.create({ name: 'form' })((props) => {
     }
     let res_shelf = await HttpApi.getNfcShelfList();
     setShelfList(res_shelf)
-  }, [])
+  }, [props.visible])
   useEffect(() => {
     listData();
   }, [listData])
 
   return (
-    <Modal {...props} >
+    <Modal {...props} destroyOnClose>
       <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
         <Form.Item label='名称' >
           {props.form.getFieldDecorator('name', {
@@ -50,30 +51,8 @@ const AddForm = Form.create({ name: 'form' })((props) => {
         </Form.Item>
         <Form.Item label='单价[元]' >
           {props.form.getFieldDecorator('oprice', {
-            rules: [{ required: false, message: '请输入单价' }]
+            rules: [{ required: true, message: '请输入单价' }]
           })(<InputNumber placeholder='请输入单价' min={0} style={{ width: '100%' }} />)}
-        </Form.Item>
-        {/* <Form.Item label='编号' >
-          {props.form.getFieldDecorator('no', {
-            rules: [{ required: false, message: '请输入编号' }]
-          })(<Input placeholder='请输入编号' style={{ width: '100%' }} />)}
-        </Form.Item> */}
-        <Form.Item label='标签'>
-          {props.form.getFieldDecorator('tids', {
-            rules: [{ required: false, message: '请选择标签' }]
-          })(
-            <TreeSelect
-              allowClear
-              multiple
-              treeNodeFilterProp="title"
-              showSearch
-              treeData={treeData}
-              style={{ width: '100%' }}
-              dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-              placeholder="请选择标签-支持搜索"
-              // treeCheckable={true}
-              showCheckedStrategy={TreeSelect.SHOW_PARENT}
-            />)}
         </Form.Item>
         <Form.Item label='货架NFC' >
           {props.form.getFieldDecorator('nfc_shelf_id', {
@@ -90,6 +69,29 @@ const AddForm = Form.create({ name: 'form' })((props) => {
             {shelfList.map((item, index) => { return <Option key={index} value={item.id}>{(item.num ? item.num + '-' : '') + item.name + (item.model ? '-' + item.model : '') + '-' + item.tag_name}</Option> })}
           </Select>)}
         </Form.Item>
+        <Form.Item label='编号' >
+          {props.form.getFieldDecorator('no', {
+            rules: [{ required: false, message: '请输入编号' }]
+          })(<Input placeholder='请输入编号' style={{ width: '100%' }} />)}
+        </Form.Item>
+        <Form.Item label='属性'>
+          {props.form.getFieldDecorator('tids', {
+            rules: [{ required: false, message: '请选择属性' }]
+          })(
+            <TreeSelect
+              allowClear
+              multiple
+              treeNodeFilterProp="title"
+              showSearch
+              treeData={treeData}
+              style={{ width: '100%' }}
+              dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+              placeholder="请选择属性-支持搜索"
+              // treeCheckable={true}
+              showCheckedStrategy={TreeSelect.SHOW_PARENT}
+            />)}
+        </Form.Item>
+
         <Form.Item label='备注'>{props.form.getFieldDecorator('remark')(<Input.TextArea rows={4} placeholder='选填' />)}</Form.Item>
       </Form>
     </Modal>

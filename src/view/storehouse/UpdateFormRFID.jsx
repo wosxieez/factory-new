@@ -5,9 +5,11 @@ import { getJsonTree, filterTag } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 const { Option } = Select;
 
-const UpdateForm = Form.create({ name: 'form' })((props) => {
+const UpdateFormRFID = Form.create({ name: 'form' })((props) => {
     const [treeData, setTreeData] = useState([])
     const [shelfList, setShelfList] = useState([])
+    const [rfidList, setRfidLIST] = useState([])
+    const [currentStoreRfidIDList, setCurrentStoreRfidIDList] = useState(null)
     const listData = useCallback(async () => {
         if (!props.visible) { return }
         let result = await api.listAllTag()
@@ -20,7 +22,12 @@ const UpdateForm = Form.create({ name: 'form' })((props) => {
         }
         let res_shelf = await HttpApi.getNfcShelfList();
         setShelfList(res_shelf)
-    }, [props.visible])
+        let res_rfid = await HttpApi.getRfidList({ hasBinded: false });///没绑定物品的标签
+        let res_current_store_rfid = await HttpApi.getRfidListByStoreId({ store_id: props.data.id });///当前物品绑定的标签
+        let current_store_rfid_id_list = res_current_store_rfid.map((item) => item.id)
+        setRfidLIST([...res_current_store_rfid, ...res_rfid])///二者合并
+        setCurrentStoreRfidIDList(current_store_rfid_id_list)
+    }, [props.visible, props.data.id])
     useEffect(() => {
         listData();
     }, [listData])
@@ -33,17 +40,27 @@ const UpdateForm = Form.create({ name: 'form' })((props) => {
                         rules: [{ required: true, message: '请输入名称' }]
                     })(<Input placeholder='请输入名称' />)}
                 </Form.Item>
-                <Form.Item label='数量' >
-                    {props.form.getFieldDecorator('count', {
-                        initialValue: props.data.count,
-                        rules: [{ required: true, message: '请输入数量' }]
-                    })(<InputNumber placeholder='请输入数量' min={0} style={{ width: '100%' }} />)}
-                </Form.Item>
                 <Form.Item label='单位' >
                     {props.form.getFieldDecorator('unit', {
                         initialValue: props.data.unit || '个',
                         rules: [{ required: true, message: '请输入单位' }]
                     })(<Input placeholder='请输入单位' style={{ width: '100%' }} />)}
+                </Form.Item>
+                <Form.Item label='RFID' >
+                    {props.form.getFieldDecorator('rfids', {
+                        initialValue: currentStoreRfidIDList,
+                        rules: [{ required: false, message: '请关联上对应的RFID' }]
+                    })(<Select
+                        showSearch
+                        optionFilterProp="children"
+                        mode="multiple"
+                        style={{ width: '100%' }}
+                        placeholder="请选择RFID标签"
+                    >
+                        {rfidList.map((item, index) => {
+                            return <Option key={index} value={item.id}>{item.name}</Option>
+                        })}
+                    </Select>)}
                 </Form.Item>
                 <Form.Item label='单价[元]' >
                     {props.form.getFieldDecorator('oprice', {
@@ -64,7 +81,6 @@ const UpdateForm = Form.create({ name: 'form' })((props) => {
                             option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                         }
                     >
-                        {/* {shelfList.map((item, index) => { return <Option key={index} value={item.id}>{item.name}</Option> })} */}
                         {shelfList.map((item, index) => { return <Option key={index} value={item.id}>{(item.num ? item.num + '-' : '') + item.name + (item.model ? '-' + item.model : '') + '-' + item.tag_name}</Option> })}
                     </Select>)}
                 </Form.Item>
@@ -96,4 +112,4 @@ const UpdateForm = Form.create({ name: 'form' })((props) => {
     )
 })
 
-export default UpdateForm
+export default UpdateFormRFID

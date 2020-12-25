@@ -183,6 +183,14 @@ const HttpApi = {
         }
         return false
     },
+    unbindRfidToStore: async ({ store_id }) => {
+        let sql = `update rfids set store_id = null where store_id = ${store_id}`
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return true
+        }
+        return false
+    },
     getNFCShelflist: async (condition = {}) => {
         let sql_name = ''
         if (condition && condition.name) {
@@ -224,6 +232,14 @@ const HttpApi = {
             return true
         }
         return false
+    },
+    getRfidListByStoreId: async ({ store_id }) => {
+        let sql = `select * from rfids where isdelete = 0 and is_out = 0 and store_id = ${store_id}`
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return result.data
+        }
+        return []
     },
 }
 export default HttpApi
