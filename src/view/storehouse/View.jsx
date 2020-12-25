@@ -194,7 +194,7 @@ export default props => {
       dataIndex: 'subList',
       width: 100,
       render: (text, record) => {
-        if (text.length > 0) {
+        if (text && text.length > 0) {
           return text.map((item, index) => { return <Tag color='tomato' key={index}>{item.name}</Tag> })
         }
         return <div>{'-'}</div>
@@ -266,6 +266,12 @@ export default props => {
           }
           if (result.code === 0) {
             let tempList = result.data.map((item, index) => { item.key = index; return item }).reverse()
+            tempList.forEach((store) => {
+              store.subList = [];
+              rfidList.forEach((storeSub) => {
+                if (store.id === storeSub.store_id) { store.subList.push(storeSub) }
+              })
+            })
             setStoreList(tempList)
           }
           setIsLoading(false)
