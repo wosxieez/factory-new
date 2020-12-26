@@ -25,6 +25,7 @@ import HttpApi from '../http/HttpApi';
 import moment from 'moment'
 import NFCShelfs from './nfcShelf/NFCShelfs';
 import RfidView from './rfid/RfidView';
+import StoreScanRecordView from './storeScanRecord/StoreScanRecordView';
 const weather = <div id="tp-weather-widget"></div>
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 // import CamView from './cam/CamView';
@@ -202,6 +203,13 @@ export default (props) => {
             <Link to={`${props.match.url}/approve/returncheckview`} />
           </Menu.Item>
         </SubMenu>
+        <SubMenu key={'记录'} title={<span><Icon type="reconciliation" /><span>记录</span></span>}>
+          <Menu.Item key={'/main/record/scanner'}>
+            <Icon type="scan" />
+            <span className="nav-text">扫描盘存</span>
+            <Link to={`${props.match.url}/record/scanner`} />
+          </Menu.Item>
+        </SubMenu>
         <SubMenu key={'设置'} title={<span><Icon type="setting" /><span>设置</span></span>}>
           {/* <Menu.Item key={'/main/usertag'}>
             <Icon type="tags" />
@@ -279,6 +287,7 @@ export default (props) => {
         <Route path={`${props.match.url}/setting/specialtime`} component={SpecialTime} />
         <Route path={`${props.match.url}/setting/nfc`} component={NFCShelfs} />
         <Route path={`${props.match.url}/setting/rfid`} component={RfidView} />
+        <Route path={`${props.match.url}/record/scanner`} component={StoreScanRecordView} />
 
         {/* <Route path={`${props.match.url}/usertag`} component={() => { return <TagView type={1} /> }} /> */}
         {/* <Route path={`${props.match.url}/camview`} component={CamView} /> */}

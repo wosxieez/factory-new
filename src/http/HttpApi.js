@@ -241,5 +241,32 @@ const HttpApi = {
         }
         return []
     },
+    getStoreScanRecordLength: async () => {
+        let sql = `select count(*) as count from store_scan_records`
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return result.data
+        }
+        return []
+    },
+    /**
+     * 分页查询物品扫描记录
+     * @param {*} param0 
+     */
+    getStoreScanRecord: async ({ store_name, user_name, time, page, pageSize }) => {
+        let sql_user_name = !user_name ? `` : ` and  user_name like '%${user_name}%'`
+        let sql_store_name = !store_name ? `` : ` and  (content_scan like '%${store_name}%'  ||  content_lost like '%${store_name}%')`///扫描或遗漏的记录里面有这个物品的名字
+        let sql_time = ` time >=  '${time[0]}' and time <= '${time[1]}'`
+        let all_sql_condtion = sql_time + sql_user_name + sql_store_name
+        // console.log('all_sql_condtion:', all_sql_condtion)
+        let startPage = (page - 1) * pageSize;
+        let sql = `select * from store_scan_records where ${all_sql_condtion} limit ${startPage},${pageSize}`
+        // console.log('sql:', sql)
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return result.data
+        }
+        return []
+    }
 }
 export default HttpApi
