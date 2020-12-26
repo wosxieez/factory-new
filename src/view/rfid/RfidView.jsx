@@ -13,7 +13,7 @@ export default function RfidView() {
         init();
     }, [init])
     const columns = [
-        { title: '编码', dataIndex: 'rfid_code', key: 'rfid_code' },
+        { title: 'RFID编码', dataIndex: 'rfid_code', key: 'rfid_code' },
         {
             title: '名称', dataIndex: 'name', key: 'name',
             render: (text, record) => {

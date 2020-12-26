@@ -36,7 +36,7 @@ export default () => {
             }
         },
         {
-            title: 'NFC名称', dataIndex: 'name', key: 'name',
+            title: '名称', dataIndex: 'name', key: 'name',
             render: (text, record) => {
                 return text || '-'
             }
