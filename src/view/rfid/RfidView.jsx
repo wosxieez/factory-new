@@ -13,9 +13,9 @@ export default function RfidView() {
         init();
     }, [init])
     const columns = [
-        { title: 'RFID编码', dataIndex: 'rfid_code', key: 'rfid_code' },
+        { title: '编码', dataIndex: 'rfid_code', key: 'rfid_code' },
         {
-            title: 'RFID名称', dataIndex: 'name', key: 'name',
+            title: '名称', dataIndex: 'name', key: 'name',
             render: (text, record) => {
                 return text || '-'
             }
@@ -31,7 +31,7 @@ export default function RfidView() {
         <div style={styles.root}>
             <div style={styles.body}>
                 <Table
-                    title={() => { return 'RFID信息列表' }}
+                    title={() => { return 'RFID标签信息列表' }}
                     columns={columns}
                     dataSource={rfidlist}
                     size='small'

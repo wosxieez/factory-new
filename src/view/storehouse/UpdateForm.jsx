@@ -51,7 +51,7 @@ const UpdateForm = Form.create({ name: 'form' })((props) => {
                         rules: [{ required: true, message: '请输入单价' }]
                     })(<InputNumber placeholder='请输入单价' min={0} style={{ width: '100%' }} />)}
                 </Form.Item>
-                <Form.Item label='货架NFC' >
+                <Form.Item label='货架标签' >
                     {props.form.getFieldDecorator('nfc_shelf_id', {
                         initialValue: props.data.nfc_shelf_id || null,
                         rules: [{ required: false }]

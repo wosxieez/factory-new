@@ -22,7 +22,7 @@ export default function StoreScanRecordView() {
     const [isLoading, setIsLoading] = useState(false)
     const [listLength, setListLength] = useState(0)
     const [defaultTime] = useState([moment().add(-1, 'month').startOf('day'), moment().endOf('day')])
-    const [isExpand, setIsExpand] = useState(false)
+    const [isExpand, setIsExpand] = useState(true)
     const columns = [{
         title: '时间', dataIndex: 'time', width: 120, align: 'center'
     },
@@ -81,7 +81,7 @@ export default function StoreScanRecordView() {
             }} /></div>
             <div style={styles.body}>
                 <Alert message={<div style={styles.alertMessage}>
-                    <span>点击盘存物品展示对应标签数据；盘存物品数量多时，可以点击右边开关查看所有数据</span>
+                    <span>点击盘存物品展示对应标签数据；盘存物品数量过多时，可以点击右边开关【精简 . 展开】</span>
                     <Switch checkedChildren="展开" unCheckedChildren="精简" defaultChecked={isExpand} onChange={(v) => { setIsExpand(v) }} />
                 </div>} type='info' style={{ width: '100%' }} />
                 <Table

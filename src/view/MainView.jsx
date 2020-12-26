@@ -218,12 +218,12 @@ export default (props) => {
           </Menu.Item> */}
           <Menu.Item key={'/main/setting/rfid'}>
             <Icon type="tags" />
-            <span className="nav-text">RFID</span>
+            <span className="nav-text">物品标签</span>
             <Link to={`${props.match.url}/setting/rfid`} />
           </Menu.Item>
           <Menu.Item key={'/main/setting/nfc'}>
             <Icon type="credit-card" />
-            <span className="nav-text">NFC</span>
+            <span className="nav-text">货架标签</span>
             <Link to={`${props.match.url}/setting/nfc`} />
           </Menu.Item>
           <Menu.Item key={'/main/setting/storetag'}>

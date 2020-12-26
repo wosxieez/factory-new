@@ -43,15 +43,15 @@ const AddFromRFID = Form.create({ name: 'form' })((props) => {
             rules: [{ required: true, message: '请输入单位' }]
           })(<Input placeholder='请输入单位' style={{ width: '100%' }} />)}
         </Form.Item>
-        <Form.Item label='RFID' >
+        <Form.Item label='物品标签' >
           {props.form.getFieldDecorator('rfids', {
-            rules: [{ required: true, message: '请关联上对应的RFID' }]
+            rules: [{ required: true, message: '请关联上对应的物品标签' }]
           })(<Select
             showSearch
             optionFilterProp="children"
             mode="multiple"
             style={{ width: '100%' }}
-            placeholder="请选择RFID标签"
+            placeholder="请选择物品标签标签"
           >
             {rfidList.map((item, index) => {
               return <Option key={index} value={item.id}>{item.name}</Option>
@@ -63,7 +63,7 @@ const AddFromRFID = Form.create({ name: 'form' })((props) => {
             rules: [{ required: true, message: '请输入单价' }]
           })(<InputNumber placeholder='请输入单价' min={0} style={{ width: '100%' }} />)}
         </Form.Item>
-        <Form.Item label='货架NFC' >
+        <Form.Item label='货架标签' >
           {props.form.getFieldDecorator('nfc_shelf_id', {
             rules: [{ required: false }]
           })(<Select style={{ width: '100%' }}

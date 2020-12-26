@@ -131,7 +131,7 @@ export default props => {
   const columns = [
     // { title: '编号', dataIndex: 'no', width: 120, align: 'center' },
     {
-      title: '名称', dataIndex: 'name', width: 120, align: 'center', render: (text, record) => {
+      title: '名称', dataIndex: 'name', width: 120, render: (text, record) => {
         if (record['has_rfid']) return <Badge color="#f50" text={text} />
         return text
       }
@@ -153,7 +153,7 @@ export default props => {
       }
     },
     {
-      title: '货架NFC',
+      title: '货架标签',
       dataIndex: 'nfc_shelf',
       key: 'nfc_shelf_name',
       render: (text) => {
