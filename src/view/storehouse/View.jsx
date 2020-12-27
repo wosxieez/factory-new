@@ -84,7 +84,7 @@ export default props => {
           ///如果是标签物品，要根据物品的id，作为rfid的store_id参数进行更新。条件范围是data.rfids 数组
           const store_id = currentItem.id
           const rfids = data['rfids']
-          let res_clean = await HttpApi.unbindRfidToStore({ store_id })
+          let res_clean = await HttpApi.unbindRfidToStore({ store_id_list: [store_id] })
           if (!res_clean) { message.error('更新失败3') }
           if (rfids.length > 0) {
             let res_bind = await HttpApi.bindRfidToStore({ rfids, store_id })
@@ -112,9 +112,17 @@ export default props => {
       okText: '删除',
       okType: 'danger',
       onOk: async function () {
+        let store_id_list = [];///标签物品的id
+        selectedRows.forEach((item) => {
+          if (item['has_rfid']) {
+            store_id_list.push(item['id'])
+          }
+        })
         let idList = selectedRows.map(item => item.id)
         let result = await api.removeStore(idList)
         if (result.code === 0) {
+          let res_clean = await HttpApi.unbindRfidToStore({ store_id_list })//解绑标签
+          if (!res_clean) { message.error('接触标签绑定失败') }
           message.success('删除成功', 4)
         }
         listAllStore()
