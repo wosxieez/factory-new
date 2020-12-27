@@ -203,50 +203,49 @@ export default (props) => {
             <Link to={`${props.match.url}/approve/returncheckview`} />
           </Menu.Item>
         </SubMenu>
-        <SubMenu key={'记录'} title={<span><Icon type="reconciliation" /><span>记录</span></span>}>
+        {hasPermission5 ? <SubMenu key={'记录'} title={<span><Icon type="reconciliation" /><span>记录</span></span>}>
           <Menu.Item key={'/main/record/scanner'}>
             <Icon type="scan" />
             <span className="nav-text">扫描盘存</span>
             <Link to={`${props.match.url}/record/scanner`} />
           </Menu.Item>
-        </SubMenu>
-        <SubMenu key={'设置'} title={<span><Icon type="setting" /><span>设置</span></span>}>
-          {/* <Menu.Item key={'/main/usertag'}>
-            <Icon type="tags" />
-            <span className="nav-text">用户标签</span>
-            <Link to={`${props.match.url}/usertag`} />
-          </Menu.Item> */}
-          <Menu.Item key={'/main/setting/rfid'}>
-            <Icon type="tags" />
-            <span className="nav-text">物品标签</span>
-            <Link to={`${props.match.url}/setting/rfid`} />
-          </Menu.Item>
-          <Menu.Item key={'/main/setting/nfc'}>
-            <Icon type="credit-card" />
-            <span className="nav-text">货架标签</span>
-            <Link to={`${props.match.url}/setting/nfc`} />
-          </Menu.Item>
-          <Menu.Item key={'/main/setting/storetag'}>
-            <Icon type="tags" />
-            <span className="nav-text">物料属性</span>
-            <Link to={`${props.match.url}/setting/storetag`} />
-          </Menu.Item>
-          <Menu.Item key={'/main/setting/specialtime'}>
-            <Icon type="history" />
-            <span className="nav-text">时段设置</span>
-            <Link to={`${props.match.url}/setting/specialtime`} />
-          </Menu.Item>
-          <Menu.Item key={'/main/setting/selfcenterview'}>
-            <Icon type="user" />
-            <span className="nav-text">个人中心</span>
-            <Link to={`${props.match.url}/setting/selfcenterview`} />
-          </Menu.Item>
-        </SubMenu>
-        {/* <Menu.Item key={'/main/camview'}>
-          <Icon type="tags" />
-          <span className="nav-text">摄像头测试</span>
-          <Link to={`${props.match.url}/camview`} />
-        </Menu.Item> */}
+        </SubMenu> : null}
+        {hasPermission5 ?
+          <SubMenu key={'设置'} title={<span><Icon type="setting" /><span>设置</span></span>}>
+            <Menu.Item key={'/main/setting/rfid'}>
+              <Icon type="tags" />
+              <span className="nav-text">物品标签</span>
+              <Link to={`${props.match.url}/setting/rfid`} />
+            </Menu.Item>
+            <Menu.Item key={'/main/setting/nfc'}>
+              <Icon type="credit-card" />
+              <span className="nav-text">货架标签</span>
+              <Link to={`${props.match.url}/setting/nfc`} />
+            </Menu.Item>
+            <Menu.Item key={'/main/setting/storetag'}>
+              <Icon type="tags" />
+              <span className="nav-text">物料属性</span>
+              <Link to={`${props.match.url}/setting/storetag`} />
+            </Menu.Item>
+            <Menu.Item key={'/main/setting/specialtime'}>
+              <Icon type="history" />
+              <span className="nav-text">时段设置</span>
+              <Link to={`${props.match.url}/setting/specialtime`} />
+            </Menu.Item>
+            <Menu.Item key={'/main/setting/selfcenterview'}>
+              <Icon type="user" />
+              <span className="nav-text">个人中心</span>
+              <Link to={`${props.match.url}/setting/selfcenterview`} />
+            </Menu.Item>
+          </SubMenu> :
+          <SubMenu key={'设置'} title={<span><Icon type="setting" /><span>设置</span></span>}>
+            <Menu.Item key={'/main/setting/selfcenterview'}>
+              <Icon type="user" />
+              <span className="nav-text">个人中心</span>
+              <Link to={`${props.match.url}/setting/selfcenterview`} />
+            </Menu.Item>
+          </SubMenu>
+        }
       </Menu>
     </Sider>
     <Layout style={{ marginLeft: collapsed ? 80 : 180 }} >
