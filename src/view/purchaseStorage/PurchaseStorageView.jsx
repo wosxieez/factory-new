@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Alert, Row, Col, Divider, Tooltip } from 'antd';
+import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Alert, Row, Col, Divider, Tooltip, Badge } from 'antd';
 import moment from 'moment';
 import api from '../../http';
 import AddForm from '../storehouse/AddFrom';
@@ -18,6 +18,7 @@ export default Form.create({ name: 'form' })(props => {
     const [sumPrice, setSumPrice] = useState(0)
     const [isAdding, setIsAdding] = useState(false)
     const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1)
+    const [isRFIDStore, setIsRFIDStore] = useState(false)
     const addForm = useRef()
     const listAllStore = useCallback(async () => {
         let result = await api.listAllStore()
@@ -51,15 +52,18 @@ export default Form.create({ name: 'form' })(props => {
                             <div
                                 style={{ padding: '4px 8px', cursor: 'pointer' }}
                                 onMouseDown={e => e.preventDefault()}
-                                onClick={() => { setIsAdding(true) }}
+                            // onClick={() => { setIsAdding(true) }}
                             >
-                                <Button disabled={!isStorehouseManager} size='small' type='danger' style={{ width: '100%' }} icon='plus'>创建物品</Button>
+                                <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+                                    <Button onClick={() => { setIsRFIDStore(false); setIsAdding(true) }} disabled={!isStorehouseManager} size='small' type='primary' style={{ width: '48%' }} icon='plus'>普通物品</Button>
+                                    <Button onClick={() => { setIsRFIDStore(true); setIsAdding(true) }} disabled={!isStorehouseManager} size='small' type='danger' style={{ width: '48%' }} icon='plus'>标签物品</Button>
+                                </div>
                             </div>
                         </div >
                     )}>
                     {
                         storeOptionList.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item} disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}>{item.name + '--库存' + item.count}</Select.Option>
+                            return <Select.Option value={item.id} key={index} all={item} disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}>{item['has_rfid'] ? <Badge color="#f50" /> : null}{item.name + '--库存' + item.count}</Select.Option>
                         })
                     }
                 </Select >
@@ -67,8 +71,9 @@ export default Form.create({ name: 'form' })(props => {
         },
         {
             title: <div>{starIcon}数量</div>, dataIndex: 'count', width: 80, align: 'center', render: (text, record) => {
-                ///如果是大件，要关联rfid的就不显示数字输入框，要动态生成select选择器
+                ///如果是标签物品，要关联rfid的就不显示数字输入框，要动态生成select选择器
                 if (record.has_rfid) {
+                    // console.log('record.has_rfid:', record.has_rfid)
                     return <RFIDSelectPanel storeList={storeList} callbackSelectRfidlist={(select_rfidlist) => {
                         // console.log('select_rfidlist:', select_rfidlist)
                         handlerSelectChangeRFID(record.key, select_rfidlist)
@@ -119,7 +124,7 @@ export default Form.create({ name: 'form' })(props => {
                     let copy = JSON.parse(JSON.stringify(storeList))
                     let afterFilter = copy.filter((item) => item.key !== record.key).map((item, index) => { item.key = index; return item })
                     storeList = afterFilter
-                    console.log('删除 afterFilter:', afterFilter)
+                    // console.log('删除 afterFilter:', afterFilter)
                     calculSumCountAndPrice()
                     props.form.setFieldsValue({ storeList: afterFilter }) ///删除有问题
                 }} >删除</Button>
@@ -159,17 +164,22 @@ export default Form.create({ name: 'form' })(props => {
         let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': selectObj.has_rfid ? 0 : 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'o_count': selectObj.count, 'o_price': selectObj.oprice, 'remark': selectObj.remark, has_rfid: selectObj.has_rfid ? 1 : 0, rfid_list: [] }
         changeTableListHandler(param)
     }, [changeTableListHandler])
-    ///对大件物品进行，rfid的关联
+    ///对标签物品物品进行，rfid的关联
     const handlerSelectChangeRFID = useCallback((key, rfidlist) => {
-        console.log('key,rfidlist:', key, rfidlist)
+        // console.log('key,rfidlist:', key, rfidlist)
         storeList.forEach((item) => {
             if (item.key === key) {
                 item.rfid_list = rfidlist
                 item.count = rfidlist.length
             }
         })
-        props.form.setFieldsValue({ storeList })
-    }, [props.form])
+        let param = { 'key': key, 'count': rfidlist.length }
+        changeTableListHandler(param)
+        ///老的代码
+        // console.log('storeList:', storeList)
+        // props.form.setFieldsValue({ storeList })
+        ///老的代码
+    }, [changeTableListHandler])
     const resetHandler = useCallback(() => {
         props.form.resetFields();
         storeList = [{ key: 0 }]
@@ -183,12 +193,19 @@ export default Form.create({ name: 'form' })(props => {
         for (const key in formData) {
             if (formData.hasOwnProperty(key)) {
                 const element = formData[key];
-                if (!element) {
-                    formData[key] = null
+                if (key === 'buy_user_id' || key === 'record_user_id') {
+                    if (element === null || element === undefined) {
+                        formData[key] = null
+                    }
+                } else {
+                    if (!element) {
+                        formData[key] = null
+                    }
                 }
             }
         }
         // console.log('formData:', formData)
+        // return
         const { date, storeList, remark, buy_user_id, record_user_id, code_num } = formData;
         const code = moment().toDate().getTime() + 'CG'
         let sql = `insert into purchase_record (date,code,code_num,content,buy_user_id,record_user_id,remark,sum_count,sum_price) values ('${date.format('YYYY-MM-DD HH:mm:ss')}','${code}',${code_num ? '\'' + code_num + '\'' : null},'${JSON.stringify(storeList)}',${buy_user_id || null},${record_user_id},${remark ? '\'' + remark + '\'' : null},${sumCount},${sumPrice})`
@@ -203,8 +220,19 @@ export default Form.create({ name: 'form' })(props => {
                     message.success('入库成功', 3);
                     resetHandler()
                 }
+                ///新增
+                ///针对storeList中存在 标签物品的 情况 进行处理
+                if (storeObj['has_rfid'] && storeObj['rfid_list'].length > 0) {
+                    const store_id = storeObj['store_id']
+                    const rfid_list = storeObj['rfid_list'];
+                    let sql = `update rfids set store_id = ${store_id} where id in (${rfid_list.join(',')})`
+                    let result = await api.query(sql)
+                    if (result.code === 0) { console.log('绑定成功') } else { console.log('绑定失败') }
+                }
             }
         }
+
+
     }, [sumCount, sumPrice, resetHandler])
 
     const handleSubmit = useCallback((e) => {
@@ -236,16 +264,31 @@ export default Form.create({ name: 'form' })(props => {
                     okText: '提交',
                     okType: 'danger',
                     onOk: async function () {
+                        let rfidListTempList = [];///已经选择过的rfid数组
                         let storeItemDontSelectRFID = false
+                        let storeItemSelectSameRFID = false
                         values.storeList.forEach((item) => {
                             if (item.count === 0) { storeItemDontSelectRFID = true; }
                         })
+                        values.storeList.forEach((item) => {
+                            if (item['has_rfid']) {
+                                const temp_rfid_list = item['rfid_list'];
+                                temp_rfid_list.forEach((rfidId) => {
+                                    if (rfidListTempList.indexOf(rfidId) !== -1) { storeItemSelectSameRFID = true }
+                                    else { rfidListTempList.push(rfidId) }
+                                })
+                            }
+                        })
                         if (storeItemDontSelectRFID) {
-                            message.error('请给物品补充数量');
-                        } else {
-                            // console.log('values:', values)
-                            updateStoreAndrecordHandler(values)
+                            message.error('请给标签物品选择标签');
+                            return;
                         }
+                        if (storeItemSelectSameRFID) {
+                            message.error('不允许物品使用相同标签');
+                            return;
+                        }
+                        console.log('没问题:')
+                        updateStoreAndrecordHandler(values)
                     },
                 })
             }
@@ -260,7 +303,8 @@ export default Form.create({ name: 'form' })(props => {
     return <div style={styles.root}>
         <div style={styles.body}>
             <h3>采购入库单</h3>
-            <Alert message={'注意！当同一个物品单价发生浮动时可以修改单价，平台会结合原有数据计算出该物品每件的平均单价，若要区分请点击【+创建物品】新建一个物品'} type='info' showIcon />
+            <Alert type='warning' showIcon
+                message={'注意！当同一种物品单价发生浮动时可以修改单价，平台会结合原有数据计算出该物品每件的平均单价。若要区分请点击【+普通物品】新建一个普通物品。若要添加标签物品请点击【+标签物品】（请保证有空余物品标签可供选择）'} />
             <Form  {...itemProps} style={{ marginTop: 16 }} onSubmit={handleSubmit}>
                 <Row>
                     <Col span={6}>
@@ -353,9 +397,9 @@ export default Form.create({ name: 'form' })(props => {
             </Form>
         </div>
         <AddForm
-            initData={{ count: 0 }}
+            initData={{ count: 0, isRFIDStore }}
             ref={addForm}
-            title='创建物品'
+            title={isRFIDStore ? '创建标签物品' : '创建普通物品'}
             visible={isAdding}
             onCancel={() => {
                 addForm.current.resetFields()
@@ -364,7 +408,7 @@ export default Form.create({ name: 'form' })(props => {
             onOk={() => {
                 addForm.current.validateFields(async (error, data) => {
                     if (!error) {
-                        console.log('data:', data)
+                        if (isRFIDStore) { data['has_rfid'] = 1 } else { data['has_rfid'] = 0 }
                         addData(data)
                         addForm.current.resetFields()
                     }
@@ -403,19 +447,20 @@ const styles = {
         justifyContent: 'space-between'
     }
 }
-
-// const rowProps = {
-//     type: 'flex',
-//     justify: 'space-around',
-//     align: 'middle'
-// }
 /**
- *
- *
+ *RFID 选择器
  * @returns
  */
 function RFIDSelectPanel({ callbackSelectRfidlist, storeList }) {
     const [selectRfidlist, setSelectRfidlist] = useState([])
+    const [rfidList, setRfidList] = useState([])
+    const getRFIDList = useCallback(async () => {
+        let res = await HttpApi.getRfidList({ hasBinded: false });
+        setRfidList(res)
+    }, [])
+    useEffect(() => {
+        getRFIDList();
+    }, [getRFIDList])
     return <div >
         <Select
             showSearch
@@ -429,8 +474,8 @@ function RFIDSelectPanel({ callbackSelectRfidlist, storeList }) {
                 callbackSelectRfidlist(v)
             }}
         >
-            {[1, 2].map((item, index) => {
-                return <Option key={item} value={item}>{item}</Option>
+            {rfidList.map((item, index) => {
+                return <Option key={index} value={item['id']}>{item['name']}</Option>
             })}
         </Select>
     </div>

@@ -80,10 +80,10 @@ export default function StoreScanRecordView() {
                 init();
             }} /></div>
             <div style={styles.body}>
-                <Alert message={<div style={styles.alertMessage}>
-                    <span>点击盘存物品展示对应标签数据；盘存物品数量过多时，可以点击右边开关【精简 . 展开】</span>
+                <Alert type='warning' showIcon message={<div style={styles.alertMessage}>
+                    <span>针对【标签物品】的盘存记录。点击盘存物品展示对应标签数据；盘存物品数量过多时，可以点击右边开关【精简 . 展开】</span>
                     <Switch checkedChildren="展开" unCheckedChildren="精简" defaultChecked={isExpand} onChange={(v) => { setIsExpand(v) }} />
-                </div>} type='info' style={{ width: '100%' }} />
+                </div>} style={{ width: '100%' }} />
                 <Table
                     style={styles.marginTop}
                     loading={isLoading}

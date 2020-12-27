@@ -162,6 +162,10 @@ const HttpApi = {
         }
         return []
     },
+    /**
+     * 获取相关RFID数据【未出库的】
+     * @param {*} param0 
+     */
     getRfidList: async ({ hasBinded, isAll }) => {
         let sql = `select * from rfids where isdelete = 0 and is_out = 0 and store_id is ${hasBinded ? 'not' : ''} null`
         if (isAll) {

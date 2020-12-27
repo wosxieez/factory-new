@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Modal, Form, Input, TreeSelect, InputNumber, Select } from 'antd'
+import { Modal, Form, Input, TreeSelect, InputNumber, Select, Alert } from 'antd'
 import api from '../../http';
 import { getJsonTree, filterTag } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 const { Option } = Select;
 
 const AddFromRFID = Form.create({ name: 'form' })((props) => {
-  // console.log('props.initData.count:', props)
   const [treeData, setTreeData] = useState([])
   const [shelfList, setShelfList] = useState([])
   const [rfidList, setRfidLIST] = useState([])
@@ -31,8 +30,9 @@ const AddFromRFID = Form.create({ name: 'form' })((props) => {
 
   return (
     <Modal {...props} destroyOnClose>
+      <Alert style={{ marginBottom: 10 }} type="warning" showIcon message='标签物品数量为绑定的【物品标签】数量；若【物品标签】无数据，请先用PDA录入新的RFID标签' />
       <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
-        <Form.Item label='名称' >
+        <Form.Item label='种类名称' >
           {props.form.getFieldDecorator('name', {
             rules: [{ required: true, message: '请输入名称' }]
           })(<Input placeholder='请输入名称' />)}
@@ -51,7 +51,7 @@ const AddFromRFID = Form.create({ name: 'form' })((props) => {
             optionFilterProp="children"
             mode="multiple"
             style={{ width: '100%' }}
-            placeholder="请选择物品标签标签"
+            placeholder="请选择物品标签"
           >
             {rfidList.map((item, index) => {
               return <Option key={index} value={item.id}>{item.name}</Option>

@@ -48,6 +48,7 @@ export default props => {
           if (store.id === storeSub.store_id) { store.subList.push(storeSub) }
         })
       })
+      // console.log('originStoreList:', originStoreList)
       setStoreList(originStoreList)
     }
     setIsLoading(false)
@@ -131,7 +132,7 @@ export default props => {
   const columns = [
     // { title: '编号', dataIndex: 'no', width: 120, align: 'center' },
     {
-      title: '名称', dataIndex: 'name', width: 120, render: (text, record) => {
+      title: '种类名称', dataIndex: 'name', width: 120, render: (text, record) => {
         if (record['has_rfid']) return <Badge color="#f50" text={text} />
         return text
       }
@@ -157,8 +158,11 @@ export default props => {
       dataIndex: 'nfc_shelf',
       key: 'nfc_shelf_name',
       render: (text) => {
+        // console.log('text:', text)
+        ///后台listAllStore接口模型需要添加nfc_shelfs的字段 num 编号
         if (text) {
           return <Tag color='blue'>
+            {/* {text.num}--{text.name} */}
             {text.name}
           </Tag>
         }
@@ -297,12 +301,11 @@ export default props => {
               </Button>
                 <Button
                   style={styles.button}
-                  type='primary'
+                  type='danger'
                   icon={'plus'}
                   onClick={() => {
                     setIsAddingRFID(true)
                   }}>
-                  <Badge color="#f50" />
                   标签物品
             </Button>
               </>

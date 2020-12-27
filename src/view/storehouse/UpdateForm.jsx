@@ -27,7 +27,7 @@ const UpdateForm = Form.create({ name: 'form' })((props) => {
     return (
         <Modal {...props} destroyOnClose>
             <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
-                <Form.Item label='名称' >
+                <Form.Item label='种类名称' >
                     {props.form.getFieldDecorator('name', {
                         initialValue: props.data.name,
                         rules: [{ required: true, message: '请输入名称' }]

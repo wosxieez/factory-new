@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import HttpApi from '../../http/HttpApi'
-import { Table } from 'antd'
+import { Alert, Table } from 'antd'
 
 export default function RfidView() {
     const [rfidlist, setFridlist] = useState([])
@@ -30,8 +30,8 @@ export default function RfidView() {
     return (
         <div style={styles.root}>
             <div style={styles.body}>
+                <Alert style={styles.marginBottom} type='info' showIcon message='物品标签信息列表；使用PDA进行物品标签的录入' />
                 <Table
-                    title={() => { return 'RFID标签信息列表' }}
                     columns={columns}
                     dataSource={rfidlist}
                     size='small'

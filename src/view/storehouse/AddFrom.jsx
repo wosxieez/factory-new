@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Modal, Form, Input, TreeSelect, InputNumber, Select } from 'antd'
+import { Modal, Form, Input, TreeSelect, InputNumber, Select, Alert } from 'antd'
 import api from '../../http';
 import { getJsonTree, filterTag } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 const { Option } = Select;
 
 const AddForm = Form.create({ name: 'form' })((props) => {
-  // console.log('props.initData.count:', props.initData.count)
+  // console.log('props.initData:', props.initData)///initData是【采购入库单】中添加物品的特殊情况 默认count = 0
   const [treeData, setTreeData] = useState([])
   const [shelfList, setShelfList] = useState([])
   const listData = useCallback(async () => {
@@ -30,8 +30,11 @@ const AddForm = Form.create({ name: 'form' })((props) => {
 
   return (
     <Modal {...props} destroyOnClose>
+      {props.initData ? <Alert style={{ marginBottom: 10 }} type="warning" showIcon message={props.initData['isRFIDStore'] ?
+        '创建的标签物品默认数量为 0；请在采购表单中的【数量列】进行标签的选择；若无数据，请先用PDA录入新的RFID标签'
+        : '创建的普通物品默认数量为 0；请在采购表单中的【数量列】进行数量的填写'} /> : null}
       <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
-        <Form.Item label='名称' >
+        <Form.Item label='种类名称' >
           {props.form.getFieldDecorator('name', {
             rules: [{ required: true, message: '请输入名称' }]
           })(<Input placeholder='请输入名称' />)}
