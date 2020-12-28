@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, message, Tag, Tooltip, Alert, Descriptions } from 'antd';
+import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, message, Tag, Tooltip, Alert, Descriptions, Badge } from 'antd';
 import api from '../../http';
 import moment from 'moment'
 // import { xiaomeiParseFloat } from '../../util/Tool';
@@ -119,7 +119,10 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
             if (record.isSum) {
                 return <Tag color={'#f5222d'}>{text}</Tag>
             }
-            return text
+            let result = null;
+            if (record['has_rfid']) { result = <Badge color="#f50" text={text} /> }
+            else { result = text }
+            return result;
         }
     }, {
         title: '数量', dataIndex: 'count',
