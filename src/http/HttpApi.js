@@ -166,15 +166,15 @@ const HttpApi = {
      * 获取相关RFID数据【未出库的】
      * @param {*} param0 
      */
-    getRfidList: async ({ hasBinded, isAll, storeIdList }) => {
-        let sql = `select * from rfids where isdelete = 0 and is_out = 0 and store_id is ${hasBinded ? 'not' : ''} null`
+    getRfidList: async ({ hasBinded, isAll, storeIdList, isOut = 0 }) => {
+        let sql = `select * from rfids where isdelete = 0 and is_out = ${isOut} and store_id is ${hasBinded ? 'not' : ''} null`
         if (isAll) {
             sql = `select rfids.*,stores.name as store_name from rfids 
             left join (select * from stores where isdelete = 0) stores on stores.id = rfids.store_id
-            where rfids.isdelete = 0 and rfids.is_out = 0`
+            where rfids.isdelete = 0 and rfids.is_out = ${isOut}`
         }
         if (storeIdList) {///根据store_id来查对应的rfid
-            sql = `select * from rfids where isdelete = 0 and is_out = 0 and store_id in (${storeIdList.join(',')})`
+            sql = `select * from rfids where isdelete = 0 and is_out = ${isOut} and store_id in (${storeIdList.join(',')})`
         }
         let result = await HttpApi.obs({ sql })
         if (result.code === 0) {
