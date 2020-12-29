@@ -166,12 +166,15 @@ const HttpApi = {
      * 获取相关RFID数据【未出库的】
      * @param {*} param0 
      */
-    getRfidList: async ({ hasBinded, isAll }) => {
+    getRfidList: async ({ hasBinded, isAll, storeIdList }) => {
         let sql = `select * from rfids where isdelete = 0 and is_out = 0 and store_id is ${hasBinded ? 'not' : ''} null`
         if (isAll) {
             sql = `select rfids.*,stores.name as store_name from rfids 
             left join (select * from stores where isdelete = 0) stores on stores.id = rfids.store_id
             where rfids.isdelete = 0 and rfids.is_out = 0`
+        }
+        if (storeIdList) {///根据store_id来查对应的rfid
+            sql = `select * from rfids where isdelete = 0 and is_out = 0 and store_id in (${storeIdList.join(',')})`
         }
         let result = await HttpApi.obs({ sql })
         if (result.code === 0) {
@@ -264,13 +267,25 @@ const HttpApi = {
         let all_sql_condtion = sql_time + sql_user_name + sql_store_name
         // console.log('all_sql_condtion:', all_sql_condtion)
         let startPage = (page - 1) * pageSize;
-        let sql = `select * from store_scan_records where ${all_sql_condtion} limit ${startPage},${pageSize}`
+        let sql = `select * from store_scan_records where ${all_sql_condtion} order by id desc limit ${startPage},${pageSize} `
         // console.log('sql:', sql)
         let result = await HttpApi.obs({ sql })
         if (result.code === 0) {
             return result.data
         }
         return []
+    },
+    /**
+     * 标签出库
+     * @param {*} param0 
+     */
+    rfidIsOut: async ({ rfid_id_list, out_time }) => {
+        let sql = `update rfids set is_out = 1,out_time = '${out_time}' where id in (${rfid_id_list.join(',')})`
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return true
+        }
+        return false
     }
 }
 export default HttpApi

@@ -37,7 +37,9 @@ export default props => {
     setSelectedRows([])
     ///获取所有rfid。【理解为贴有rfid的标签物品】对应的store。就表示该标签物品的类型。如store 电脑 ; rfid 戴尔01 ...
     let res_rfid = await HttpApi.getRfidList({ hasBinded: true });
-    if (res_rfid.length > 0) { rfidList = res_rfid }
+    // console.log('获取所有rfid:', res_rfid)
+    // if (res_rfid.length > 0) { rfidList = res_rfid }
+    rfidList = res_rfid
     ///获取所有store
     let result = await api.listAllStore()
     if (result.code === 0) {
@@ -48,7 +50,6 @@ export default props => {
           if (store.id === storeSub.store_id) { store.subList.push(storeSub) }
         })
       })
-      // console.log('originStoreList:', originStoreList)
       setStoreList(originStoreList)
     }
     setIsLoading(false)

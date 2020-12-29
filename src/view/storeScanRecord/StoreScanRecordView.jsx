@@ -62,7 +62,7 @@ export default function StoreScanRecordView() {
         let res = await HttpApi.getStoreScanRecordLength();
         if (res.length > 0) { setListLength(res[0]['count']) }
         let list = await HttpApi.getStoreScanRecord(conditions);
-        let afterSort = list.map((item, index) => { item['key'] = index; return item }).reverse();
+        let afterSort = list.map((item, index) => { item['key'] = index; return item });
         setRecordList(afterSort)
         setIsLoading(false)
     }, [])

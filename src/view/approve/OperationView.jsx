@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, message, Tag, Tooltip, Alert, Descriptions, Badge } from 'antd';
+import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, message, Tag, Tooltip, Alert, Descriptions, Badge, Select } from 'antd';
 import api from '../../http';
 import moment from 'moment'
 // import { xiaomeiParseFloat } from '../../util/Tool';
@@ -14,6 +14,7 @@ export default props => {
     const [record, setRecord] = useState(props.record || {})
     const [workflok, setWorkflok] = useState([])
     const [orderStepLog, setOrderStepLog] = useState([])
+    const [rfidList, setRfidList] = useState([])
 
     const getOrderData = useCallback(async () => {
         if (!props.record.id) { return }
@@ -51,16 +52,31 @@ export default props => {
             // console.log('getworkFlok 结果:', result3.data[0])
             setWorkflok(result3.data[0])
         }
-    }, [props.record])
-
+    }, [props.record])/// record 变化触发
+    const getRFIDList = useCallback(async () => {
+        if (!props.visible) { return }
+        if (props.record && props.record.content) {
+            try {
+                let has_rfid_store_id_list = [];
+                JSON.parse(props.record.content).forEach((storeItem) => {
+                    if (storeItem['has_rfid']) { has_rfid_store_id_list.push(storeItem['store_id']) }
+                })
+                let res_list = await HttpApi.getRfidList({ storeIdList: has_rfid_store_id_list })
+                setRfidList(res_list)
+            } catch (error) {
+                console.log('错误4:', error)
+            }
+        }
+    }, [props.visible, props.record])
     useEffect(() => {
         getOrderData()
-    }, [getOrderData])
+        getRFIDList()
+    }, [getOrderData, getRFIDList])
 
     return (
         <Modal
             maskClosable={false}
-            destroyOnClose
+            destroyOnClose={true}
             width={1200}
             title={`审批处理【${props.record.code}】`}
             visible={props.visible}
@@ -70,15 +86,27 @@ export default props => {
             }}
             footer={null}
         >
-            {RenderDetail(record, workflok, orderStepLog, getOrderData, props)}
+            {RenderDetail({ record, workflok, orderStepLog, getOrderData, rfidList, props })}
         </Modal>)
 }
-
-function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
-    // console.log('RenderDetail')
+/**
+ * record  当前记录
+ * workflok   工作流
+ * orderStepLog  步骤日志
+ * getOrderData  函数
+ * rfidList 当前记录对应的store的标签数据
+ * props
+ * @param {*} param0 
+ */
+function RenderDetail({ record, workflok, orderStepLog, getOrderData, rfidList, props }) {
+    // console.log('RenderDetail:', props.visible)
     const [user] = useState(localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : {})
     const [remark, setRemark] = useState('')
     const [status, setStatus] = useState(1)
+    const [hasRFID, setHasRFID] = useState(false)
+    const [selectRfidList, setSelectRfidlist] = useState([])
+    const [selectStatusIsOk, setSelectStatusIsOk] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
     const renderImg = useCallback(() => {
         if (!record.gid || !record.sid || !record.did || !record.uid || !record.fid) {
             return '-'
@@ -86,11 +114,71 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
         const imgUrl = 'https://xiaomei-face.oss-cn-hangzhou.aliyuncs.com/' + record.gid + '/' + record.sid + '/' + record.did + '/' + record.uid + '/' + record.fid + '.png'
         return <img style={{ width: 50, height: 50 }} src={imgUrl} alt='' />
     }, [record])
-    // const [stepNumber, setStepNumber] = useState(record.step_number)
-    // console.log('1workflok:', workflok)
-    // console.log('1orderStepLog:', orderStepLog)
-    // console.log('1record:', record)
-    // console.log('stepNumber:', stepNumber)
+    const checkSelectRfidList = useCallback(() => {
+        let need_rfid_list = [];///判断哪些物品，分别需要几个rfid
+        let need_rfid_count_all = 0;///总共需要多少个 标签
+        if (record && record.content) {
+            try {
+                let contentlist = JSON.parse(record.content);
+                contentlist.forEach((item) => {
+                    if (item['has_rfid']) {
+                        need_rfid_count_all = need_rfid_count_all + item['count']
+                        need_rfid_list.push({ store_id: item['store_id'], need_rfid_count: item['count'] })
+                    }
+                })
+                if (selectRfidList.length === need_rfid_count_all) {
+                    let afterTransList = selectRfidList.map((rfid_id) => {
+                        return rfidList.filter((rfidItem) => rfidItem['id'] === rfid_id)[0]
+                    })
+                    // console.log('选择的是:', afterTransList)
+                    need_rfid_list.forEach((need_item) => {
+                        afterTransList.forEach((rfid_item) => {
+                            if (need_item['store_id'] === rfid_item['store_id']) {
+                                need_item['need_rfid_count'] = need_item['need_rfid_count'] - 1;
+                            }
+                        })
+                    })
+                    console.log('need_rfid_list:', need_rfid_list)
+                    need_rfid_list.forEach((need_item) => {
+                        if (need_item['need_rfid_count'] !== 0) {
+                            console.log('数量对了，种类不对:')
+                            setSelectStatusIsOk(false)
+                            setAlertMessage('物品种类不匹配')
+                        }
+                    })
+                    console.log('匹配')
+                    setSelectStatusIsOk(true)
+                    setAlertMessage('匹配')
+                } else {
+                    ///数量不对，直接说明不符合
+                    console.log('数量不对，直接说明不符合:')
+                    setSelectStatusIsOk(false)
+                    setAlertMessage('标签数量不匹配')
+                }
+            } catch (error) {
+                console.log('错误1:', error)
+            }
+        }
+    }, [selectRfidList, record, rfidList])
+    const checkIsHasRFID = useCallback(() => {
+        if (record && record.content) {
+            try {
+                let contentlist = JSON.parse(record.content);
+                setHasRFID(false)
+                contentlist.forEach((item) => {
+                    if (item['has_rfid']) {
+                        setHasRFID(true)
+                    }
+                })
+            } catch (error) {
+                console.log('错误2:', error)
+            }
+        }
+    }, [record])
+    useEffect(() => {
+        checkSelectRfidList()
+        checkIsHasRFID()
+    }, [checkSelectRfidList, checkIsHasRFID])
     let alertTitle = null;
     const { type_id, is_special } = record;
     if (type_id === 1) { ///申领
@@ -213,6 +301,34 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                         </Radio.Group>
                     </Col>
                 </Row>
+                {record.step_number === 2 && record.type_id === 1 && hasRFID ? <div>
+                    <Row style={styles.marginTop}>
+                        <Col span={3}></Col>
+                        <Col span={18}>
+                            <Alert type={selectStatusIsOk ? 'success' : 'error'} showIcon message={alertMessage} />
+                        </Col>
+                    </Row>
+                    <Row style={styles.marginTop}>
+                        <Col span={3}>标签选择: </Col>
+                        <Col span={18}>
+                            <Select
+                                showSearch
+                                optionFilterProp="children"
+                                mode="multiple"
+                                style={{ width: '100%' }}
+                                placeholder="请选择匹配的物品标签；利用PDA扫描获取物品标签名后，手动在此处选择对应标签。请自行保证选择的准确性"
+                                value={selectRfidList}
+                                onChange={(v) => {
+                                    setSelectRfidlist(v)
+                                }}
+                            >
+                                {rfidList.map((item, index) => {
+                                    return <Select.Option key={index} value={item.id}>{item.name}</Select.Option>
+                                })}
+                            </Select>
+                        </Col>
+                    </Row>
+                </div> : null}
                 <Row style={styles.marginTop}>
                     <Col span={3}>
                         备注:
@@ -229,17 +345,20 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                                 icon: <Icon type="info-circle" />,
                                 content: '请自行确保提交信息的准确性--审批操作不可撤销',
                                 onOk: async () => {
-                                    // console.log('1workflok:', workflok)
-                                    // console.log('record:', record)
+                                    console.log('1workflok:', workflok)
+                                    console.log('record:', record)
+                                    // let rfid_situation=false;///是否为
                                     // return;
                                     /// step_number +1 用于表示当前写的审批出现在 step 中的位置
                                     let currentWirteStep = record.step_number;
                                     let step_number_next = status === 1 ? currentWirteStep + 1 : currentWirteStep ///如果选择通过 step+1
                                     // return
-                                    ///插入order_step_log 表中一条记录
-                                    let sql = `insert into order_step_log (order_id,assignee_id,status,remark,createdAt,step_number,step_number_next) values (${record.id},${user.id},${status},'${remark}','${moment().format(FORMAT)}',${currentWirteStep},${step_number_next})`
-                                    let result = await api.query(sql)
-                                    if (result.code !== 0) { return }
+                                    ////移动至下方
+                                    // ///插入order_step_log 表中一条记录
+                                    // let sql = `insert into order_step_log (order_id,assignee_id,status,remark,createdAt,step_number,step_number_next) values (${record.id},${user.id},${status},'${remark}','${moment().format(FORMAT)}',${currentWirteStep},${step_number_next})`
+                                    // let result = await api.query(sql)
+                                    // if (result.code !== 0) { return }
+                                    ////移动至下方
                                     let order_status;
                                     if (status === 1 && step_number_next > workflok.length) {///如果下一步大于 该类表的审核流程数量 那么就说明流程全部走完 该条申请完成 order 的状态要改成 3 完成
                                         order_status = 3
@@ -256,20 +375,24 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                                     } else if (status === 2) {///选择了 正在处理
                                         order_status = 1
                                     }
+                                    if (status === 1 && order_status === 2 && !selectStatusIsOk) {
+                                        message.error('请先选择好物品对应的标签')
+                                        return;
+                                    }
+                                    console.log('selectRfidList:', selectRfidList)
+                                    console.log('selectStatusIsOk:', selectStatusIsOk)
+                                    // return;
                                     // console.log('step_number_next:', step_number_next)
+                                    ////来自上方
+                                    ///插入order_step_log 表中一条记录
+                                    let sql = `insert into order_step_log (order_id,assignee_id,status,remark,createdAt,step_number,step_number_next) values (${record.id},${user.id},${status},'${remark}','${moment().format(FORMAT)}',${currentWirteStep},${step_number_next})`
+                                    let result = await api.query(sql)
+                                    if (result.code !== 0) { return }
                                     let sql2 = `update orders set status=${order_status},step_number=${step_number_next} where id = ${record.id}`
+                                    ////来自上方
                                     // return;
                                     let result2 = await api.query(sql2)
                                     if (result2.code === 0) { message.success('审批成功', 3); getOrderData(); props.refreshTableData() }
-                                    // workflok.forEach((item) => {
-                                    //     // console.log('item.step_number:', item.step_number, 'record.step_number:', record.step_number, 'item.is_over:', item.is_over, 'status:', status)
-                                    //     if (item.step_number === currentWirteStep && item.is_change === 1 && status === 1) {
-                                    //         console.log('库管确认---仓库变动')
-                                    //         console.log('record:', record)
-                                    //         // api.updateStore()
-                                    //         updateStoreHandler(record)
-                                    //     }
-                                    // })
                                     if (record.is_special) { return }///如果 是特殊时段，就不再流程中设计仓库物料变动。要再领料人扫码后直接扣除对应物料的数量
                                     for (let index = 0; index < workflok.length; index++) {
                                         const item = workflok[index];
@@ -279,12 +402,17 @@ function RenderDetail(record, workflok, orderStepLog, getOrderData, props) {
                                             updateStoreHandler(record)
                                         }
                                     }
+                                    /// 移除 标签 is_out = 1
+                                    if (selectRfidList.length > 0) {
+                                        await HttpApi.rfidIsOut({ rfid_id_list: selectRfidList, out_time: moment().format(FORMAT) })
+                                    }
                                 },
                             });
                         }}>提交</Button>
                     </Col>
                 </Row>
-            </> : null}
+            </> : null
+        }
     </div >
 }
 function renderApproveSteps(record, workflok, orderStepLog) {
