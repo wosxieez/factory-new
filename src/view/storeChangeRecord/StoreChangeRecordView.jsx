@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Collapse, Switch, Alert } from 'antd'
+import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Alert } from 'antd'
 import moment from 'moment'
 import HttpApi from '../../http/HttpApi'
-const { Panel } = Collapse;
 // const testList = [
 //     { time: "2020-10-10 10:10:10", user_name: "tom", content_scan: '[{"store_id":43,"store_name":"测试法兰","rfid_list":[{"code":"300833B2DDD9014000000000","name":"鼠标(1)"},{"code":"E200001D881200871760395B","name":"鼠标"}],"rfid_count":2}]', content_lost: '[]' },
 //     { time: "2020-10-10 10:10:10", user_name: "tom", content_scan: '[{"store_id":45,"store_name":"纸纸纸2333","rfid_list":[{"code":"E200001D881200871760395B","name":"纸质rfid"}],"rfid_count":1}]', content_lost: '[{"store_id":46,"count":1,"store_name":"塑料","is_lost":true,"count_lost":1}]' },]
@@ -14,51 +13,60 @@ const { Panel } = Collapse;
 //     return temp_list
 // }
 // const testData = copyList(testList, 100)
+const { Option } = Select;
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 var searchCondition = {};
 var pageCondition = {};
-export default function StoreScanRecordView() {
+export default function StoreChangeRecordView() {
     const [recordList, setRecordList] = useState([])
     const [isLoading, setIsLoading] = useState(false)
     const [defaultTime] = useState([moment().add(-1, 'month').startOf('day'), moment().endOf('day')])
-    const [isExpand, setIsExpand] = useState(true)
     const columns = [{
         title: '时间', dataIndex: 'time', width: 120, align: 'center'
     },
-    { title: '记录人', dataIndex: 'user_name', width: 80, },
+    { title: '操作人', dataIndex: 'user_name', width: 80, },
     {
-        title: '盘存', dataIndex: 'content_scan', render: (text) => {
-            if (text) {
-                try {
-                    let content = JSON.parse(text)
-                    return renderScanContent(content, isExpand)
-                } catch (error) {
-                    console.log('error:', error)
-                    return '-'
-                }
+        title: '原先', dataIndex: 'origin_content', render: (text) => {
+            try {
+                let temp = JSON.parse(text)
+                return temp.map((item, index) => {
+                    return <Tag key={index} color='blue'>
+                        {item['name']} 数量 {item['count']}
+                    </Tag>
+                })
+            } catch (error) {
+                return '-'
             }
-            return '-'
         }
     },
     {
-        title: '遗漏', dataIndex: 'content_lost', render: (text) => {
-            if (text) {
-                try {
-                    let content = JSON.parse(text)
-                    return renderLostContent(content, isExpand)
-                } catch (error) {
-                    console.log('error:', error)
-                    return '-'
-                }
+        title: '变动后', dataIndex: 'change_content', render: (text) => {
+            try {
+                let temp = JSON.parse(text)
+                return temp.map((item, index) => {
+                    return <Tag key={index} color='volcano'>
+                        {item['name']} 数量 {item['count']}
+                    </Tag>
+                })
+            } catch (error) {
+                return '-'
             }
-            return '-'
         }
     },
-    { title: '备注', dataIndex: 'remark', render: (text) => { return text || '-' } }]
+    {
+        title: '货架', dataIndex: 'shelf_name', render: (text) => {
+            return text || '-'
+        }
+    },
+    {
+        title: '操作端', dataIndex: 'type', render: (text) => {
+            return text === 0 ? 'PDA' : '平台'
+        }
+    }]
     const init = useCallback(async () => {
         setIsLoading(true)
         let conditions = { ...searchCondition, ...pageCondition }
-        let list = await HttpApi.getStoreScanRecord(conditions);
+        let list = await HttpApi.getStoreChangeRecords(conditions);
         let afterSort = list.map((item, index) => { item['key'] = index; return item });
         setRecordList(afterSort)
         setIsLoading(false)
@@ -77,10 +85,7 @@ export default function StoreScanRecordView() {
                 init();
             }} /></div>
             <div style={styles.body}>
-                <Alert type='warning' showIcon message={<div style={styles.alertMessage}>
-                    <span>针对【标签物品】的盘存记录。点击盘存物品展示对应标签数据；盘存物品数量过多时，可以点击右边开关【精简 . 展开】</span>
-                    <Switch checkedChildren="展开" unCheckedChildren="精简" defaultChecked={isExpand} onChange={(v) => { setIsExpand(v) }} />
-                </div>} style={{ width: '100%' }} />
+                <Alert type='info' showIcon message='物品数量变动的历史记录' />
                 <Table
                     style={styles.marginTop}
                     loading={isLoading}
@@ -116,7 +121,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
             for (const key in values) {
                 if (values.hasOwnProperty(key)) {
                     const element = values[key];
-                    if (element && element.length > 0) {
+                    if ((element && element.length > 0) || element >= 0) {
                         if (key === 'time') {
                             newObj[key] = [element[0].startOf('day').format(FORMAT), element[1].endOf('day').format(FORMAT)]
                         } else {
@@ -152,10 +157,10 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                 </Form.Item>
             </Col>
             <Col span={6}>
-                <Form.Item label='记录人' {...itemProps}>
+                <Form.Item label='操作人' {...itemProps}>
                     {props.form.getFieldDecorator('user_name', {
                         rules: [{ required: false }]
-                    })(<Input allowClear placeholder="请输入记录人名称" />)}
+                    })(<Input allowClear placeholder="请输入操作人名称" />)}
                 </Form.Item>
             </Col>
             <Col span={6}>
@@ -166,6 +171,27 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                 </Form.Item>
             </Col>
             <Col span={6}>
+                <Form.Item label='货架' {...itemProps}>
+                    {props.form.getFieldDecorator('shelf_name', {
+                        rules: [{ required: false }]
+                    })(<Input allowClear placeholder="请输入货架名称" />)}
+                </Form.Item>
+            </Col>
+        </Row>
+        <Row>
+            <Col span={6}>
+                <Form.Item label='操作端' {...itemProps}>
+                    {props.form.getFieldDecorator('type', {
+                        rules: [{ required: false }]
+                    })(
+                        <Select style={{ width: '100%' }}>
+                            <Option value={0}>PDA</Option>
+                            <Option value={1}>平台</Option>
+                        </Select>
+                    )}
+                </Form.Item>
+            </Col>
+            <Col span={18}>
                 <div style={{ textAlign: 'right', paddingTop: 3 }}>
                     <Button type="primary" htmlType="submit">查询</Button>
                     <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>
@@ -174,49 +200,6 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
         </Row>
     </Form>
 })
-function renderScanContent(contentlist, isExpand) {
-    let temp_header = [];
-    let temp_rfid_count = 0;
-    contentlist.forEach((item) => {
-        temp_rfid_count = temp_rfid_count + item['rfid_count'];
-    })
-    temp_header = <Tag index={'x'} color={'#f5222d'}>{'共计:' + temp_rfid_count}</Tag>
-    if (!isExpand) {
-        contentlist = contentlist.slice(0, 2)
-    }
-    let collapse_list = <Collapse accordion bordered={false}>
-        {contentlist.map((item, index) => {
-            return <Panel header={renderTtile(item, index, temp_header)} key={index} style={styles.customPanelStyle} showArrow={false}>
-                {renderPanel(item['rfid_list'])}
-            </Panel>
-        })}
-    </Collapse>
-    return collapse_list
-    function renderTtile(data, index, temp_header) {
-        return <div style={styles.tiitleBar}> <Tag color={'#1890ff'}>物品:{data['store_name']}</Tag> <Tag color={'#faad14'}>数量:{data['rfid_count']}</Tag>{index === 0 ? temp_header : null}</div>
-    }
-    function renderPanel(rfidlist) {
-        return rfidlist.map((item, index) => {
-            return <div key={index}><Tag color={'volcano'}>标签:{item['name']} 编码:{item['code']}</Tag></div>
-        })
-    }
-}
-function renderLostContent(contentlist, isExpand) {
-    let temp_rfid_count_lost = 0;
-    contentlist.forEach((item) => {
-        temp_rfid_count_lost = temp_rfid_count_lost + item['count_lost'];
-    })
-    if (!isExpand) {
-        contentlist = contentlist.slice(0, 2)
-    }
-    return contentlist.map((item, index) => {
-        return <div key={index} style={{ ...styles.tiitleBar, marginBottom: 10 }}>
-            <Tag color={'#1890ff'}>物品:{item['store_name']}</Tag>
-            <Tag color={'#faad14'}>数量:{item['count_lost']}</Tag>
-            {index === 0 ? <Tag index={'x'} color={'#f5222d'}>{'共计:' + temp_rfid_count_lost}</Tag> : null}
-        </div>
-    })
-}
 const styles = {
     root: {
         backgroundColor: '#F1F2F5',

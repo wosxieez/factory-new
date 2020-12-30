@@ -26,6 +26,8 @@ import moment from 'moment'
 import NFCShelfs from './nfcShelf/NFCShelfs';
 import RfidView from './rfid/RfidView';
 import StoreScanRecordView from './storeScanRecord/StoreScanRecordView';
+import ShelfScanRecordView from './shelfScanRecord/ShelfScanRecordView';
+import StoreChangeRecordView from './storeChangeRecord/StoreChangeRecordView';
 const weather = <div id="tp-weather-widget"></div>
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 // import CamView from './cam/CamView';
@@ -204,10 +206,20 @@ export default (props) => {
           </Menu.Item>
         </SubMenu>
         {hasPermission5 ? <SubMenu key={'记录'} title={<span><Icon type="reconciliation" /><span>记录</span></span>}>
-          <Menu.Item key={'/main/record/scanner'}>
-            <Icon type="scan" />
-            <span className="nav-text">扫描盘存</span>
-            <Link to={`${props.match.url}/record/scanner`} />
+          <Menu.Item key={'/main/record/storechange'}>
+            <Icon type="area-chart" />
+            <span className="nav-text">物品变动</span>
+            <Link to={`${props.match.url}/record/storechange`} />
+          </Menu.Item>
+          <Menu.Item key={'/main/record/shelfscanner'}>
+            <Icon type="hdd" />
+            <span className="nav-text">货架盘存</span>
+            <Link to={`${props.match.url}/record/shelfscanner`} />
+          </Menu.Item>
+          <Menu.Item key={'/main/record/storescanner'}>
+            <Icon type="switcher" />
+            <span className="nav-text">标签盘存</span>
+            <Link to={`${props.match.url}/record/storescanner`} />
           </Menu.Item>
         </SubMenu> : null}
         {hasPermission5 ?
@@ -286,7 +298,9 @@ export default (props) => {
         <Route path={`${props.match.url}/setting/specialtime`} component={SpecialTime} />
         <Route path={`${props.match.url}/setting/nfc`} component={NFCShelfs} />
         <Route path={`${props.match.url}/setting/rfid`} component={RfidView} />
-        <Route path={`${props.match.url}/record/scanner`} component={StoreScanRecordView} />
+        <Route path={`${props.match.url}/record/storescanner`} component={StoreScanRecordView} />
+        <Route path={`${props.match.url}/record/shelfscanner`} component={ShelfScanRecordView} />
+        <Route path={`${props.match.url}/record/storechange`} component={StoreChangeRecordView} />
 
         {/* <Route path={`${props.match.url}/usertag`} component={() => { return <TagView type={1} /> }} /> */}
         {/* <Route path={`${props.match.url}/camview`} component={CamView} /> */}

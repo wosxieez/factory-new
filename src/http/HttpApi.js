@@ -248,8 +248,8 @@ const HttpApi = {
         }
         return []
     },
-    getStoreScanRecordLength: async () => {
-        let sql = `select count(*) as count from store_scan_records`
+    getTableLength: async ({ tablename }) => {
+        let sql = `select count(*) as count from ${tablename}`
         let result = await HttpApi.obs({ sql })
         if (result.code === 0) {
             return result.data
@@ -286,6 +286,45 @@ const HttpApi = {
             return true
         }
         return false
+    },
+    /**
+     *  分页查询物品数量变动记录
+     * @param {*} param0 
+     */
+    getStoreChangeRecords: async ({ store_name, user_name, time, page, pageSize, shelf_name, type }) => {
+        let sql_type = type === 0 || type > 0 ? ` and type = ${type}` : ''
+        let sql_shelf_name = !shelf_name ? `` : ` and  shelf_name like '%${shelf_name}%'`
+        let sql_user_name = !user_name ? `` : ` and  user_name like '%${user_name}%'`
+        let sql_store_name = !store_name ? `` : ` and  (origin_content like '%${store_name}%'  ||  change_content like '%${store_name}%')`///记录里面有这个物品的名字
+        let sql_time = ` time >=  '${time[0]}' and time <= '${time[1]}'`
+        let all_sql_condtion = sql_time + sql_user_name + sql_store_name + sql_shelf_name + sql_type
+        let startPage = (page - 1) * pageSize;
+        let sql = `select * from store_change_records where ${all_sql_condtion} order by id desc limit ${startPage},${pageSize} `
+        // console.log('sql:', sql)
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return result.data
+        }
+        return []
+    },
+    /**
+    *  分页查询货架扫描记录
+    * @param {*} param0 
+    */
+    getShelfScanRecords: async ({ store_name, user_name, time, page, pageSize, shelf_name }) => {
+        let sql_shelf_name = !shelf_name ? `` : ` and  shelf_name like '%${shelf_name}%'`
+        let sql_user_name = !user_name ? `` : ` and  user_name like '%${user_name}%'`
+        let sql_store_name = !store_name ? `` : ` and  (content like '%${store_name}%')`///记录里面有这个物品的名字
+        let sql_time = ` time >=  '${time[0]}' and time <= '${time[1]}'`
+        let all_sql_condtion = sql_time + sql_user_name + sql_store_name + sql_shelf_name
+        let startPage = (page - 1) * pageSize;
+        let sql = `select * from shelf_scan_records where ${all_sql_condtion} order by id desc limit ${startPage},${pageSize} `
+        // console.log('sql:', sql)
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return result.data
+        }
+        return []
     }
 }
 export default HttpApi
