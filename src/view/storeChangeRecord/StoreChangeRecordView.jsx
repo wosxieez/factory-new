@@ -31,7 +31,8 @@ export default function StoreChangeRecordView() {
                 if (record['change_type'] === 0) {
                     let temp = JSON.parse(text)
                     return temp.map((item, index) => {
-                        return <Tag key={index} color='orange'>
+                        return <Tag key={index} color='#faad14'>
+                            {item['has_rfid'] === 1 ? <Badge color="#f50" /> : null}
                             {item['name']} 数量 {item['count']}
                         </Tag>
                     })
@@ -41,6 +42,7 @@ export default function StoreChangeRecordView() {
                         let temp = JSON.parse(record['remove_content'])
                         return temp.map((item, index) => {
                             return <Tag key={index} color='red'>
+                                {item['has_rfid'] === 1 ? <Badge color="#f50" /> : null}
                                 {item['name']} 数量 {item['count']}
                             </Tag>
                         })
@@ -57,7 +59,8 @@ export default function StoreChangeRecordView() {
                 if (record['change_type'] === 0) {
                     let temp = JSON.parse(text)
                     return temp.map((item, index) => {
-                        return <Tag key={index} color='orange'>
+                        return <Tag key={index} color='#faad14'>
+                            {item['has_rfid'] === 1 ? <Badge color="#f50" /> : null}
                             {item['name']} 数量 {item['count']}
                         </Tag>
                     })
@@ -66,7 +69,8 @@ export default function StoreChangeRecordView() {
                     else if (record['add_content'] && !record['remove_content']) {
                         let temp = JSON.parse(record['add_content'])
                         return temp.map((item, index) => {
-                            return <Tag key={index} color='green'>
+                            return <Tag key={index} color='#52c41a'>
+                                {item['has_rfid'] === 1 ? <Badge color="#f50" /> : null}
                                 {item['name']} 数量 {item['count']}
                             </Tag>
                         })
@@ -80,10 +84,10 @@ export default function StoreChangeRecordView() {
     {
         title: '说明', dataIndex: 'other', render: (text, record) => {
             if (record['change_type'] === 0) {
-                return <Badge color='orange' text='数量变动' />
+                return <Badge color='#faad14' text='数量变动' />
             } else if (record['change_type'] === 1) {
                 if (record['add_content'] && !record['remove_content']) {
-                    return <Badge color='green' text='新增物品' />
+                    return <Badge color='#52c41a' text='新增物品' />
                 } else if (!record['add_content'] && record['remove_content']) {
                     return <Badge color='red' text='删除物品' />
                 }

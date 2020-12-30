@@ -286,7 +286,7 @@ export async function checkStoreCountChange({ origin_store, change_store, is_edi
   change_data['id'] = origin_store['id']
   change_data['name'] = origin_store['name']
   change_data['count'] = change_store['count']
-  change_data['has_rfid'] = change_data['has_rfid'] ? 1 : 0
+  change_data['has_rfid'] = change_store['has_rfid'] ? 1 : 0
   await storeCountChange({ ...data, origin_content: [origin_data], change_content: [change_data] })
 }
 /**

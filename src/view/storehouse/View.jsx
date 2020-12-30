@@ -143,7 +143,7 @@ export default props => {
         if (result.code === 0) {
           if (store_id_list.length > 0) {
             let res_clean = await HttpApi.unbindRfidToStore({ store_id_list })//解绑标签
-            if (res_clean) { message.error('解除标签绑定成功') } else { message.error('解除标签绑定失败') }
+            if (res_clean) { message.success('解除标签绑定成功') } else { message.error('解除标签绑定失败') }
           }
           message.success('删除成功')
           checkStoreClassChange({ is_add: 0, content: selectedRows })

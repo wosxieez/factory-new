@@ -192,7 +192,6 @@ const HttpApi = {
     },
     unbindRfidToStore: async ({ store_id_list }) => {
         let sql = `update rfids set store_id = null where store_id in (${store_id_list.join(',')})`
-        console.log('unbindRfidToStore:', sql)
         let result = await HttpApi.obs({ sql })
         if (result.code === 0) {
             return true
