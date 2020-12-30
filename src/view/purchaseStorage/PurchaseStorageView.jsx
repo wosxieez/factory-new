@@ -4,7 +4,7 @@ import moment from 'moment';
 import api from '../../http';
 import AddForm from '../storehouse/AddFrom';
 import HttpApi from '../../http/HttpApi';
-import { userinfo } from '../../util/Tool';
+import { checkStoreClassChange, userinfo } from '../../util/Tool';
 const { Option } = Select;
 var storeList = [{ key: 0 }]
 const starIcon = <span style={{ color: 'red' }}>* </span>
@@ -38,6 +38,9 @@ export default Form.create({ name: 'form' })(props => {
                 setIsAdding(false)
                 message.success('创建物品成功')
                 listAllStore();
+                const store_id = response.data.id
+                data['id'] = store_id
+                checkStoreClassChange({ is_add: 1, content: [data] })
             }
         }, [listAllStore])
     const columns = [

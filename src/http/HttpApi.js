@@ -248,19 +248,12 @@ const HttpApi = {
         }
         return []
     },
-    getTableLength: async ({ tablename }) => {
-        let sql = `select count(*) as count from ${tablename}`
-        let result = await HttpApi.obs({ sql })
-        if (result.code === 0) {
-            return result.data
-        }
-        return []
-    },
     /**
      * 分页查询物品扫描记录
      * @param {*} param0 
      */
     getStoreScanRecord: async ({ store_name, user_name, time, page, pageSize }) => {
+        let result_data = { list: [], count: 0 };
         let sql_user_name = !user_name ? `` : ` and  user_name like '%${user_name}%'`
         let sql_store_name = !store_name ? `` : ` and  (content_scan like '%${store_name}%'  ||  content_lost like '%${store_name}%')`///扫描或遗漏的记录里面有这个物品的名字
         let sql_time = ` time >=  '${time[0]}' and time <= '${time[1]}'`
@@ -268,12 +261,16 @@ const HttpApi = {
         // console.log('all_sql_condtion:', all_sql_condtion)
         let startPage = (page - 1) * pageSize;
         let sql = `select * from store_scan_records where ${all_sql_condtion} order by id desc limit ${startPage},${pageSize} `
-        // console.log('sql:', sql)
         let result = await HttpApi.obs({ sql })
         if (result.code === 0) {
-            return result.data
+            result_data['list'] = result.data
         }
-        return []
+        let sql_len = `select  count(*) as count from store_scan_records where ${all_sql_condtion}`
+        let result_len = await HttpApi.obs({ sql: sql_len })
+        if (result_len.code === 0) {
+            result_data['count'] = result_len.data[0].count
+        }
+        return result_data
     },
     /**
      * 标签出库
@@ -292,6 +289,7 @@ const HttpApi = {
      * @param {*} param0 
      */
     getStoreChangeRecords: async ({ store_name, user_name, time, page, pageSize, shelf_name, type }) => {
+        let result_data = { list: [], count: 0 };
         let sql_type = type === 0 || type > 0 ? ` and type = ${type}` : ''
         let sql_shelf_name = !shelf_name ? `` : ` and  shelf_name like '%${shelf_name}%'`
         let sql_user_name = !user_name ? `` : ` and  user_name like '%${user_name}%'`
@@ -303,15 +301,21 @@ const HttpApi = {
         // console.log('sql:', sql)
         let result = await HttpApi.obs({ sql })
         if (result.code === 0) {
-            return result.data
+            result_data['list'] = result.data
         }
-        return []
+        let sql_len = `select  count(*) as count from store_change_records where ${all_sql_condtion}`
+        let result_len = await HttpApi.obs({ sql: sql_len })
+        if (result_len.code === 0) {
+            result_data['count'] = result_len.data[0].count
+        }
+        return result_data
     },
     /**
     *  分页查询货架扫描记录
     * @param {*} param0 
     */
     getShelfScanRecords: async ({ store_name, user_name, time, page, pageSize, shelf_name }) => {
+        let result_data = { list: [], count: 0 };
         let sql_shelf_name = !shelf_name ? `` : ` and  shelf_name like '%${shelf_name}%'`
         let sql_user_name = !user_name ? `` : ` and  user_name like '%${user_name}%'`
         let sql_store_name = !store_name ? `` : ` and  (content like '%${store_name}%')`///记录里面有这个物品的名字
@@ -322,9 +326,14 @@ const HttpApi = {
         // console.log('sql:', sql)
         let result = await HttpApi.obs({ sql })
         if (result.code === 0) {
-            return result.data
+            result_data['list'] = result.data
         }
-        return []
+        let sql_len = `select  count(*) as count from shelf_scan_records where ${all_sql_condtion}`
+        let result_len = await HttpApi.obs({ sql: sql_len })
+        if (result_len.code === 0) {
+            result_data['count'] = result_len.data[0].count
+        }
+        return result_data
     },
     /**
     * 物品数量种类变动记录

@@ -20,7 +20,9 @@ var pageCondition = {};
 export default function StoreChangeRecordView() {
     const [recordList, setRecordList] = useState([])
     const [isLoading, setIsLoading] = useState(false)
+    const [listLength, setListLength] = useState(0)
     const [defaultTime] = useState([moment().add(-1, 'month').startOf('day'), moment().endOf('day')])
+    const [currentPage, setCurrentPage] = useState(1)
     const columns = [{
         title: '时间', dataIndex: 'time', width: 120, align: 'center'
     },
@@ -116,8 +118,9 @@ export default function StoreChangeRecordView() {
     const init = useCallback(async () => {
         setIsLoading(true)
         let conditions = { ...searchCondition, ...pageCondition }
-        let list = await HttpApi.getStoreChangeRecords(conditions);
-        let afterSort = list.map((item, index) => { item['key'] = index; return item });
+        let data = await HttpApi.getStoreChangeRecords(conditions);
+        setListLength(data['count'])
+        let afterSort = data['list'].map((item, index) => { item['key'] = index; return item });
         setRecordList(afterSort)
         setIsLoading(false)
     }, [])
@@ -132,6 +135,8 @@ export default function StoreChangeRecordView() {
         <div style={styles.root}>
             <div style={styles.header}><Searchfrom defaultTime={defaultTime} startSearch={async (conditionsValue) => {
                 searchCondition = conditionsValue;
+                pageCondition = { page: 1, pageSize: 10 }
+                setCurrentPage(1)
                 init();
             }} /></div>
             <div style={styles.body}>
@@ -144,15 +149,22 @@ export default function StoreChangeRecordView() {
                     columns={columns}
                     dataSource={recordList}
                     pagination={{
+                        total: listLength,
+                        showTotal: () => {
+                            return <div>共{listLength}条记录</div>
+                        },
+                        current: currentPage,
                         showSizeChanger: true,
                         showQuickJumper: true,
                         pageSizeOptions: ['10', '50', '100'],
                         onShowSizeChange: (page, pageSize) => {
                             pageCondition = { page, pageSize }
+                            setCurrentPage(page)
                             init();
                         },
                         onChange: (page, pageSize) => {
                             pageCondition = { page, pageSize }
+                            setCurrentPage(page)
                             init();
                         }
                     }}

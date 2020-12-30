@@ -268,7 +268,13 @@ export async function storeCountChange({ origin_content, change_content, user_id
   let res = await HttpApi.insertStoreChangeRecord(data)
   return res
 }
-
+/**
+ * 检查物品数量发生变化
+ *  origin_store, 原始数据
+ * change_store,  变动后数据
+ * is_edit 是否为编辑
+ * @param {*} param0 
+ */
 export async function checkStoreCountChange({ origin_store, change_store, is_edit }) {
   let user = userinfo();
   let data = {};
@@ -290,6 +296,7 @@ export async function checkStoreCountChange({ origin_store, change_store, is_edi
   await storeCountChange({ ...data, origin_content: [origin_data], change_content: [change_data] })
 }
 /**
+ * 检查物品种类发生变化
  * content JSON
  * @param {*} param0 
  */
@@ -300,7 +307,7 @@ export async function checkStoreClassChange({ is_add, content }) {
     let obj = {};
     obj['id'] = item['id']
     obj['name'] = item['name']
-    obj['count'] = item['count']
+    obj['count'] = item['count'] || 0
     obj['has_rfid'] = item['has_rfid'] ? 1 : 0
     return obj
   })
