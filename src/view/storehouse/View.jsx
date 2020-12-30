@@ -4,7 +4,7 @@ import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag,
 import moment from 'moment'
 import AddForm from './AddFrom'
 import UpdateForm from './UpdateForm'
-import { getJsonTree, filterTag } from '../../util/Tool'
+import { getJsonTree, filterTag, checkStoreCountChange, checkStoreClassChange } from '../../util/Tool'
 import { userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi'
 import AddFromRFID from './AddFromRFID'
@@ -26,6 +26,7 @@ export default props => {
   const addFormRFID = useRef()
   const updateForm = useRef()
   const updateFormRFID = useRef()
+  const [shelfList, setShelfList] = useState([])
   const [storeList, setStoreList] = useState([])
   const [currentItem, setCurrentItem] = useState({})
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
@@ -53,6 +54,8 @@ export default props => {
       setStoreList(originStoreList)
     }
     setIsLoading(false)
+    let res_shelf = await HttpApi.getNfcShelfList();
+    setShelfList(res_shelf)
   }, [])
   useEffect(() => {
     listAllStore()
@@ -61,21 +64,31 @@ export default props => {
     async data => {
       const response = await api.addStore(data)
       if (response.code === 0) {
+        ///要拿到返回结果。id 作为rfid的store_id参数进行更新。
+        const store_id = response.data.id
+        //////////////////////
+        shelfList.forEach((item) => { if (item['id'] === data['nfc_shelf_id']) { data['shelf_name'] = item['name'] } })
+        data['id'] = store_id
+        //////////////////////
         if (data['has_rfid'] === 1) {
-          ///如果是标签物品，要拿到返回结果。id，作为rfid的store_id参数进行更新。
-          const store_id = response.data.id
           const rfids = data['rfids']
           let res_bind = await HttpApi.bindRfidToStore({ rfids, store_id })
-          if (res_bind) { setIsAddingRFID(false); listAllStore(); message.success('添加成功') }
+          if (res_bind) {
+            setIsAddingRFID(false);
+            listAllStore();
+            message.success('添加成功')
+            checkStoreClassChange({ is_add: 1, content: [data] })
+          }
           else { message.error('添加失败1') }
         } else {
           setIsAdding(false)
           listAllStore()
           message.success('添加成功')
+          checkStoreClassChange({ is_add: 1, content: [data] })
         }
       } else { message.error('添加失败2') }
     },
-    [listAllStore]
+    [listAllStore, shelfList]
   )
   const updateData = useCallback(
     async data => {
@@ -93,17 +106,23 @@ export default props => {
             else { message.error('更新失败4') }
           } else {
             message.success('更新成功')
+            if (data['count'] !== currentItem['count']) {///数量发生变化
+              checkStoreCountChange({ origin_store: currentItem, change_store: data, is_edit: 1 })
+            }
             setIsUpdatingRFID(false);
             listAllStore();
           }
         } else {
-          message.success('修改成功', 3)
+          message.success('修改成功')
+          if (data['count'] !== currentItem['count']) {///数量发生变化
+            checkStoreCountChange({ origin_store: currentItem, change_store: data, is_edit: 1 })
+          }
           setIsUpdating(false)
           listAllStore()
         }
       }
     },
-    [currentItem.id, listAllStore]
+    [currentItem, listAllStore]
   )
 
   const batchDelete = useCallback(() => {
@@ -122,10 +141,13 @@ export default props => {
         let idList = selectedRows.map(item => item.id)
         let result = await api.removeStore(idList)
         if (result.code === 0) {
-          let res_clean = await HttpApi.unbindRfidToStore({ store_id_list })//解绑标签
-          if (!res_clean) { message.error('接触标签绑定失败') }
-          message.success('删除成功', 4)
-        }
+          if (store_id_list.length > 0) {
+            let res_clean = await HttpApi.unbindRfidToStore({ store_id_list })//解绑标签
+            if (res_clean) { message.error('解除标签绑定成功') } else { message.error('解除标签绑定失败') }
+          }
+          message.success('删除成功')
+          checkStoreClassChange({ is_add: 0, content: selectedRows })
+        } else { message.success('删除失败') }
         listAllStore()
       },
     })
@@ -377,6 +399,9 @@ export default props => {
           onOk={() => {
             addForm.current.validateFields(async (error, data) => {
               if (!error) {
+                ///测试 加上id
+                // data['id'] = 999
+                // checkStoreClassChange({ is_add: 1, content: [data] })
                 addData(data)
                 addForm.current.resetFields()
               }

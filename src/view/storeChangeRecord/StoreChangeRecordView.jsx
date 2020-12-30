@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Alert } from 'antd'
+import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Alert, Badge } from 'antd'
 import moment from 'moment'
 import HttpApi from '../../http/HttpApi'
 // const testList = [
@@ -26,30 +26,67 @@ export default function StoreChangeRecordView() {
     },
     { title: '操作人', dataIndex: 'user_name', width: 80, },
     {
-        title: '原先', dataIndex: 'origin_content', render: (text) => {
+        title: '原先', dataIndex: 'origin_content', render: (text, record) => {
             try {
-                let temp = JSON.parse(text)
-                return temp.map((item, index) => {
-                    return <Tag key={index} color='blue'>
-                        {item['name']} 数量 {item['count']}
-                    </Tag>
-                })
+                if (record['change_type'] === 0) {
+                    let temp = JSON.parse(text)
+                    return temp.map((item, index) => {
+                        return <Tag key={index} color='orange'>
+                            {item['name']} 数量 {item['count']}
+                        </Tag>
+                    })
+                } else if (record['change_type'] === 1) {
+                    if (record['add_content'] && !record['remove_content']) { return '-' }
+                    else if (!record['add_content'] && record['remove_content']) {
+                        let temp = JSON.parse(record['remove_content'])
+                        return temp.map((item, index) => {
+                            return <Tag key={index} color='red'>
+                                {item['name']} 数量 {item['count']}
+                            </Tag>
+                        })
+                    }
+                }
             } catch (error) {
                 return '-'
             }
         }
     },
     {
-        title: '变动后', dataIndex: 'change_content', render: (text) => {
+        title: '变动后', dataIndex: 'change_content', render: (text, record) => {
             try {
-                let temp = JSON.parse(text)
-                return temp.map((item, index) => {
-                    return <Tag key={index} color='volcano'>
-                        {item['name']} 数量 {item['count']}
-                    </Tag>
-                })
+                if (record['change_type'] === 0) {
+                    let temp = JSON.parse(text)
+                    return temp.map((item, index) => {
+                        return <Tag key={index} color='orange'>
+                            {item['name']} 数量 {item['count']}
+                        </Tag>
+                    })
+                } else if (record['change_type'] === 1) {
+                    if (!record['add_content'] && record['remove_content']) { return '-' }
+                    else if (record['add_content'] && !record['remove_content']) {
+                        let temp = JSON.parse(record['add_content'])
+                        return temp.map((item, index) => {
+                            return <Tag key={index} color='green'>
+                                {item['name']} 数量 {item['count']}
+                            </Tag>
+                        })
+                    }
+                }
             } catch (error) {
                 return '-'
+            }
+        }
+    },
+    {
+        title: '说明', dataIndex: 'other', render: (text, record) => {
+            if (record['change_type'] === 0) {
+                return <Badge color='orange' text='数量变动' />
+            } else if (record['change_type'] === 1) {
+                if (record['add_content'] && !record['remove_content']) {
+                    return <Badge color='green' text='新增物品' />
+                } else if (!record['add_content'] && record['remove_content']) {
+                    return <Badge color='red' text='删除物品' />
+                }
             }
         }
     },
@@ -85,7 +122,7 @@ export default function StoreChangeRecordView() {
                 init();
             }} /></div>
             <div style={styles.body}>
-                <Alert type='info' showIcon message='物品数量变动的历史记录' />
+                <Alert type='info' showIcon message='物品数量变动的历史记录【只包含在平台端库存列表模块中对物品的数量、种类的改动 + PDA端的数据修订记录】' />
                 <Table
                     style={styles.marginTop}
                     loading={isLoading}

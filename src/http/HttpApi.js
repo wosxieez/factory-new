@@ -192,6 +192,7 @@ const HttpApi = {
     },
     unbindRfidToStore: async ({ store_id_list }) => {
         let sql = `update rfids set store_id = null where store_id in (${store_id_list.join(',')})`
+        console.log('unbindRfidToStore:', sql)
         let result = await HttpApi.obs({ sql })
         if (result.code === 0) {
             return true
@@ -295,7 +296,7 @@ const HttpApi = {
         let sql_type = type === 0 || type > 0 ? ` and type = ${type}` : ''
         let sql_shelf_name = !shelf_name ? `` : ` and  shelf_name like '%${shelf_name}%'`
         let sql_user_name = !user_name ? `` : ` and  user_name like '%${user_name}%'`
-        let sql_store_name = !store_name ? `` : ` and  (origin_content like '%${store_name}%'  ||  change_content like '%${store_name}%')`///记录里面有这个物品的名字
+        let sql_store_name = !store_name ? `` : ` and  (origin_content like '%${store_name}%'  ||  change_content like '%${store_name}%' ||  add_content like '%${store_name}%' ||  remove_content like '%${store_name}%')`///记录里面有这个物品的名字
         let sql_time = ` time >=  '${time[0]}' and time <= '${time[1]}'`
         let all_sql_condtion = sql_time + sql_user_name + sql_store_name + sql_shelf_name + sql_type
         let startPage = (page - 1) * pageSize;
@@ -325,6 +326,39 @@ const HttpApi = {
             return result.data
         }
         return []
-    }
+    },
+    /**
+    * 物品数量种类变动记录
+    * change_type = 0, 变动类型 0 数量 1 种类
+    * type = 1, 操作平台类型 0 pda 1pc
+    * add_content, 新增物品内容 【change_type=1时】
+    * remove_content, 移除物品内容【change_type=1时】
+    * origin_content, 原先物品数量 【change_type=0时】
+    * change_content, 变动后物品数量 【change_type=0时】
+    * time, 时间
+    * user_id, 操作人id
+    * user_name, 操作人名称
+    * shelf_id, 货架id
+    * shelf_name 货架名称
+    * is_edit 1编辑库存列表操作 0出库、采购、退料
+    * remark 出库、采购、退料
+    * @param {*} param0 
+    */
+    insertStoreChangeRecord: async ({ change_type = 0, type = 1, add_content, remove_content, origin_content, change_content, time, user_id, user_name, shelf_id, shelf_name, is_edit, remark }) => {
+        let sql = ``
+        if (change_type === 0) {///物品数量变动
+            sql = `insert into store_change_records (origin_content, change_content,time, user_id, user_name, shelf_id, shelf_name, type, change_type, is_edit, remark) values 
+            (${origin_content ? "'" + origin_content + "'" : null},${change_content ? "'" + change_content + "'" : null},'${time}',${user_id},'${user_name}',${shelf_id ? shelf_id : null},${shelf_name ? "'" + shelf_name + "'" : null},${type},${change_type},${is_edit},${remark ? "'" + remark + "'" : null})`
+        } else {///物品种类变动【新增或删除物品】
+            sql = `insert into store_change_records (add_content, remove_content,time, user_id, user_name, shelf_id, shelf_name, type, change_type, is_edit, remark) values 
+            (${add_content ? "'" + add_content + "'" : null},${remove_content ? "'" + remove_content + "'" : null},'${time}',${user_id},'${user_name}',${shelf_id ? shelf_id : null},${shelf_name ? "'" + shelf_name + "'" : null},${type},${change_type},${is_edit},${remark ? "'" + remark + "'" : null})`
+        }
+        // console.log('sql:', sql)
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return true
+        }
+        return false
+    },
 }
 export default HttpApi

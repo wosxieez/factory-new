@@ -221,3 +221,95 @@ export function userinfo() {
   }
   return result
 }
+
+/**
+ * 物品种类发生变动
+ * change_type 0 数量 1种类
+ * content [{store_id:1,store_name:'物品A',count:x},...]
+ * is_add 1 / 0 增加或删除
+ * is_edit = 1, 物品种类发生变动一定是编辑物品列表新增物品
+ * @param {*} param0 
+ */
+export async function storeClassChange({ content, is_add, user_id, user_name, shelf_id, shelf_name, is_edit = 1 }) {
+  let data = {};
+  data['change_type'] = 1;
+  data['time'] = moment().format('YYYY-MM-DD HH:mm:ss');
+  data['user_id'] = user_id;
+  data['user_name'] = user_name;
+  data['shelf_id'] = shelf_id;
+  data['shelf_name'] = shelf_name;
+  data['is_edit'] = is_edit;
+  if (is_add) {
+    data['add_content'] = JSON.stringify(content);
+  } else {
+    data['remove_content'] = JSON.stringify(content);
+  }
+  let res = await HttpApi.insertStoreChangeRecord(data)
+  return res
+}
+/**
+ * 物品数量发生变动
+ * origin_content [{store_id:1,store_name:'物品A',count:x},...]
+ * change_content [{store_id:1,store_name:'物品A',count:y},...]
+ * @param {*} param0 
+ */
+export async function storeCountChange({ origin_content, change_content, user_id, user_name, shelf_id, shelf_name, is_edit, remark = null }) {
+  let data = {};
+  data['change_type'] = 0;
+  data['time'] = moment().format('YYYY-MM-DD HH:mm:ss');
+  data['user_id'] = user_id;
+  data['user_name'] = user_name;
+  data['shelf_id'] = shelf_id;
+  data['shelf_name'] = shelf_name;
+  data['origin_content'] = JSON.stringify(origin_content);
+  data['change_content'] = JSON.stringify(change_content);
+  data['is_edit'] = is_edit;
+  data['remark'] = remark;
+  let res = await HttpApi.insertStoreChangeRecord(data)
+  return res
+}
+
+export async function checkStoreCountChange({ origin_store, change_store, is_edit }) {
+  let user = userinfo();
+  let data = {};
+  data['user_id'] = user['id']
+  data['user_name'] = user['name']
+  data['shelf_id'] = origin_store['nfc_shelf_id']
+  data['shelf_name'] = origin_store['nfc_shelf'] ? origin_store['nfc_shelf']['name'] : null
+  data['is_edit'] = is_edit
+  let origin_data = {};
+  origin_data['id'] = origin_store['id']
+  origin_data['name'] = origin_store['name']
+  origin_data['count'] = origin_store['count']
+  origin_data['has_rfid'] = origin_store['has_rfid'] ? 1 : 0
+  let change_data = {};
+  change_data['id'] = origin_store['id']
+  change_data['name'] = origin_store['name']
+  change_data['count'] = change_store['count']
+  change_data['has_rfid'] = change_data['has_rfid'] ? 1 : 0
+  await storeCountChange({ ...data, origin_content: [origin_data], change_content: [change_data] })
+}
+/**
+ * content JSON
+ * @param {*} param0 
+ */
+export async function checkStoreClassChange({ is_add, content }) {
+  let user = userinfo();
+  let content_temp = [];
+  content_temp = content.map((item) => {
+    let obj = {};
+    obj['id'] = item['id']
+    obj['name'] = item['name']
+    obj['count'] = item['count']
+    obj['has_rfid'] = item['has_rfid'] ? 1 : 0
+    return obj
+  })
+  let data = {};
+  data['user_id'] = user['id']
+  data['user_name'] = user['name']
+  if (is_add) {///添加物品种类时，是一个一个添加的可能有货架信息一一对应。删除时，可能存在物品所属不同的货架。所以删除时，不包含货架信息
+    data['shelf_id'] = content[0]['nfc_shelf_id']
+    data['shelf_name'] = content[0]['shelf_name']
+  }
+  await storeClassChange({ is_add, content: content_temp, ...data });
+}
