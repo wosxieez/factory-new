@@ -103,7 +103,7 @@ export default function StoreChangeRecordView() {
         title: '操作端', dataIndex: 'type', render: (text) => {
             return text === 0 ?
                 <div>
-                    <Icon type="mobile" theme="twoTone" twoToneColor="#eb2f96" />
+                    <Icon type="mobile" theme="twoTone" twoToneColor="#faad14" />
                     <span style={styles.subtitle}>PDA</span>
                 </div>
                 :
