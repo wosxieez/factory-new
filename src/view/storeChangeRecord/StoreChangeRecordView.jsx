@@ -89,7 +89,7 @@ export default function StoreChangeRecordView() {
                 return <Badge color='#faad14' text='数量变动' />
             } else if (record['change_type'] === 1) {
                 if (record['add_content'] && !record['remove_content']) {
-                    return <Badge color='#52c41a' text='新增物品' />
+                    return <Badge color='#52c41a' text='创建物品' />
                 } else if (!record['add_content'] && record['remove_content']) {
                     return <Badge color='red' text='删除物品' />
                 }
