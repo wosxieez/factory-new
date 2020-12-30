@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Alert, Badge } from 'antd'
+import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Alert, Badge, Icon } from 'antd'
 import moment from 'moment'
 import HttpApi from '../../http/HttpApi'
 // const testList = [
@@ -101,7 +101,16 @@ export default function StoreChangeRecordView() {
     },
     {
         title: '操作端', dataIndex: 'type', render: (text) => {
-            return text === 0 ? 'PDA' : '平台'
+            return text === 0 ?
+                <div>
+                    <Icon type="mobile" theme="twoTone" twoToneColor="#eb2f96" />
+                    <span style={styles.subtitle}>PDA</span>
+                </div>
+                :
+                <div>
+                    <Icon type="appstore" theme="twoTone" />
+                    <span style={styles.subtitle}>平台</span>
+                </div>
         }
     }]
     const init = useCallback(async () => {
@@ -263,8 +272,8 @@ const styles = {
         padding: 24,
         marginTop: 16
     },
-    button: {
-        marginLeft: 10
+    subtitle: {
+        marginLeft: 5
     },
     alertMessage: {
         display: 'flex',
