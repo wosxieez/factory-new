@@ -1,18 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Alert, Badge, Icon } from 'antd'
+import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Alert, Badge, Icon, Collapse } from 'antd'
 import moment from 'moment'
 import HttpApi from '../../http/HttpApi'
-// const testList = [
-//     { time: "2020-10-10 10:10:10", user_name: "tom", content_scan: '[{"store_id":43,"store_name":"测试法兰","rfid_list":[{"code":"300833B2DDD9014000000000","name":"鼠标(1)"},{"code":"E200001D881200871760395B","name":"鼠标"}],"rfid_count":2}]', content_lost: '[]' },
-//     { time: "2020-10-10 10:10:10", user_name: "tom", content_scan: '[{"store_id":45,"store_name":"纸纸纸2333","rfid_list":[{"code":"E200001D881200871760395B","name":"纸质rfid"}],"rfid_count":1}]', content_lost: '[{"store_id":46,"count":1,"store_name":"塑料","is_lost":true,"count_lost":1}]' },]
-// function copyList(list, times = 1) {
-//     let temp_list = []
-//     for (let index = 0; index < times; index++) {
-//         temp_list = [...JSON.parse(JSON.stringify(temp_list)), ...list]
-//     }
-//     return temp_list
-// }
-// const testData = copyList(testList, 100)
+const { Panel } = Collapse;
 const { Option } = Select;
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 var searchCondition = {};
@@ -84,14 +74,23 @@ export default function StoreChangeRecordView() {
         }
     },
     {
-        title: '说明', dataIndex: 'other', render: (text, record) => {
+        title: '说明【备注】', dataIndex: 'other', render: (text, record) => {
             if (record['change_type'] === 0) {
-                return <Badge color='#faad14' text='数量变动' />
+                if (record['type'] === 0) {
+                    return <Collapse accordion bordered={false}>
+                        <Panel header={<Badge color='#faad14' text='数量变动' />} key={1} style={styles.customPanelStyle} showArrow={false}>
+                            <div>{record['remark'] || '-'}</div>
+                        </Panel>
+                    </Collapse>
+                } else if (record['type'] === 1) {
+                    return <Badge color='#faad14' text='数量变动' style={styles.badgestyle} />
+                }
+                // return <Badge color='#faad14' text='数量变动' />
             } else if (record['change_type'] === 1) {
                 if (record['add_content'] && !record['remove_content']) {
-                    return <Badge color='#52c41a' text='创建物品' />
+                    return <Badge color='#52c41a' text='创建物品' style={styles.badgestyle} />
                 } else if (!record['add_content'] && record['remove_content']) {
-                    return <Badge color='red' text='删除物品' />
+                    return <Badge color='red' text='删除物品' style={styles.badgestyle} />
                 }
             }
         }
@@ -301,5 +300,8 @@ const styles = {
         borderRadius: 4,
         border: 0,
         overflow: 'hidden',
+    },
+    badgestyle: {
+        marginLeft: 10
     }
 }
