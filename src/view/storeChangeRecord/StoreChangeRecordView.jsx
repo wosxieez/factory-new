@@ -34,7 +34,7 @@ export default function StoreChangeRecordView() {
                     let temp = JSON.parse(text)
                     return temp.map((item, index) => {
                         return <Tag key={index} color='#faad14'>
-                            {item['has_rfid'] === 1 ? <Badge color="#f50" /> : null}
+                            {item['has_rfid'] === 1 ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null}
                             {item['name']} 数量 {item['count']}
                         </Tag>
                     })
@@ -44,7 +44,7 @@ export default function StoreChangeRecordView() {
                         let temp = JSON.parse(record['remove_content'])
                         return temp.map((item, index) => {
                             return <Tag key={index} color='red'>
-                                {item['has_rfid'] === 1 ? <Badge color="#f50" /> : null}
+                                {item['has_rfid'] === 1 ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null}
                                 {item['name']} 数量 {item['count']}
                             </Tag>
                         })
@@ -62,7 +62,7 @@ export default function StoreChangeRecordView() {
                     let temp = JSON.parse(text)
                     return temp.map((item, index) => {
                         return <Tag key={index} color='#faad14'>
-                            {item['has_rfid'] === 1 ? <Badge color="#f50" /> : null}
+                            {item['has_rfid'] === 1 ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null}
                             {item['name']} 数量 {item['count']}
                         </Tag>
                     })
@@ -72,7 +72,7 @@ export default function StoreChangeRecordView() {
                         let temp = JSON.parse(record['add_content'])
                         return temp.map((item, index) => {
                             return <Tag key={index} color='#52c41a'>
-                                {item['has_rfid'] === 1 ? <Badge color="#f50" /> : null}
+                                {item['has_rfid'] === 1 ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null}
                                 {item['name']} 数量 {item['count']}
                             </Tag>
                         })

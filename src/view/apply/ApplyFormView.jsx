@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Row, Col, Tooltip, Alert, Badge } from 'antd';
+import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Row, Col, Tooltip, Alert, Icon } from 'antd';
 import moment from 'moment';
 import api from '../../http';
 import { userinfo } from '../../util/Tool';
@@ -61,7 +61,7 @@ export default Form.create({ name: 'form' })(props => {
                     {
                         storeOptionList.map((item, index) => {
                             return <Select.Option value={item.id} key={index} all={item} disabled={(storeList.map((item) => item.store_id).indexOf(item.id) !== -1) || (selectOrderType === 1 && item.count === 0)}>
-                                {item['has_rfid'] ? <Badge color="#f50" /> : null} {selectOrderType === 1 ? item.name + '--剩余' + item.count : item.name}
+                                {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null} {selectOrderType === 1 ? item.name + '--剩余' + item.count : item.name}
                             </Select.Option>
                         })
                     }

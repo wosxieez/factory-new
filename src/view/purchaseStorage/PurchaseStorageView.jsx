@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Alert, Row, Col, Divider, Tooltip, Badge } from 'antd';
+import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Alert, Row, Col, Divider, Tooltip, Icon } from 'antd';
 import moment from 'moment';
 import api from '../../http';
 import AddForm from '../storehouse/AddFrom';
@@ -66,7 +66,7 @@ export default Form.create({ name: 'form' })(props => {
                     )}>
                     {
                         storeOptionList.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item} disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}>{item['has_rfid'] ? <Badge color="#f50" /> : null}{item.name + '--库存' + item.count}</Select.Option>
+                            return <Select.Option value={item.id} key={index} all={item} disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}>{item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null}{item.name + '--库存' + item.count}</Select.Option>
                         })
                     }
                 </Select >

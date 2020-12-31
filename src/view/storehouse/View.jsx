@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import api from '../../http'
-import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Form, Badge } from 'antd'
+import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Form, Icon } from 'antd'
 import moment from 'moment'
 import AddForm from './AddFrom'
 import UpdateForm from './UpdateForm'
@@ -164,7 +164,7 @@ export default props => {
     // { title: '编号', dataIndex: 'no', width: 120, align: 'center' },
     {
       title: '种类名称', dataIndex: 'name', width: 120, render: (text, record) => {
-        if (record['has_rfid']) return <Badge color="#f50" text={text} />
+        if (record['has_rfid']) return <div><Icon type="barcode" style={{ marginRight: 5 }} />{text}</div>
         return text
       }
     },
