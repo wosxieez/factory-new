@@ -30,7 +30,7 @@ export default () => {
     const columns = [
         { title: 'NFC编码', dataIndex: 'code', key: 'code' },
         {
-            title: '编号', dataIndex: 'num', key: 'num',
+            title: '货架编号', dataIndex: 'num', key: 'num',
             render: (text, record) => {
                 return text || '-'
             }

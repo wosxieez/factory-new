@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, message, Tag, Tooltip, Alert, Descriptions, Badge, Select } from 'antd';
+import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, message, Tag, Tooltip, Alert, Descriptions, Select } from 'antd';
 import api from '../../http';
 import moment from 'moment'
 // import { xiaomeiParseFloat } from '../../util/Tool';
@@ -208,7 +208,7 @@ function RenderDetail({ record, workflok, orderStepLog, getOrderData, rfidList, 
                 return <Tag color={'#f5222d'}>{text}</Tag>
             }
             let result = null;
-            if (record['has_rfid']) { result = <Badge color="#f50" text={text} /> }
+            if (record['has_rfid']) { result = <div><Icon type="barcode" style={{ marginRight: 5 }} />{text}</div> }
             else { result = text }
             return result;
         }

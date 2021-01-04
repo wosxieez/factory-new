@@ -58,7 +58,6 @@ export default _ => {
             if (result.code === 0) {
                 result.data = result.data[0]
                 if (result.data.length === 1) {
-                    // console.log('result.data[0]:', result.data[0])
                     setCurrentItem(result.data[0])
                     setOperationVisible(true)
                     if (result.data[0].is_special === 1) { ///如果是特殊时段，那么直接算作出库。并将该订单的is_special改成 2 【特殊-已出库】
@@ -213,7 +212,7 @@ export default _ => {
                 let result = JSON.parse(text).map((item, index) => {
                     return (
                         <Tag color={'blue'} key={index} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>
-                            {item.store_name} 数量:{item.count}
+                            {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null}{item.store_name} 数量:{item.count}
                         </Tag>
                     )
                 })

@@ -102,7 +102,14 @@ export default props => {
           if (!res_clean) { message.error('更新失败3') }
           if (rfids.length > 0) {
             let res_bind = await HttpApi.bindRfidToStore({ rfids, store_id })
-            if (res_bind) { setIsUpdatingRFID(false); listAllStore(); message.success('更新成功') }
+            if (res_bind) {
+              setIsUpdatingRFID(false);
+              listAllStore();
+              message.success('更新成功');
+              if (data['count'] !== currentItem['count']) {///数量发生变化
+                checkStoreCountChange({ origin_store: currentItem, change_store: data, is_edit: 1 })
+              }
+            }
             else { message.error('更新失败4') }
           } else {
             message.success('更新成功')
@@ -114,6 +121,8 @@ export default props => {
           }
         } else {
           message.success('修改成功')
+          console.log('data[count] :', data['count'])
+          console.log('currentItem[count] :', currentItem['count'])
           if (data['count'] !== currentItem['count']) {///数量发生变化
             checkStoreCountChange({ origin_store: currentItem, change_store: data, is_edit: 1 })
           }
@@ -161,7 +170,28 @@ export default props => {
     }
   }
   const columns = [
-    // { title: '编号', dataIndex: 'no', width: 120, align: 'center' },
+    {
+      title: '物品编号',///物品自身编号
+      dataIndex: 'no',
+      key: 'no',
+      render: (text) => {
+        return text || '-'
+      }
+    },
+    // {
+    //   title: '编号',///NFC编号
+    //   dataIndex: 'nfc_shelf',
+    //   key: 'nfc_shelf_num',
+    //   render: (text) => {
+    //     console.log('text:', text)
+    //     if (text) {
+    //       return <Tag color='blue'>
+    //         {text.num}
+    //       </Tag>
+    //     }
+    //     return <div>-</div>
+    //   }
+    // },
     {
       title: '种类名称', dataIndex: 'name', width: 120, render: (text, record) => {
         if (record['has_rfid']) return <div><Icon type="barcode" style={{ marginRight: 5 }} />{text}</div>
@@ -200,20 +230,6 @@ export default props => {
         return <div>-</div>
       }
     },
-    // {
-    //   title: '编号',
-    //   dataIndex: 'nfc_shelf',
-    //   key: 'nfc_shelf_num',
-    //   render: (text) => {
-    //     console.log('text:', text)
-    //     if (text) {
-    //       return <Tag color='blue'>
-    //         {text.num}
-    //       </Tag>
-    //     }
-    //     return <div>-</div>
-    //   }
-    // },
     {
       title: '数量',
       dataIndex: 'count',

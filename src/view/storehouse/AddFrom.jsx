@@ -72,11 +72,11 @@ const AddForm = Form.create({ name: 'form' })((props) => {
             {shelfList.map((item, index) => { return <Option key={index} value={item.id}>{(item.num ? item.num + '-' : '') + item.name + (item.model ? '-' + item.model : '') + '-' + item.tag_name}</Option> })}
           </Select>)}
         </Form.Item>
-        {/* <Form.Item label='编号' >
+        <Form.Item label='物品编号' >
           {props.form.getFieldDecorator('no', {
             rules: [{ required: false, message: '请输入编号' }]
           })(<Input placeholder='请输入编号' style={{ width: '100%' }} />)}
-        </Form.Item> */}
+        </Form.Item>
         <Form.Item label='属性'>
           {props.form.getFieldDecorator('tids', {
             rules: [{ required: false, message: '请选择属性' }]
