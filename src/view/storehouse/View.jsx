@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import api from '../../http'
-import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Form, Icon } from 'antd'
+import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Form, Icon, Collapse, Badge } from 'antd'
 import moment from 'moment'
 import AddForm from './AddFrom'
 import UpdateForm from './UpdateForm'
@@ -9,6 +9,7 @@ import { userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi'
 import AddFromRFID from './AddFromRFID'
 import UpdateFormRFID from './UpdateFormRFID'
+const { Panel } = Collapse;
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 var originStoreList
 var rfidList = [];
@@ -44,6 +45,7 @@ export default props => {
     ///获取所有store
     let result = await api.listAllStore()
     if (result.code === 0) {
+      console.log('result.data:', result.data)
       originStoreList = result.data.map((item, index) => { item.key = index; return item }).reverse()
       originStoreList.forEach((store) => {
         store.subList = [];
@@ -217,15 +219,15 @@ export default props => {
     {
       title: '货架标签',
       dataIndex: 'nfc_shelf',
-      key: 'nfc_shelf_name',
+      key: 'nfc_shelf_obj',
       render: (text) => {
-        // console.log('text:', text)
-        ///后台listAllStore接口模型需要添加nfc_shelfs的字段 num 编号
         if (text) {
-          return <Tag color='blue'>
-            {/* {text.num}--{text.name} */}
-            {text.name}
-          </Tag>
+          return <Collapse accordion bordered={false}>
+            <Panel header={<Tag color='blue'>{text.name}</Tag>} style={styles.customPanelStyle} key={1} showArrow={false}>
+              <Tag>编号:{text.num||'-'}</Tag>
+              <Tag>型号:{text.model||'-'}</Tag>
+            </Panel>
+          </Collapse>
         }
         return <div>-</div>
       }
@@ -606,5 +608,12 @@ const styles = {
   alertMessage: {
     display: 'flex',
     justifyContent: 'space-between'
-  }
+  },
+  customPanelStyle: {
+    // background: '#f7f7f7',
+    background: '#ffffff',
+    borderRadius: 4,
+    border: 0,
+    overflow: 'hidden',
+  },
 }
