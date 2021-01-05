@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import api from '../../http'
-import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Form, Icon, Collapse, Badge } from 'antd'
+import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Form, Icon, Collapse } from 'antd'
 import moment from 'moment'
 import AddForm from './AddFrom'
 import UpdateForm from './UpdateForm'
@@ -224,8 +224,8 @@ export default props => {
         if (text) {
           return <Collapse accordion bordered={false}>
             <Panel header={<Tag color='blue'>{text.name}</Tag>} style={styles.customPanelStyle} key={1} showArrow={false}>
-              <Tag>编号:{text.num||'-'}</Tag>
-              <Tag>型号:{text.model||'-'}</Tag>
+              <Tag>编号:{text.num || '-'}</Tag>
+              <Tag>型号:{text.model || '-'}</Tag>
             </Panel>
           </Collapse>
         }
