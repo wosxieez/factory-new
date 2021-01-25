@@ -2,12 +2,14 @@ import React, { useState, useCallback, useEffect } from 'react'
 import HttpApi from '../../http/HttpApi'
 import { Button, Col, Divider, Form, Input, message, Modal, Row, Table, TreeSelect } from 'antd'
 import UpdateNFC from './UpdateNFC'
+import AddNFC from './AddNFC'
 import api from '../../http'
 import { filterTag, getJsonTree } from '../../util/Tool'
 
 export default () => {
     const [nfclist, setNfclist] = useState([])
     const [visible, setVisible] = useState(false)
+    const [addVisible, setAddVisible] = useState(false)
     const [currentItem, setCurrentItem] = useState({})
     const init = useCallback(async () => {
         let res = await HttpApi.getNFCShelflist()
@@ -18,6 +20,11 @@ export default () => {
         let res = await HttpApi.updateNfcShelf({ code: currentItem.code, name: values.name, tagId: values.tag_id, model: values.model, num: values.num })
         if (res) { message.success('修改成功'); init(); } else { message.error('修改失败') }
         setVisible(false)
+    }, [currentItem.code, init])
+    const addHandler = useCallback(async (values) => {
+        let res = await HttpApi.addNfcShelf({ code: currentItem.code, name: values.name, tagId: values.tag_id, model: values.model || '', num: values.num })
+        if (res) { message.success('添加成功'); init(); } else { message.error('添加失败') }
+        setAddVisible(false)
     }, [currentItem.code, init])
     const startSearch = useCallback(async (v) => {
         let res = await HttpApi.getNFCShelflist(v)
@@ -77,7 +84,7 @@ export default () => {
     return (
         <div style={styles.root}>
             <div style={styles.header}>
-                <Searchfrom startSearch={startSearch} />
+                <Searchfrom startSearch={startSearch} addNfc={() => {setAddVisible(true)}}/>
             </div>
             <div style={styles.body}>
                 <Table
@@ -88,6 +95,7 @@ export default () => {
                     pagination={false}
                 />
                 <UpdateNFC visible={visible} onCancel={() => { setVisible(false) }} data={currentItem} onOk={updateHandler} />
+                <AddNFC visible={addVisible} onCancel={() => { setAddVisible(false) }} onOk={addHandler} />
             </div>
         </div>
     )
@@ -171,6 +179,9 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
             <Col span={24}>
                 <div style={{ textAlign: 'right' }}>
                     <Button icon='search' type="primary" htmlType="submit">查询</Button>
+                    <Button icon='plus' style={{ marginLeft: 8 }} type="primary" onClick={() => {
+                        props.addNfc()
+                    }}>新增</Button>
                     <Button icon='redo' style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>
                 </div>
             </Col>

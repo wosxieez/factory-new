@@ -232,6 +232,15 @@ const HttpApi = {
         }
         return false
     },
+    addNfcShelf: async ({name, tagId, model, num }) => {
+        let sql = `insert into nfc_shelfs (name, tag_id, model, num) values 
+        (${"'" + name + "'"}, ${"'" + tagId + "'"}, ${"'" + model + "'"}, ${"'" + num + "'"})`
+        let res = await HttpApi.obs({ sql })
+        if (res.code === 0) {
+            return true
+        }
+        return false
+    },
     deleteNfcShelf: async ({ id }) => {
         let sql = `update nfc_shelfs set isdelete = 1 where id = '${id}'`
         let res = await HttpApi.obs({ sql })
