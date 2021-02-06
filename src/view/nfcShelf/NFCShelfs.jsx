@@ -5,7 +5,8 @@ import UpdateNFC from './UpdateNFC'
 import AddNFC from './AddNFC'
 import api from '../../http'
 import { filterTag, getJsonTree } from '../../util/Tool'
-
+import moment from 'moment'
+const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 export default () => {
     const [nfclist, setNfclist] = useState([])
     const [visible, setVisible] = useState(false)
@@ -17,12 +18,14 @@ export default () => {
         setNfclist(tempList)
     }, [])
     const updateHandler = useCallback(async (values) => {
-        let res = await HttpApi.updateNfcShelf({ code: currentItem.code, name: values.name, tagId: values.tag_id, model: values.model, num: values.num })
+        // console.log('values:', values, currentItem)
+        // return;
+        let res = await HttpApi.updateNfcShelf({ id: currentItem.id, name: values.name, tagId: values.tag_id, model: values.model, num: values.num, updatedAt: moment().format(FORMAT) })
         if (res) { message.success('修改成功'); init(); } else { message.error('修改失败') }
         setVisible(false)
-    }, [currentItem.code, init])
+    }, [currentItem.id, init])
     const addHandler = useCallback(async (values) => {
-        let res = await HttpApi.addNfcShelf({ code: currentItem.code, name: values.name, tagId: values.tag_id, model: values.model || '', num: values.num })
+        let res = await HttpApi.addNfcShelf({ code: currentItem.code, name: values.name, tagId: values.tag_id, model: values.model || '', num: values.num, createdAt: moment().format(FORMAT) })
         if (res) { message.success('添加成功'); init(); } else { message.error('添加失败') }
         setAddVisible(false)
     }, [currentItem.code, init])
@@ -35,6 +38,11 @@ export default () => {
         init();
     }, [init])
     const columns = [
+        {
+            title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', width: 200, render: (text) => {
+                return text ? moment(text).format(FORMAT) : '-'
+            }
+        },
         { title: 'NFC编码', dataIndex: 'code', key: 'code' },
         {
             title: '货架编号', dataIndex: 'num', key: 'num',
@@ -84,7 +92,7 @@ export default () => {
     return (
         <div style={styles.root}>
             <div style={styles.header}>
-                <Searchfrom startSearch={startSearch} addNfc={() => {setAddVisible(true)}}/>
+                <Searchfrom startSearch={startSearch} addNfc={() => { setAddVisible(true) }} />
             </div>
             <div style={styles.body}>
                 <Table

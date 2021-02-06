@@ -224,17 +224,17 @@ const HttpApi = {
         }
         return []
     },
-    updateNfcShelf: async ({ code, name, tagId, model, num }) => {
-        let sql = `update nfc_shelfs set name = '${name}', tag_id = ${tagId} ,model = ${model ? "'" + model + "'" : null},num = ${num ? "'" + num + "'" : null} where code = '${code}'`
+    updateNfcShelf: async ({ id, name, tagId, model, num, updatedAt }) => {
+        let sql = `update nfc_shelfs set name = '${name}', tag_id = ${tagId} ,model = ${model ? "'" + model + "'" : null},num = ${num ? "'" + num + "'" : null},updatedAt = '${updatedAt}' where id = '${id}'`
         let res = await HttpApi.obs({ sql })
         if (res.code === 0) {
             return true
         }
         return false
     },
-    addNfcShelf: async ({name, tagId, model, num }) => {
-        let sql = `insert into nfc_shelfs (name, tag_id, model, num) values 
-        (${"'" + name + "'"}, ${"'" + tagId + "'"}, ${"'" + model + "'"}, ${"'" + num + "'"})`
+    addNfcShelf: async ({ name, tagId, model, num, createdAt }) => {
+        let sql = `insert into nfc_shelfs (name, tag_id, model, num, createdAt) values 
+        (${"'" + name + "'"}, ${"'" + tagId + "'"}, ${"'" + model + "'"}, ${"'" + num + "'"}, ${"'" + createdAt + "'"})`
         let res = await HttpApi.obs({ sql })
         if (res.code === 0) {
             return true
