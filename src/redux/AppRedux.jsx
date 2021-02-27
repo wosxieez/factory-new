@@ -1,7 +1,7 @@
 import React, { useReducer } from 'react'
 
 const initialState = {
-    version: 'Beta 0.7.4',
+    version: 'Beta 0.7.5',
     currentcode: '', // 推送id
     approvecount: 0,//申请单计数
     purchasecount: 0,//采购单计数
