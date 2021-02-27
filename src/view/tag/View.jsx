@@ -93,7 +93,7 @@ export default (props) => {
                 onClick={e => {
                   setTags([])
                 }}>
-                物料属性
+                物品属性
               </Button>
             </Breadcrumb.Item>
             {Tags.map((Tag, index) => (

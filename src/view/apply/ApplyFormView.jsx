@@ -178,7 +178,7 @@ export default Form.create({ name: 'form' })(props => {
                     onOk: async function () {
                         let is_special = 0
                         let is_special_result = await checkCurrentTimeIsSpecial()
-                        if (is_special_result && values.type_id === 1) { ///在工作时段表之外的 物料申领
+                        if (is_special_result && values.type_id === 1) { ///在工作时段表之外的 物品申领
                             is_special = 1
                         }
                         // console.log('asdasdasd')
@@ -218,7 +218,7 @@ export default Form.create({ name: 'form' })(props => {
     return <div style={styles.root}>
         <div style={styles.body}>
             <h3>申领、申购单</h3>
-            <Alert message={'注意！当有需要【申领物料】和【申购物料】时，请填写相关申请，完成流程'} type='info' showIcon />
+            <Alert message={'注意！当有需要【申领物品】和【申购物品】时，请填写相关申请，完成流程'} type='info' showIcon />
             <Form  {...itemProps} style={{ marginTop: 16 }} onSubmit={handleSubmit}>
                 <Row>
                     <Col span={6}>

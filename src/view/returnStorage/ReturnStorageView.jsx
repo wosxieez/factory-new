@@ -23,7 +23,7 @@ export default Form.create({ name: 'form' })(props => {
             setStoreOptionList(list)
         }
         // let result_user = await api.listAllUser()
-        let result_user = await HttpApi.getUserList() ///是否需要限制为那些已经领取过物料的人？
+        let result_user = await HttpApi.getUserList() ///是否需要限制为那些已经领取过物品的人？
         // result_user = result_user.filter((item) => {
         // })
         setUserOptionList(result_user)
@@ -194,7 +194,7 @@ export default Form.create({ name: 'form' })(props => {
     return <div style={styles.root}>
         <div style={styles.body}>
             <h3>退料入库单</h3>
-            <Alert message={'注意！当有物料退库时，库管在确认后可以直接填写【退料入库单】；不需要走退料申请流程；暂时不支持【标签物品】的退料操作'} type='warning' showIcon />
+            <Alert message={'注意！当有物品退库时，库管在确认后可以直接填写【退料入库单】；不需要走退料申请流程；暂时不支持【标签物品】的退料操作'} type='warning' showIcon />
             <Form  {...itemProps} style={{ marginTop: 16 }} onSubmit={handleSubmit}>
                 <Row>
                     <Col span={6}>

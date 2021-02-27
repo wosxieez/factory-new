@@ -183,12 +183,12 @@ function RenderDetail({ record, workflok, orderStepLog, getOrderData, rfidList, 
     const { type_id, is_special } = record;
     if (type_id === 1) { ///申领
         if (is_special) {
-            alertTitle = <Alert style={{ marginBottom: 10 }} message={'特殊时段：相关物料会在领料人扫码盒前出示【领料申请单】的二维码后，认定已出库；后期流程补走时，库管确认后不会再次变更物料数量'} type='warning' showIcon />
+            alertTitle = <Alert style={{ marginBottom: 10 }} message={'特殊时段：相关物品会在领料人扫码盒前出示【领料申请单】的二维码后，认定已出库；后期流程补走时，库管确认后不会再次变更物品数量'} type='warning' showIcon />
         } else {
-            alertTitle = <Alert style={{ marginBottom: 10 }} message={'正常时段：相关物料会在库管人员操作确认后，认定已出库'} type='info' showIcon />
+            alertTitle = <Alert style={{ marginBottom: 10 }} message={'正常时段：相关物品会在库管人员操作确认后，认定已出库'} type='info' showIcon />
         }
     } else if (type_id === 3) {///申购
-        alertTitle = <Alert style={{ marginBottom: 10 }} message={'当申购流程库管确认后，不会触发仓库物料变动。一切物料采购入库行为由库管在【采购入库单】模块中进行统一操作，财务也是在【采购单审计】中进行审计'} type='info' showIcon />
+        alertTitle = <Alert style={{ marginBottom: 10 }} message={'当申购流程库管确认后，不会触发仓库物品变动。一切物品采购入库行为由库管在【采购入库单】模块中进行统一操作，财务也是在【采购单审计】中进行审计'} type='info' showIcon />
     }
 
     if (!record.content) { return }
@@ -202,7 +202,7 @@ function RenderDetail({ record, workflok, orderStepLog, getOrderData, rfidList, 
     tempList.push({ store_name: '总计', count: sum_count, price: sum_price, isSum: true })
     let data = tempList.map((item, index) => { item.key = index; return item })
     const columns = [{
-        title: '物料', dataIndex: 'store_name',
+        title: '物品', dataIndex: 'store_name',
         render: (text, record) => {
             if (record.isSum) {
                 return <Tag color={'#f5222d'}>{text}</Tag>
@@ -393,7 +393,7 @@ function RenderDetail({ record, workflok, orderStepLog, getOrderData, rfidList, 
                                     // return;
                                     let result2 = await api.query(sql2)
                                     if (result2.code === 0) { message.success('审批成功', 3); getOrderData(); props.refreshTableData() }
-                                    if (record.is_special) { return }///如果 是特殊时段，就不再流程中设计仓库物料变动。要再领料人扫码后直接扣除对应物料的数量
+                                    if (record.is_special) { return }///如果 是特殊时段，就不再流程中设计仓库物品变动。要再领料人扫码后直接扣除对应物品的数量
                                     for (let index = 0; index < workflok.length; index++) {
                                         const item = workflok[index];
                                         if (item.step_number === currentWirteStep && item.is_change === 1 && status === 1) {
@@ -468,7 +468,7 @@ export async function updateStoreHandler(record) {
         if (record.type_id === 1) {
             element.count = - element.count
         }
-        ///这里-用的是循环调用单次修改接口一次修改一个物料，所以会出现多次返回修改结果；后期接口需要升级。支持批量修改
+        ///这里-用的是循环调用单次修改接口一次修改一个物品，所以会出现多次返回修改结果；后期接口需要升级。支持批量修改
         let result = await api.updateStoreCount({ id: element.store_id, count: element.count })
         if (result.code === 0) {
             message.success(record.type_id === 1 ? '出库成功' : '入库成功', 3);

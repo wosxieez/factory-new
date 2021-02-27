@@ -61,14 +61,14 @@ export default _ => {
         </div>
         <div style={styles.body}>
             <Descriptions title="特别说明" bordered size='small' column={1}>
-                <Descriptions.Item label="申购">对某些物料发起采购申请后，库管在人工汇总确认后，结合实际情况进行统一的采购行为，后期再通过【采购入库单】进行物料数据统一的录入</Descriptions.Item>
-                <Descriptions.Item label="采购入库单">考虑到实际采购情况，会与【申购】的物料数据有所出入，故独立出采购入库的入口，库管自行填写</Descriptions.Item>
+                <Descriptions.Item label="申购">对某些物品发起采购申请后，库管在人工汇总确认后，结合实际情况进行统一的采购行为，后期再通过【采购入库单】进行物品数据统一的录入</Descriptions.Item>
+                <Descriptions.Item label="采购入库单">考虑到实际采购情况，会与【申购】的物品数据有所出入，故独立出采购入库的入口，库管自行填写</Descriptions.Item>
             </Descriptions>
         </div>
         <div style={styles.body}>
             <Descriptions title="时段信息" bordered size='small' column={1}>
-                <Descriptions.Item label="正常">申领、申购单走人工审核流程。其中【申领】在库管确认操作后，才会判定物料出库</Descriptions.Item>
-                <Descriptions.Item label="特殊">特殊时段下的【申领】在扫码后自动判定物料出库，后续人工审批流程不再影响物料数量</Descriptions.Item>
+                <Descriptions.Item label="正常">申领、申购单走人工审核流程。其中【申领】在库管确认操作后，才会判定物品出库</Descriptions.Item>
+                <Descriptions.Item label="特殊">特殊时段下的【申领】在扫码后自动判定物品出库，后续人工审批流程不再影响物品数量</Descriptions.Item>
             </Descriptions>
         </div>
     </div>

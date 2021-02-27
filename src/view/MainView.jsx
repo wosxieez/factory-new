@@ -236,7 +236,7 @@ export default (props) => {
             </Menu.Item>
             <Menu.Item key={'/main/setting/storetag'}>
               <Icon type="tags" />
-              <span className="nav-text">物料属性</span>
+              <span className="nav-text">物品属性</span>
               <Link to={`${props.match.url}/setting/storetag`} />
             </Menu.Item>
             <Menu.Item key={'/main/setting/specialtime'}>

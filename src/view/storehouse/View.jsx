@@ -332,7 +332,7 @@ export default props => {
       </div>
       <div style={styles.body}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <h3>物料管理</h3>
+          <h3>物品管理</h3>
           <div>
             {isStorehouseManager ? (selectedRowKeys.length === 0 ? (
               <>
