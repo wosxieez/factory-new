@@ -1,14 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Modal, Form, Input, TreeSelect, InputNumber, Select, Alert } from 'antd'
+import { Modal, Form, Input, TreeSelect, InputNumber, Alert } from 'antd'
 import api from '../../http';
 import { getJsonTree, filterTag } from '../../util/Tool';
-import HttpApi from '../../http/HttpApi';
-const { Option } = Select;
 
-const AddForm = Form.create({ name: 'form' })((props) => {
-  // console.log('props.initData:', props.initData)///initData是【采购入库单】中添加物品的特殊情况 默认count = 0
-  const [treeData, setTreeData] = useState([])
-  const [shelfList, setShelfList] = useState([])
+const AddForm2 = Form.create({ name: 'form' })((props) => {
+  const [treeData, setTreeData] = useState([])///属性树
+  const [areaTreeData, setAreaTreeData] = useState([])///区域属性树
   const listData = useCallback(async () => {
     if (!props.visible) { return }
     let result = await api.listAllTag()
@@ -20,9 +17,9 @@ const AddForm = Form.create({ name: 'form' })((props) => {
       let temp = getJsonTree(treeResult, 0);
       let afterFilter = temp.filter((item) => item.value !== 1)
       setTreeData(afterFilter)
+      let afterFilterArea = temp.filter((item) => item.value === 1)
+      setAreaTreeData(afterFilterArea)
     }
-    let res_shelf = await HttpApi.getNfcShelfList();
-    setShelfList(res_shelf)
   }, [props.visible])
   useEffect(() => {
     listData();
@@ -62,21 +59,6 @@ const AddForm = Form.create({ name: 'form' })((props) => {
             rules: [{ required: true, message: '请输入税率' }]
           })(<InputNumber placeholder='请输入税率' min={0} style={{ width: '100%' }} />)}
         </Form.Item>
-        <Form.Item label='货架标签' >
-          {props.form.getFieldDecorator('nfc_shelf_id', {
-            rules: [{ required: false }]
-          })(<Select style={{ width: '100%' }}
-            placeholder="支持搜索"
-            allowClear
-            showSearch
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-          >
-            {shelfList.map((item, index) => { return <Option key={index} value={item.id}>{(item.num ? item.num + '-' : '') + item.name + (item.model ? '-' + item.model : '') + '-' + item.tag_name}</Option> })}
-          </Select>)}
-        </Form.Item>
         <Form.Item label='物品编号' >
           {props.form.getFieldDecorator('no', {
             rules: [{ required: false, message: '请输入编号' }]
@@ -101,9 +83,42 @@ const AddForm = Form.create({ name: 'form' })((props) => {
         </Form.Item>
 
         <Form.Item label='备注'>{props.form.getFieldDecorator('remark')(<Input.TextArea rows={4} placeholder='选填' />)}</Form.Item>
+
+        <Form.Item label="货架编号">
+          {props.form.getFieldDecorator('num', {
+            initialValue: props.data ? props.data.num : null,
+            rules: [{ required: true, message: '请输入编号' }]
+          })(<Input placeholder='请输入编号'></Input>)}
+        </Form.Item>
+        <Form.Item label="货架名称">
+          {props.form.getFieldDecorator('shelf_name', {
+            initialValue: props.data ? props.data.name : null,
+            rules: [{ required: true, message: '请输入名称' }]
+          })(<Input placeholder='请输入名称'></Input>)}
+        </Form.Item>
+        <Form.Item label="货架区域">
+          {props.form.getFieldDecorator('tag_id', {
+            initialValue: props.data ? props.data.tag_id : null,
+            rules: [{ required: true, message: '请选择区域' }]
+          })(<TreeSelect
+            treeNodeFilterProp="title"
+            // showSearch
+            treeData={areaTreeData}
+            style={{ width: '100%' }}
+            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+            placeholder="请选择区域"
+            showCheckedStrategy={TreeSelect.SHOW_PARENT}
+          />)}
+        </Form.Item>
+        <Form.Item label="型号">
+          {props.form.getFieldDecorator('model', {
+            initialValue: props.data ? props.data.model : null,
+            rules: [{ required: false, message: '请输入型号' }]
+          })(<Input placeholder='请输入型号【选填】'></Input>)}
+        </Form.Item>
       </Form>
     </Modal>
   )
 })
 
-export default AddForm
+export default AddForm2

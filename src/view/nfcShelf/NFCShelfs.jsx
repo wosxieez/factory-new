@@ -25,10 +25,10 @@ export default () => {
         setVisible(false)
     }, [currentItem.id, init])
     const addHandler = useCallback(async (values) => {
-        let res = await HttpApi.addNfcShelf({ code: currentItem.code, name: values.name, tagId: values.tag_id, model: values.model || '', num: values.num, createdAt: moment().format(FORMAT) })
+        let res = await HttpApi.addNfcShelf({ name: values.name, tagId: values.tag_id, model: values.model || '', num: values.num, createdAt: moment().format(FORMAT) })
         if (res) { message.success('添加成功'); init(); } else { message.error('添加失败') }
         setAddVisible(false)
-    }, [currentItem.code, init])
+    }, [init])
     const startSearch = useCallback(async (v) => {
         let res = await HttpApi.getNFCShelflist(v)
         let tempList = res.map((item, index) => { item.key = index; return item });

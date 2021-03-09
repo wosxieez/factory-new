@@ -51,6 +51,12 @@ const UpdateForm = Form.create({ name: 'form' })((props) => {
                         rules: [{ required: true, message: '请输入单价' }]
                     })(<InputNumber placeholder='请输入单价' min={0} style={{ width: '100%' }} />)}
                 </Form.Item>
+                <Form.Item label='税率[%]' >
+                    {props.form.getFieldDecorator('tax', {
+                        initialValue: props.data.tax,
+                        rules: [{ required: true, message: '请输入税率' }]
+                    })(<InputNumber placeholder='请输入税率' min={0} style={{ width: '100%' }} />)}
+                </Form.Item>
                 <Form.Item label='货架标签' >
                     {props.form.getFieldDecorator('nfc_shelf_id', {
                         initialValue: props.data.nfc_shelf_id || null,
@@ -69,6 +75,7 @@ const UpdateForm = Form.create({ name: 'form' })((props) => {
                 </Form.Item>
                 <Form.Item label='物品编号' >
                     {props.form.getFieldDecorator('no', {
+                        initialValue: props.data.no,
                         rules: [{ required: false, message: '请输入编号' }]
                     })(<Input placeholder='请输入编号' style={{ width: '100%' }} />)}
                 </Form.Item>

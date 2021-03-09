@@ -8,7 +8,7 @@ import ExportJsonExcel from 'js-export-excel'
 
 var date_range;
 /***
- * 采购物品记录
+ * 自行出库物品记录
  */
 export default _ => {
     const [isLoading, setIsLoading] = useState(false)
@@ -46,8 +46,8 @@ export default _ => {
         }
         let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_bug_user_id + sql_record_user_id
         // console.log('sql_condition:', sql_condition)
-        let sql = `select pr.*,users1.name as buy_user_name,users2.name as record_user_name from purchase_record as pr
-        left join (select * from users where effective = 1) users1 on users1.id = pr.buy_user_id
+        let sql = `select pr.*,users1.name as out_user_name,users2.name as record_user_name from outbound_record as pr
+        left join (select * from users where effective = 1) users1 on users1.id = pr.out_user_id
         left join (select * from users where effective = 1) users2 on users2.id = pr.record_user_id
         where pr.isdelete = 0${sql_condition} order by id desc`
         // console.log('sql:', sql)
@@ -81,6 +81,7 @@ export default _ => {
         setIsLoading(false)
     }, [])
     const exportHandler = useCallback(() => {
+        console.log('dataSource:', dataSource)
         let new_list = dataSource.map((item) => {
             let data = {};
             data.tax_price = String(item.tax_price || '-')
@@ -93,20 +94,20 @@ export default _ => {
             data.count = String(item.count);
             data.unit = item.unit;
             data.sum_oprice = parseFloat(item.price * item.count).toFixed(2);
-            data.buy_user_name = item.other.buy_user_name || '-';
+            data.out_user_name = item.other.out_user_name || '-';
             data.record_user_name = item.other.record_user_name || '-';
             data.remark = item.other.remark;
             return data
         })
         if (new_list.length === 0) { message.warn('没有相关数据-可供导出'); return }
         var option = {};
-        option.fileName = "采购记录文件";
+        option.fileName = "自行出库记录文件";
         option.datas = [
             {
                 sheetData: new_list,
-                sheetName: `采购记录`,
-                sheetFilter: ["date", "code_num", "code", "store_name", "price", "tax", "tax_price", "count", "unit", "sum_oprice", "buy_user_name", "record_user_name", "remark"],
-                sheetHeader: ["采购时间", "单号", "流水", "物品", "采购单价[元]", "税率", "单税价[元]", "采购数量", "单位", "采购总价[元]", "采购人员", "记录人员", "采购备注"],
+                sheetName: `出库记录`,
+                sheetFilter: ["date", "code_num", "code", "store_name", "price", "tax", "tax_price", "count", "unit", "sum_oprice", "out_user_name", "record_user_name", "remark"],
+                sheetHeader: ["出库时间", "单号", "流水", "物品", "出库单价[元]", "税率", "单税价[元]", "出库数量", "单位", "出库总价[元]", "出库人员", "记录人员", "出库备注"],
                 columnWidths: [8, 5, 8, 10, 5, 5, 5, 5, 3, 5, 5, 5, 5],
             }
         ];
@@ -118,7 +119,7 @@ export default _ => {
     }, [listData])
     const columns = [
         {
-            title: '采购时间',
+            title: '出库时间',
             dataIndex: 'other.date',
             key: 'other.date',
             width: 180,
@@ -154,7 +155,7 @@ export default _ => {
             }
         },
         {
-            title: '采购单价[元]',
+            title: '出库单价[元]',
             dataIndex: 'price',
             key: 'price',
             render: (text) => {
@@ -170,7 +171,7 @@ export default _ => {
             }
         },
         {
-            title: '采购数量',
+            title: '出库数量',
             dataIndex: 'count',
             key: 'count',
             render: (text) => {
@@ -186,7 +187,7 @@ export default _ => {
             }
         },
         {
-            title: '采购总价[元]',
+            title: '出库总价[元]',
             dataIndex: 'sum_price',
             key: 'sum_price',
             render: (_, record) => {
@@ -194,9 +195,9 @@ export default _ => {
             }
         },
         {
-            title: '采购人员',
-            dataIndex: 'other.buy_user_name',
-            key: 'other.buy_user_name',
+            title: '出库人员',
+            dataIndex: 'other.out_user_name',
+            key: 'other.out_user_name',
             align: 'center',
             width: 100,
         },
@@ -208,11 +209,14 @@ export default _ => {
             width: 100,
         },
         {
-            title: '采购备注',
+            title: '出库备注',
             dataIndex: 'other.remark',
             key: 'other.remark',
             align: 'center',
             width: 100,
+            render: (text) => {
+                return text || '-'
+            }
         },
     ]
     return (<div style={styles.root}>
@@ -224,11 +228,11 @@ export default _ => {
         <div style={styles.body}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    <h3>采购物品记录</h3>
+                    <h3>自行出库物品记录</h3>
                     <Button icon="download" size='small' type='link' style={{ padding: 0, marginLeft: 10, marginTop: -6 }} onClick={() => {
                         Modal.confirm({
                             title: `确认导出当前页面中查询到的所有数据吗？`,
-                            content: '请自行确保所选的信息的准确性；数据会保存为【采购记录文件】的Excel文件',
+                            content: '请自行确保所选的信息的准确性；数据会保存为【自行出库记录文件】的Excel文件',
                             okText: '确定',
                             okType: 'danger',
                             onOk: exportHandler
@@ -301,7 +305,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
     }}>
         <Row>
             <Col span={6}>
-                <Form.Item label='采购时间'  {...itemProps}>
+                <Form.Item label='出库时间'  {...itemProps}>
                     {props.form.getFieldDecorator('date_range', {
                         initialValue: [moment().add(0, 'month').startOf('month'), moment().endOf('day')],
                         rules: [{ required: false }]
@@ -350,7 +354,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
         </Row>
         <Row>
             <Col span={6}>
-                <Form.Item label='采购人'  {...itemProps}>
+                <Form.Item label='出库人'  {...itemProps}>
                     {props.form.getFieldDecorator('bug_user_id_list', {
                         rules: [{ required: false }]
                     })(<Select mode='multiple' allowClear placeholder='选择人员-支持名称搜索' showSearch optionFilterProp="children">

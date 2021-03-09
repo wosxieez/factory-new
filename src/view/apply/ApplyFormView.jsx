@@ -56,7 +56,7 @@ export default Form.create({ name: 'form' })(props => {
     const columns = [
         { title: '编号', dataIndex: 'key', width: 50, align: 'center', render: (text) => <div>{text + 1}</div> },
         {
-            title: <div>{starIcon}物品</div>, dataIndex: 'store_id', width: 220, align: 'center', render: (text, record) => {
+            title: <div>{starIcon}物品</div>, dataIndex: 'store_id', width: 400, align: 'center', render: (text, record) => {
                 return <Select placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children" value={text} onChange={(_, option) => { handleSelectChange(option, record.key) }}>
                     {
                         storeOptionList.map((item, index) => {
@@ -136,7 +136,7 @@ export default Form.create({ name: 'form' })(props => {
 
     const handleSelectChange = useCallback((option, key) => {
         const selectObj = option.props.all;
-        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'max_count': selectObj.count, has_rfid: selectObj.has_rfid ? 1 : 0 }
+        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'max_count': selectObj.count, has_rfid: selectObj.has_rfid ? 1 : 0, tax: selectObj.tax }
         changeTableListHandler(param)
     }, [changeTableListHandler])
 

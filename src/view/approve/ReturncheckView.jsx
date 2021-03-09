@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react'
 import api from '../../http'
-import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Radio, Modal, message } from 'antd'
+import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Radio, Modal, message, Tooltip } from 'antd'
 import moment from 'moment'
 import HttpApi from '../../http/HttpApi';
-import { userinfo } from '../../util/Tool';
+import { getListAllTaxPrice, userinfo } from '../../util/Tool';
 import { AppDataContext } from '../../redux/AppRedux';
 export async function getCountRT(condition_sql) {
     let sql = `select count(id) count from return_record where isdelete = 0${condition_sql} `
@@ -47,9 +47,9 @@ export default props => {
         if (conditionObj.code_num) {
             sql_code_num = ` and code_num like '%${conditionObj.code_num}%'`
         }
-        let sql_bug_user_id = ''
-        if (conditionObj.bug_user_id_list) {
-            sql_bug_user_id = ' and return_user_id in (' + conditionObj.bug_user_id_list.join(',') + ')'
+        let sql_buy_user_id = ''
+        if (conditionObj.buy_user_id_list) {
+            sql_buy_user_id = ' and return_user_id in (' + conditionObj.buy_user_id_list.join(',') + ')'
         }
         let sql_record_user_id = ''
         if (conditionObj.record_user_id_list) {
@@ -59,7 +59,7 @@ export default props => {
         if (conditionObj.check_status) {
             sql_check_status = ' and check_status in (' + conditionObj.check_status.join(',') + ')'
         }
-        let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_bug_user_id + sql_record_user_id + sql_check_status
+        let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_buy_user_id + sql_record_user_id + sql_check_status
         let sql = `select pr.*,users1.name as return_user_name,users2.name as record_user_name,users3.name as check_user_name from return_record as pr
         left join (select * from users where effective = 1) users1 on users1.id = pr.return_user_id
         left join (select * from users where effective = 1) users2 on users2.id = pr.record_user_id
@@ -116,7 +116,12 @@ export default props => {
             render: (text, record) => {
                 let contentList = JSON.parse(text)
                 return contentList.map((item, index) => {
-                    return <div key={index}><Tag key={index} color={'cyan'} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>{item.store_name} 退料价{item.price}元*{item.count}</Tag><br /></div>
+                    // return <div key={index}><Tag key={index} color={'cyan'} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>{item.store_name} 退料价{item.price}元*{item.count}</Tag><br /></div>
+                    return <Tooltip key={index} placement='left' title={item && item.tax ? '税率' + item.tax + '%' : '无税率'} >
+                        <div key={index}>
+                            <Tag key={index} color={'cyan'} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>{item.store_name} 采购价{item.price}元*{item.count}</Tag><br />
+                        </div>
+                    </Tooltip>
                 })
             }
         },
@@ -138,6 +143,22 @@ export default props => {
             width: 80,
             render: (text) => {
                 return <Tag color={'#fa541c'} style={{ marginRight: 0 }}>{text}</Tag>
+            }
+        },
+        {
+            title: '总税价',
+            dataIndex: 'content',
+            key: 'content1',
+            align: 'center',
+            width: 80,
+            render: (text) => {
+                try {
+                    const contextList = JSON.parse(text)
+                    let sum_tax_price = parseFloat(getListAllTaxPrice(contextList)).toFixed(2)
+                    return <Tag color={'#722ed1'} style={{ marginRight: 0 }}>{sum_tax_price}</Tag>
+                } catch (error) {
+                    return '-'
+                }
             }
         },
         {
@@ -380,7 +401,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
         <Row>
             <Col span={6}>
                 <Form.Item label='退料人'  {...itemProps}>
-                    {props.form.getFieldDecorator('bug_user_id_list', {
+                    {props.form.getFieldDecorator('buy_user_id_list', {
                         rules: [{ required: false }]
                     })(<Select mode='multiple' allowClear placeholder='选择人员-支持名称搜索' showSearch optionFilterProp="children">
                         {userOptionList.map((item, index) => {

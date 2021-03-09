@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import api from '../../http'
-import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Form, Icon, Collapse } from 'antd'
+import { Menu, Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Form, Icon, Collapse, Dropdown, Tooltip } from 'antd'
 import moment from 'moment'
 import AddForm from './AddFrom'
 import UpdateForm from './UpdateForm'
-import { getJsonTree, filterTag, checkStoreCountChange, checkStoreClassChange } from '../../util/Tool'
+import { getJsonTree, filterTag, checkStoreCountChange, checkStoreClassChange, getTaxPrice } from '../../util/Tool'
 import { userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi'
 import AddFromRFID from './AddFromRFID'
 import UpdateFormRFID from './UpdateFormRFID'
+import AddForm2 from './AddFrom2'
 const { Panel } = Collapse;
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 var originStoreList
@@ -20,10 +21,12 @@ var rfidList = [];
 export default props => {
   const [isLoading, setIsLoading] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
+  const [isAdding2, setIsAdding2] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isAddingRFID, setIsAddingRFID] = useState(false)
   const [isUpdatingRFID, setIsUpdatingRFID] = useState(false)
   const addForm = useRef()
+  const addForm2 = useRef()
   const addFormRFID = useRef()
   const updateForm = useRef()
   const updateFormRFID = useRef()
@@ -33,6 +36,34 @@ export default props => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [selectedRows, setSelectedRows] = useState([])
   const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1)
+
+  const menu = (
+    <Menu onClick={(target) => {
+      switch (target.key) {
+        case '1':
+          console.log('物品和货架')
+          setIsAdding2(true)
+          break;
+        case '2':
+          setIsAdding(true)
+          console.log('物品关联货架')
+          break;
+        default:
+          break;
+      }
+    }}>
+      <Menu.Item key="1">
+        <Icon type="pic-right" />
+        <span>物品和货架</span>
+      </Menu.Item>
+      <Menu.Divider />
+      <Menu.Item key="2">
+        <Icon type="inbox" />
+        <span>物品</span>
+      </Menu.Item>
+    </Menu>
+  );
+
   const listAllStore = useCallback(async () => {
     setIsLoading(true)
     setSelectedRowKeys([])
@@ -45,7 +76,7 @@ export default props => {
     ///获取所有store
     let result = await api.listAllStore()
     if (result.code === 0) {
-      console.log('result.data:', result.data)
+      // console.log('result.data:', result.data)
       originStoreList = result.data.map((item, index) => { item.key = index; return item }).reverse()
       originStoreList.forEach((store) => {
         store.subList = [];
@@ -62,6 +93,7 @@ export default props => {
   useEffect(() => {
     listAllStore()
   }, [props.selectNode, listAllStore])
+
   const addData = useCallback(
     async data => {
       const response = await api.addStore(data)
@@ -78,20 +110,34 @@ export default props => {
           if (res_bind) {
             setIsAddingRFID(false);
             listAllStore();
-            message.success('添加成功')
+            message.success('物品添加成功')
             checkStoreClassChange({ is_add: 1, content: [data] })
           }
-          else { message.error('添加失败1') }
+          else { message.error('物品添加失败1') }
         } else {
           setIsAdding(false)
           listAllStore()
-          message.success('添加成功')
+          message.success('物品添加成功')
           checkStoreClassChange({ is_add: 1, content: [data] })
         }
-      } else { message.error('添加失败2') }
+      } else { message.error('物品添加失败2') }
     },
     [listAllStore, shelfList]
   )
+  const addShelfAndStoreHandler = useCallback(async (data_shelf, data_store) => {
+    let res = await HttpApi.addNfcShelf({ name: data_shelf.name, tagId: data_shelf.tag_id, model: data_shelf.model || '', num: data_shelf.num, createdAt: moment().format(FORMAT) })
+    if (res) {
+      let shelf_list_res = await HttpApi.getNFCShelflist()
+      if (shelf_list_res) {
+        const nfc_shelf_id = shelf_list_res[0].id
+        console.log(nfc_shelf_id)
+        const data = { ...data_store, nfc_shelf_id }
+        console.log('data:', data)
+        addData(data)
+      }
+    } else { message.error('货架添加失败') }
+    setIsAdding2(false)
+  }, [addData])
   const updateData = useCallback(
     async data => {
       let result = await api.updateStore({ id: currentItem.id, ...data })
@@ -254,12 +300,25 @@ export default props => {
       }
     },
     {
-      title: '参考单价【元】',
+      title: '参考单价[元]',
       dataIndex: 'oprice',
       align: 'center',
       width: 120,
       render: (text) => {
         return <div>{text}</div>
+      }
+    },
+    {
+      title: '税价[元]',
+      dataIndex: 'tax',
+      align: 'center',
+      width: 100,
+      render: (text, record) => {
+        if (record.oprice && text) {
+          let tax_p = getTaxPrice(record.oprice, text)
+          return <Tooltip title={'税率' + text + '%'}>{tax_p}</Tooltip>
+        }
+        return <div>-</div>
       }
     },
     {
@@ -339,15 +398,18 @@ export default props => {
                 {/* <Tooltip title={tooltipTxt}>
                   <Icon type="question-circle" />
                 </Tooltip> */}
-                <Button
-                  style={styles.button}
-                  type='primary'
-                  icon={'plus'}
-                  onClick={() => {
-                    setIsAdding(true)
-                  }}>
-                  普通物品
+                <Dropdown overlay={menu} >
+                  <Button
+                    style={styles.button}
+                    type='primary'
+                    icon={'plus'}
+                  // onClick={() => {
+                  //   setIsAdding(true)
+                  // }}
+                  >
+                    普通物品
               </Button>
+                </Dropdown>
                 <Button
                   style={styles.button}
                   type='danger'
@@ -359,10 +421,10 @@ export default props => {
             </Button>
               </>
             ) : (
-                <Button style={styles.button} type='danger' onClick={batchDelete}>
-                  批量删除
-                </Button>
-              )) : null}
+              <Button style={styles.button} type='danger' onClick={batchDelete}>
+                批量删除
+              </Button>
+            )) : null}
           </div>
         </div>
         {isStorehouseManager ?
@@ -422,6 +484,34 @@ export default props => {
                 // checkStoreClassChange({ is_add: 1, content: [data] })
                 addData(data)
                 addForm.current.resetFields()
+              }
+            })
+          }}
+        />
+        <AddForm2
+          ref={addForm2}
+          title='新增普通物品和货架'
+          visible={isAdding2}
+          onCancel={() => {
+            addForm2.current.resetFields()
+            setIsAdding2(false)
+          }}
+          onOk={() => {
+            addForm2.current.validateFields(async (error, data) => {
+              if (!error) {
+                console.log('新数据：', data)
+                const { count, model, name, no, num, oprice, remark, tag_id, tax, tids, unit, shelf_name } = data
+                const data_store = { name, count, unit, oprice, tax, no, tids, remark }
+                const data_shelf = { model, num, tag_id, name: shelf_name }
+
+                console.log('data_store:', data_store)
+                console.log('data_shelf:', data_shelf)
+                ///测试 加上id
+                // data['id'] = 999
+                // checkStoreClassChange({ is_add: 1, content: [data] })
+                // addData(data_store)
+                addShelfAndStoreHandler(data_shelf, data_store)
+                // addForm2.current.resetFields()
               }
             })
           }}

@@ -320,3 +320,42 @@ export async function checkStoreClassChange({ is_add, content }) {
   }
   await storeClassChange({ is_add, content: content_temp, ...data });
 }
+
+/**
+ * 获取物品税后单价
+ * @param {*} oprice  原价
+ * @param {*} tax  税率 %
+ * @returns 
+ */
+export function getTaxPrice(oprice, tax) {
+  if (!tax) { return oprice }
+  return parseFloat((oprice / (1 + tax / 100)).toFixed(2))
+}
+
+export function getListAllTaxPrice(storeList) {
+  if (storeList) {
+    let sum_price = 0;
+    storeList.forEach((item) => {
+      const tax = item.tax
+      const price = item.price
+      const count = item.count
+      sum_price = sum_price + getTaxPrice(price, tax) * count
+    })
+    return sum_price
+  }
+  return 0
+}
+
+/**
+ * 计算 流程出库物品记录 中的数据 的税总价
+ * @param {*} list 
+ */
+export function calculOrderListStoreTaxAllPrice(list) {
+  if (!list) { return 0 }
+  let sum_tax_price = 0
+  list.forEach((item) => {
+    const store = item.store
+    sum_tax_price += store.tax_price * store.count
+  })
+  return sum_tax_price
+}

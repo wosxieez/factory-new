@@ -1,8 +1,8 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import api from '../../http';
-import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message } from 'antd';
+import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip } from 'antd';
 import moment from 'moment';
-import { translatePurchaseRecordList } from '../../util/Tool';
+import { getTaxPrice, translatePurchaseRecordList } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 import ExportJsonExcel from 'js-export-excel'
 
@@ -15,6 +15,7 @@ export default _ => {
     const [dataSource, setDataSource] = useState([])
     const [sum_price, setSumPrice] = useState(0)
     const [sum_count, setSumCount] = useState(0)
+    const [sum_tax_price, setSumTaxPrice] = useState(0)
 
     const listData = useCallback(async (conditionObj) => {
         setIsLoading(true)
@@ -59,15 +60,24 @@ export default _ => {
                     return conditionObj.store_id_list.indexOf(item.store_id) !== -1
                 })
             }
-            setDataSource(storeData.map((item, index) => { item.key = index; return item }))
+            // setDataSource(storeData.map((item, index) => { item.key = index; return item }))
+            let temp = storeData.map((item, index) => {
+                item.key = index;
+                item.tax_price = getTaxPrice(item.price, item.tax);
+                return item
+            })
+            setDataSource(temp)
             let records_sum_price = 0
             let records_sum_count = 0
+            let records_sum_tax_price = 0
             storeData.forEach((item) => {
                 records_sum_price += parseFloat(item.count * item.price)
                 records_sum_count += parseFloat(item.count)
+                records_sum_tax_price += parseFloat(item.count * item.tax_price)
             })
             setSumPrice(parseFloat(records_sum_price).toFixed(2))
             setSumCount(records_sum_count)
+            setSumTaxPrice(parseFloat(records_sum_tax_price).toFixed(2))
         }
         setIsLoading(false)
     }, [])
@@ -75,6 +85,8 @@ export default _ => {
         console.log('dataSource:', dataSource)
         let new_list = dataSource.map((item) => {
             let data = {};
+            data.tax_price = String(item.tax_price || '-')
+            data.tax = String(item.tax || '-')
             data.date = item.other.date;
             data.code_num = item.other.code_num || '-'
             data.code = item.other.code;
@@ -95,9 +107,9 @@ export default _ => {
             {
                 sheetData: new_list,
                 sheetName: `退料记录`,
-                sheetFilter: ["date", "code_num", "code", "store_name", "price", "count", "unit", "sum_oprice", "return_user_name", "record_user_name", "remark"],
-                sheetHeader: ["退料时间", "单号", "流水", "物品", "退料单价(元)", "退料数量", "单位", "退料总价(元)", "退料人员", "记录人员", "退料备注"],
-                columnWidths: [8, 5, 8, 10, 5, 5, 3, 5, 5, 5, 5],
+                sheetFilter: ["date", "code_num", "code", "store_name", "price", "tax", "tax_price", "count", "unit", "sum_oprice", "return_user_name", "record_user_name", "remark"],
+                sheetHeader: ["退料时间", "单号", "流水", "物品", "退料单价[元]", "税率", "单税价[元]", "退料数量", "单位", "退料总价[元]", "退料人员", "记录人员", "退料备注"],
+                columnWidths: [8, 5, 8, 10, 5, 5, 5, 5, 3, 5, 5, 5, 5],
             }
         ];
         new ExportJsonExcel(option).saveExcel(); //保存
@@ -138,15 +150,25 @@ export default _ => {
             dataIndex: 'store_name',
             key: 'store_name',
             render: (text, record) => {
-                return <Tag color='cyan' style={{ marginRight: 0 }}>{text}</Tag>
+                return <Tooltip placement='left' title={record.tax ? '税率' + record.tax + '%' : '无税率'}>
+                    <Tag color='cyan' style={{ marginRight: 0 }}>{text}</Tag>
+                </Tooltip>
             }
         },
         {
-            title: '退料单价(元)',
+            title: '退料单价[元]',
             dataIndex: 'price',
             key: 'price',
             render: (text) => {
                 return <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
+            }
+        },
+        {
+            title: '单税价[元]',
+            dataIndex: 'tax_price',
+            key: 'tax_price',
+            render: (text) => {
+                return <Tag color='#722ed1' style={{ marginRight: 0 }}>{text}</Tag>
             }
         },
         {
@@ -166,7 +188,7 @@ export default _ => {
             }
         },
         {
-            title: '退料总价(元)',
+            title: '退料总价[元]',
             dataIndex: 'sum_price',
             key: 'sum_price',
             render: (_, record) => {
@@ -220,7 +242,8 @@ export default _ => {
                 </div>
                 <div>
                     <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
-                    <Tag color={'#fa541c'} style={{ marginRight: 0 }}>总价格¥: {sum_price}</Tag>
+                    <Tag color={'#fa541c'}>总价格¥: {sum_price}</Tag>
+                    <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总税价¥: {sum_tax_price}</Tag>
                 </div>
             </div>
             <Table

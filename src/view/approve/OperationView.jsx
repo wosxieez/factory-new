@@ -3,7 +3,7 @@ import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, mes
 import api from '../../http';
 import moment from 'moment'
 // import { xiaomeiParseFloat } from '../../util/Tool';
-import { userinfo } from '../../util/Tool';
+import { getListAllTaxPrice, getTaxPrice, userinfo, xiaomeiParseFloat } from '../../util/Tool';
 import '../../css/styles.css'
 import HttpApi from '../../http/HttpApi';
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
@@ -199,7 +199,8 @@ function RenderDetail({ record, workflok, orderStepLog, getOrderData, rfidList, 
         sum_count = sum_count + item.count;
     })
     let tempList = JSON.parse(record.content);
-    tempList.push({ store_name: '总计', count: sum_count, price: sum_price, isSum: true })
+    let listAllTaxPrice = getListAllTaxPrice(tempList)
+    tempList.push({ store_name: '总计', count: sum_count, price: sum_price, isSum: true, tax_price: listAllTaxPrice })
     let data = tempList.map((item, index) => { item.key = index; return item })
     const columns = [{
         title: '物品', dataIndex: 'store_name',
@@ -221,15 +222,27 @@ function RenderDetail({ record, workflok, orderStepLog, getOrderData, rfidList, 
             return text
         }
     },
-    // {
-    //     title: '单价【元】', dataIndex: 'price',
-    //     render: (text, record) => {
-    //         if (record.isSum) {
-    //             return <Tag color={'red'}>{xiaomeiParseFloat(text)}</Tag>
-    //         }
-    //         return text
-    //     }
-    // },
+    {
+        title: '单价[元]', dataIndex: 'price',
+        render: (text, record) => {
+            if (record.isSum) {
+                return <Tag color={'red'}>{xiaomeiParseFloat(text)}</Tag>
+            }
+            return text
+        }
+    },
+    {
+        title: '税单价[元]', dataIndex: 'tax_price',
+        render: (text, record) => {
+            if (record.isSum) {
+                return <Tag color={'#722ed1'}>{xiaomeiParseFloat(text)}</Tag>
+            } else {
+                return <Tooltip placement='left' title={record.tax ? '税率' + record.tax + '%' : '无税率'}>
+                    <div>{getTaxPrice(record.price, record.tax)}</div>
+                </Tooltip>
+            }
+        }
+    },
     {
         title: '属性', dataIndex: 'tags',
         render: (text, record) => {
@@ -462,7 +475,7 @@ export async function updateStoreHandler(record) {
     contentList.forEach((element) => {
         tempList.push({ store_id: element.store_id, count: element.count }) ///cut 在数据库中 count 字段值 要减少多少
     })
-    console.log('目标:', tempList)
+    // console.log('目标:', tempList)
     for (let index = 0; index < tempList.length; index++) {
         const element = tempList[index];
         if (record.type_id === 1) {

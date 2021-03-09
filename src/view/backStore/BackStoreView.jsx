@@ -70,7 +70,7 @@ export default _ => {
             }
         },
         {
-            title: '单价(元)',
+            title: '单价[元]',
             dataIndex: 'store.avg_price',
             key: 'avg_price',
             render: (text) => {
@@ -86,7 +86,7 @@ export default _ => {
             }
         },
         {
-            title: '总价(元)',
+            title: '总价[元]',
             dataIndex: 'store',
             key: 'sum_oprice',
             render: (_, record) => {

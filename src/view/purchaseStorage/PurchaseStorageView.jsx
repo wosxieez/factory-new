@@ -164,7 +164,7 @@ export default Form.create({ name: 'form' })(props => {
     ///生成物品对象
     const handleSelectChange = useCallback((option, key) => {
         const selectObj = option.props.all;
-        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': selectObj.has_rfid ? 0 : 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'o_count': selectObj.count, 'o_price': selectObj.oprice, 'remark': selectObj.remark, has_rfid: selectObj.has_rfid ? 1 : 0, rfid_list: [] }
+        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': selectObj.has_rfid ? 0 : 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'o_count': selectObj.count, 'o_price': selectObj.oprice, 'remark': selectObj.remark, has_rfid: selectObj.has_rfid ? 1 : 0, rfid_list: [], tax: selectObj.tax }
         changeTableListHandler(param)
     }, [changeTableListHandler])
     ///对标签物品物品进行，rfid的关联
@@ -290,7 +290,7 @@ export default Form.create({ name: 'form' })(props => {
                             message.error('不允许物品使用相同标签');
                             return;
                         }
-                        console.log('没问题:')
+                        // console.log('没问题:', values)
                         updateStoreAndrecordHandler(values)
                     },
                 })

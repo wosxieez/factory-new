@@ -141,7 +141,7 @@ export default _ => {
             }
         },
         {
-            title: '单价(元)',
+            title: '单价[元]',
             dataIndex: 'store.oprice',
             key: 'oprice',
             render: (text) => {
@@ -157,7 +157,7 @@ export default _ => {
             }
         },
         {
-            title: '总价(元)',
+            title: '总价[元]',
             dataIndex: 'store',
             key: 'sum_oprice',
             render: (_, record) => {

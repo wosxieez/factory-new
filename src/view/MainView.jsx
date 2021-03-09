@@ -28,6 +28,9 @@ import RfidView from './rfid/RfidView';
 import StoreScanRecordView from './storeScanRecord/StoreScanRecordView';
 import ShelfScanRecordView from './shelfScanRecord/ShelfScanRecordView';
 import StoreChangeRecordView from './storeChangeRecord/StoreChangeRecordView';
+import OutboundStorageView from './outboundStorage/OutboundStorageView';
+import OutboundcheckView, { getCountZC } from './approve/OutboundcheckView';
+import OutboundStoreView from './outboundStore/OutboundStoreView';
 const weather = <div id="tp-weather-widget"></div>
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 // import CamView from './cam/CamView';
@@ -114,6 +117,13 @@ export default (props) => {
       let sql_tl = sql_date_tl + sql_check_status_tl
       let result_count_tl = await getCountRT(sql_tl)
       appDispatch({ type: 'returncount', data: result_count_tl })
+
+      ////自行出库记录
+      let sql_date_zc = ` and date >= '${startOfM}' and date <= '${endOfD}'`
+      let sql_check_status_zc = ' and check_status in (0)'
+      let sql_zc = sql_date_zc + sql_check_status_zc
+      let result_count_zc = await getCountZC(sql_zc)
+      appDispatch({ type: 'outboundcount', data: result_count_zc })
     }
   }, [appDispatch, hasPermission0, hasPermission4, hasPermission5, hasPermission6])
   useEffect(() => {
@@ -121,7 +131,7 @@ export default (props) => {
     doSomething()
   }, [doSomething])
   return <Layout>
-    <Sider style={styles.side} width={180} trigger={null} collapsible collapsed={collapsed}>
+    <Sider style={styles.side} width={220} trigger={null} collapsible collapsed={collapsed}>
       <div style={styles.logo} >
         <span style={styles.titleIcon}>{svgs.loginTitle(30, 30, '#FFFFFF')}</span>
         <span style={{ ...styles.title, visibility: collapsed ? 'hidden' : 'visible' }}>Welcome</span>
@@ -132,6 +142,11 @@ export default (props) => {
             <Icon type="hdd" />
             <span className="nav-text">库存列表</span>
             <Link to={`${props.match.url}/storeview`} />
+          </Menu.Item>
+          <Menu.Item key={'/main/outboundstorageview'}>
+            <Icon type="paper-clip" />
+            <span className="nav-text">自行出库单</span>
+            <Link to={`${props.match.url}/outboundstorageview`} />
           </Menu.Item>
           <Menu.Item key={'/main/purchasestorageview'}>
             <Icon type="shopping-cart" />
@@ -147,8 +162,13 @@ export default (props) => {
         <SubMenu key="报表统计" title={<span><Icon type="area-chart" /><span>统计</span></span>}>
           <Menu.Item key={'/main/exportstoreview'}>
             <Icon type="area-chart" />
-            <span className="nav-text">出库记录</span>
+            <span className="nav-text">流程出库记录</span>
             <Link to={`${props.match.url}/exportstoreview`} />
+          </Menu.Item>
+          <Menu.Item key={'/main/outboundstoreview'}>
+            <Icon type="area-chart" />
+            <span className="nav-text">自行出库记录</span>
+            <Link to={`${props.match.url}/outboundstoreview`} />
           </Menu.Item>
           <Menu.Item key={'/main/purchasetoreview'}>
             <Icon type="area-chart" />
@@ -203,6 +223,12 @@ export default (props) => {
             <span className="nav-text">退料审计</span>
             <Badge style={styles.titleIcon} count={appState.returncount} overflowCount={99} />
             <Link to={`${props.match.url}/approve/returncheckview`} />
+          </Menu.Item>
+          <Menu.Item key={'/main/approve/outboundcheckview'}>
+            <Icon type="ordered-list" />
+            <span className="nav-text">出库审计</span>
+            <Badge style={styles.titleIcon} count={appState.outboundcount} overflowCount={99} />
+            <Link to={`${props.match.url}/approve/outboundcheckview`} />
           </Menu.Item>
         </SubMenu>
         {hasPermission5 ? <SubMenu key={'记录'} title={<span><Icon type="reconciliation" /><span>记录</span></span>}>
@@ -260,7 +286,7 @@ export default (props) => {
         }
       </Menu>
     </Sider>
-    <Layout style={{ marginLeft: collapsed ? 80 : 180 }} >
+    <Layout style={{ marginLeft: collapsed ? 80 : 220 }} >
       <Header style={{ backgroundColor: '#FFF', zIndex: 10, width: '100%', height: 64, padding: 0, borderBottomStyle: 'solid', borderBottomWidth: 1, borderBottomColor: '#e8e8e8', }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', height: '100%' }}>
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
@@ -282,14 +308,15 @@ export default (props) => {
       <Content style={{ margin: '16px 16px 0', overflow: 'initial', height: '100vh' }}>
         <Route path={`${props.match.url}/departmentview`} component={NewDptAndUser} />
         <Route path={`${props.match.url}/storeview`} component={StoreHouseView} />
-        {/* <Route path={`${props.match.url}/userview`} component={UserView} /> */}
         <Route path={`${props.match.url}/applyview`} component={ApplyView} />
         <Route path={`${props.match.url}/approve/approveview`} component={ApproveView} />
         <Route path={`${props.match.url}/approve/purchasecheckview`} component={PurchasecheckView} />
         <Route path={`${props.match.url}/approve/returncheckview`} component={ReturncheckView} />
+        <Route path={`${props.match.url}/approve/outboundcheckview`} component={OutboundcheckView} />
         <Route path={`${props.match.url}/exportstoreview`} component={ExportStoreView} />
+        <Route path={`${props.match.url}/outboundstorageview`} component={OutboundStorageView} />
         <Route path={`${props.match.url}/purchasetoreview`} component={PurchaseStoreView} />
-        {/* <Route path={`${props.match.url}/backstoreview`} component={BackStoreView} /> */}
+        <Route path={`${props.match.url}/outboundstoreview`} component={OutboundStoreView} />
         <Route path={`${props.match.url}/purchasestorageview`} component={PurchaseStorageView} />
         <Route path={`${props.match.url}/returnstorageview`} component={ReturnStorageView} />
         <Route path={`${props.match.url}/returnstoreview`} component={ReturnStoreView} />
@@ -301,7 +328,6 @@ export default (props) => {
         <Route path={`${props.match.url}/record/storescanner`} component={StoreScanRecordView} />
         <Route path={`${props.match.url}/record/shelfscanner`} component={ShelfScanRecordView} />
         <Route path={`${props.match.url}/record/storechange`} component={StoreChangeRecordView} />
-
         {/* <Route path={`${props.match.url}/usertag`} component={() => { return <TagView type={1} /> }} /> */}
         {/* <Route path={`${props.match.url}/camview`} component={CamView} /> */}
         {/* <Affix offsetBottom={10}>

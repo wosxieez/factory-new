@@ -5,8 +5,13 @@ import moment from 'moment'
 import HttpApi from '../../http/HttpApi';
 import { getListAllTaxPrice, userinfo } from '../../util/Tool';
 import { AppDataContext } from '../../redux/AppRedux';
-export async function getCountCG(condition_sql) {
-    let sql = `select count(id) count from purchase_record where isdelete = 0${condition_sql} `
+/**
+ * 自行出库记录
+ * @param {*} condition_sql 
+ * @returns 
+ */
+export async function getCountZC(condition_sql) {
+    let sql = `select count(id) count from outbound_record where isdelete = 0${condition_sql} `
     let result = await api.query(sql)
     if (result.code === 0) {
         return result.data[0][0]['count']
@@ -15,7 +20,7 @@ export async function getCountCG(condition_sql) {
     }
 }
 /**
- * 采购入库单记录--用于财务审计
+ * 自行出库单记录--用于财务审计
  */
 export default props => {
     const [hasPermission6] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('6') !== -1)
@@ -47,9 +52,9 @@ export default props => {
         if (conditionObj.code_num) {
             sql_code_num = ` and code_num like '%${conditionObj.code_num}%'`
         }
-        let sql_buy_user_id = ''
-        if (conditionObj.buy_user_id_list) {
-            sql_buy_user_id = ' and buy_user_id in (' + conditionObj.buy_user_id_list.join(',') + ')'
+        let sql_out_user_id = ''
+        if (conditionObj.out_user_id_list) {
+            sql_out_user_id = ' and out_user_id in (' + conditionObj.out_user_id_list.join(',') + ')'
         }
         let sql_record_user_id = ''
         if (conditionObj.record_user_id_list) {
@@ -59,16 +64,16 @@ export default props => {
         if (conditionObj.check_status) {
             sql_check_status = ' and check_status in (' + conditionObj.check_status.join(',') + ')'
         }
-        let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_buy_user_id + sql_record_user_id + sql_check_status
-        let sql = `select pr.*,users1.name as buy_user_name,users2.name as record_user_name,users3.name as check_user_name from purchase_record as pr
-        left join (select * from users where effective = 1) users1 on users1.id = pr.buy_user_id
+        let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_out_user_id + sql_record_user_id + sql_check_status
+        let sql = `select pr.*,users1.name as return_user_name,users2.name as record_user_name,users3.name as check_user_name from outbound_record as pr
+        left join (select * from users where effective = 1) users1 on users1.id = pr.out_user_id
         left join (select * from users where effective = 1) users2 on users2.id = pr.record_user_id
         left join (select * from users where effective = 1) users3 on users3.id = pr.check_user_id
         where pr.isdelete = 0${sql_condition} order by id desc`
         // console.log('sql:', sql)
-        let result_count = await getCountCG(sql_condition)
+        let result_count = await getCountZC(sql_condition)
         setCount(result_count)
-        if (hasPermission6) { appDispatch({ type: 'purchasecount', data: result_count }) }
+        if (hasPermission6) { appDispatch({ type: 'outboundcount', data: result_count }) }
         let result = await api.query(sql)
         if (result.code === 0) {
             let tempSumcount = 0;
@@ -92,7 +97,7 @@ export default props => {
     }, [listData])
 
     const columns = [
-        { title: '采购时间', dataIndex: 'date', key: 'date', width: 120, align: 'center' },
+        { title: '出库时间', dataIndex: 'date', key: 'date', width: 120, align: 'center' },
         {
             title: '单号',
             dataIndex: 'code_num',
@@ -110,12 +115,13 @@ export default props => {
             }
         },
         {
-            title: '采购单',
+            title: '出库单',
             dataIndex: 'content',
             // align: 'center',
             render: (text, record) => {
                 let contentList = JSON.parse(text)
                 return contentList.map((item, index) => {
+                    // return <div key={index}><Tag key={index} color={'cyan'} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>{item.store_name} 出库价{item.price}元*{item.count}</Tag><br /></div>
                     return <Tooltip key={index} placement='left' title={item && item.tax ? '税率' + item.tax + '%' : '无税率'} >
                         <div key={index}>
                             <Tag key={index} color={'cyan'} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>{item.store_name} 采购价{item.price}元*{item.count}</Tag><br />
@@ -161,9 +167,9 @@ export default props => {
             }
         },
         {
-            title: '采购人员',
-            dataIndex: 'buy_user_name',
-            key: 'buy_user_name',
+            title: '出库人员',
+            dataIndex: 'return_user_name',
+            key: 'return_user_name',
             align: 'center',
             width: 80,
             render: (text) => {
@@ -178,7 +184,7 @@ export default props => {
             width: 80,
         },
         {
-            title: '采购备注',
+            title: '出库备注',
             dataIndex: 'remark',
             align: 'center',
             width: 100,
@@ -268,7 +274,7 @@ export default props => {
             </div>
             <div style={styles.body}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <h3>实际采购单记录</h3>
+                    <h3>自行出库单记录</h3>
                     <div>
                         <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
                         <Tag color={'#fa541c'} style={{ marginRight: 0 }}>总价格¥: {sum_price}</Tag>
@@ -276,7 +282,7 @@ export default props => {
                 </div>
                 <HandlerPanel visible={isUpdating} onCancel={() => { setIsUpdating(false) }} onOk={async (data) => {
                     // console.log('data:', data)
-                    let sql = `update purchase_record set 
+                    let sql = `update outbound_record set 
                     check_status = ${data.check_status},
                     check_remark =${data.check_remark ? "'" + data.check_remark + "'" : null},
                     check_user_id = ${userinfo().id},
@@ -350,7 +356,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
     }}>
         <Row>
             <Col span={6}>
-                <Form.Item label='采购时间'  {...itemProps}>
+                <Form.Item label='出库时间'  {...itemProps}>
                     {props.form.getFieldDecorator('date_range', {
                         initialValue: [moment().add(0, 'month').startOf('month'), moment().endOf('day')],
                         rules: [{ required: false }]
@@ -399,8 +405,8 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
         </Row>
         <Row>
             <Col span={6}>
-                <Form.Item label='采购人'  {...itemProps}>
-                    {props.form.getFieldDecorator('buy_user_id_list', {
+                <Form.Item label='领料人'  {...itemProps}>
+                    {props.form.getFieldDecorator('out_user_id_list', {
                         rules: [{ required: false }]
                     })(<Select mode='multiple' allowClear placeholder='选择人员-支持名称搜索' showSearch optionFilterProp="children">
                         {userOptionList.map((item, index) => {

@@ -1,8 +1,8 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import api from '../../http';
-import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message } from 'antd';
+import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip } from 'antd';
 import moment from 'moment';
-import { translateOrderList } from '../../util/Tool';
+import { calculOrderListStoreTaxAllPrice, getTaxPrice, translateOrderList } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 import ExportJsonExcel from 'js-export-excel'
 var date_range;
@@ -11,6 +11,7 @@ export default _ => {
     const [dataSource, setDataSource] = useState([])
     const [sum_price, setSumPrice] = useState(0)
     const [sum_count, setSumCount] = useState(0)
+    const [sum_tax_price, setSumTaxPrice] = useState(0)
 
     const listData = useCallback(async (conditionObj) => {
         setIsLoading(true)
@@ -44,7 +45,14 @@ export default _ => {
             let result2 = translateOrderList(result.data[0], conditionObj.store_id_list)
             // console.log('result2:', result2)
             // console.log('ad:', result2.allStoreList.map((item, index) => { item.key = index; return item }))
-            setDataSource(result2.allStoreList.map((item, index) => { item.key = index; return item }))
+            let temp = result2.allStoreList.map((item, index) => {
+                item.key = index;
+                item.store.tax_price = getTaxPrice(item.store.price, item.store.tax);
+                return item
+            });
+            let all_tax_price = calculOrderListStoreTaxAllPrice(temp)
+            setSumTaxPrice(parseFloat(all_tax_price).toFixed(2))
+            setDataSource(temp)
             setSumPrice(parseFloat(result2.sum_price).toFixed(2))
             setSumCount(result2.sum_count)
         }
@@ -53,6 +61,8 @@ export default _ => {
     const exportHandler = useCallback(() => {
         let new_list = dataSource.map((item) => {
             let data = {};
+            data.tax_price = String(item.store.tax_price || '-')
+            data.tax = String(item.store.tax || '-')
             data.in_out_time = moment(item.order.in_out_time).format('YYYY-MM-DD HH:mm:ss');
             data.code = item.order.code;
             data.store_name = item.store.store_name;
@@ -65,14 +75,14 @@ export default _ => {
         })
         if (new_list.length === 0) { message.warn('没有相关数据-可供导出'); return }
         var option = {};
-        option.fileName = "出库记录文件";
+        option.fileName = "流程出库记录文件";
         option.datas = [
             {
                 sheetData: new_list,
                 sheetName: `出库记录`,
-                sheetFilter: ["in_out_time", "code", "store_name", "price", "count", "unit", "sum_oprice", "user_name"],
-                sheetHeader: ["出库时间", "流水", "物品", "单价(元)", "数量", "单位", "总价(元)", "领料人员"],
-                columnWidths: [8, 8, 10, 5, 5, 3, 5, 5],
+                sheetFilter: ["in_out_time", "code", "store_name", "price", "tax", "tax_price", "count", "unit", "sum_oprice", "user_name"],
+                sheetHeader: ["出库时间", "流水", "物品", "单价[元]", "税率", "单税价[元]", "数量", "单位", "总价[元]", "领料人员"],
+                columnWidths: [8, 8, 10, 5, 5, 5, 5, 3, 5, 5],
             }
         ];
         new ExportJsonExcel(option).saveExcel(); //保存
@@ -114,15 +124,26 @@ export default _ => {
             dataIndex: 'store.store_name',
             key: 'store_name',
             render: (text, record) => {
-                return <Tag color='cyan' style={{ marginRight: 0 }}>{text}</Tag>
+                // return <Tag color='cyan' style={{ marginRight: 0 }}>{text}</Tag>
+                return <Tooltip placement='left' title={record.store.tax ? '税率' + record.store.tax + '%' : '无税率'}>
+                    <Tag color='cyan' style={{ marginRight: 0 }}>{text}</Tag>
+                </Tooltip>
             }
         },
         {
-            title: '单价(元)',
+            title: '单价[元]',
             dataIndex: 'store.price',
             key: 'price',
             render: (text) => {
                 return <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
+            }
+        },
+        {
+            title: '单税价[元]',
+            dataIndex: 'store.tax_price',
+            key: 'tax_price',
+            render: (text) => {
+                return <Tag color='#722ed1' style={{ marginRight: 0 }}>{text}</Tag>
             }
         },
         {
@@ -142,7 +163,7 @@ export default _ => {
             }
         },
         {
-            title: '总价(元)',
+            title: '总价[元]',
             dataIndex: 'store',
             key: 'sum_oprice',
             render: (_, record) => {
@@ -168,11 +189,11 @@ export default _ => {
         <div style={styles.body}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    <h3>出库物品记录</h3>
+                    <h3>流程出库物品记录</h3>
                     <Button icon="download" size='small' type='link' style={{ padding: 0, marginLeft: 10, marginTop: -6 }} onClick={() => {
                         Modal.confirm({
                             title: `确认导出当前页面中查询到的所有数据吗？`,
-                            content: '请自行确保所选的信息的准确性；数据会保存为【出库记录文件】的Excel文件',
+                            content: '请自行确保所选的信息的准确性；数据会保存为【流程出库记录文件】的Excel文件',
                             okText: '确定',
                             okType: 'danger',
                             onOk: exportHandler
@@ -181,7 +202,8 @@ export default _ => {
                 </div>
                 <div>
                     <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
-                    <Tag color={'#fa541c'} style={{ marginRight: 0 }}>总价格¥: {sum_price}</Tag>
+                    <Tag color={'#fa541c'}>总价格¥: {sum_price}</Tag>
+                    <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总税价¥: {sum_tax_price}</Tag>
                 </div>
             </div>
             <Table

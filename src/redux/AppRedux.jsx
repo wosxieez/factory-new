@@ -6,6 +6,7 @@ const initialState = {
     approvecount: 0,//申请单计数
     purchasecount: 0,//采购单计数
     returncount: 0,//退料单计数
+    outboundcount: 0,///自行出库单计数
 }
 function reducer(state, action) {
     switch (action.type) {
@@ -13,6 +14,7 @@ function reducer(state, action) {
         case 'approvecount': return { ...state, approvecount: action.data }
         case 'purchasecount': return { ...state, purchasecount: action.data }
         case 'returncount': return { ...state, returncount: action.data }
+        case 'outboundcount': return { ...state, outboundcount: action.data }
         default: return state
     }
 }
