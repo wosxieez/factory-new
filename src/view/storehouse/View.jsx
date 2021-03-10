@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import api from '../../http'
-import { Menu, Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Form, Icon, Collapse, Dropdown, Tooltip } from 'antd'
+import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Form, Icon, Tooltip } from 'antd'
 import moment from 'moment'
-import AddForm from './AddFrom'
+// import AddForm from './AddFrom'
 import UpdateForm from './UpdateForm'
-import { getJsonTree, filterTag, checkStoreCountChange, checkStoreClassChange, getTaxPrice } from '../../util/Tool'
+import { getJsonTree, filterTag, checkStoreCountChange, checkStoreClassChange, getTaxPrice, getListAllTaxPrice, getListAllPriceAndCount } from '../../util/Tool'
 import { userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi'
 import AddFromRFID from './AddFromRFID'
 import UpdateFormRFID from './UpdateFormRFID'
 import AddForm2 from './AddFrom2'
-const { Panel } = Collapse;
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 var originStoreList
 var rfidList = [];
@@ -19,13 +18,17 @@ var rfidList = [];
  * 库品信息表单
  */
 export default props => {
+  const [sum_price, setSumPrice] = useState(0)
+  const [sum_tax_price, setSumTaxPrice] = useState(0)
+  const [sum_count, setSumCount] = useState(0)
+
   const [isLoading, setIsLoading] = useState(false)
-  const [isAdding, setIsAdding] = useState(false)
+  // const [isAdding, setIsAdding] = useState(false)
   const [isAdding2, setIsAdding2] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isAddingRFID, setIsAddingRFID] = useState(false)
   const [isUpdatingRFID, setIsUpdatingRFID] = useState(false)
-  const addForm = useRef()
+  // const addForm = useRef()
   const addForm2 = useRef()
   const addFormRFID = useRef()
   const updateForm = useRef()
@@ -37,33 +40,14 @@ export default props => {
   const [selectedRows, setSelectedRows] = useState([])
   const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1)
 
-  const menu = (
-    <Menu onClick={(target) => {
-      switch (target.key) {
-        case '1':
-          console.log('物品和货架')
-          setIsAdding2(true)
-          break;
-        case '2':
-          setIsAdding(true)
-          console.log('物品关联货架')
-          break;
-        default:
-          break;
-      }
-    }}>
-      <Menu.Item key="1">
-        <Icon type="pic-right" />
-        <span>物品和货架</span>
-      </Menu.Item>
-      <Menu.Divider />
-      <Menu.Item key="2">
-        <Icon type="inbox" />
-        <span>物品</span>
-      </Menu.Item>
-    </Menu>
-  );
-
+  const calculSumCountAndPrice = useCallback((store_list) => {
+    let temp_store_list = store_list.map((item) => { item.price = item.oprice; return item });
+    let all_tax_price = getListAllTaxPrice(temp_store_list)
+    let { sum_price, sum_count } = getListAllPriceAndCount(temp_store_list)
+    setSumTaxPrice(parseFloat(all_tax_price).toFixed(2))
+    setSumPrice(parseFloat(sum_price).toFixed(2))
+    setSumCount(sum_count)
+  }, [])
   const listAllStore = useCallback(async () => {
     setIsLoading(true)
     setSelectedRowKeys([])
@@ -76,20 +60,22 @@ export default props => {
     ///获取所有store
     let result = await api.listAllStore()
     if (result.code === 0) {
-      // console.log('result.data:', result.data)
-      originStoreList = result.data.map((item, index) => { item.key = index; return item }).reverse()
+      // console.log('result.data:', result.data)///不是分页查询。是总数据
+      let temp_store_list = result.data.map((item, index) => { item.key = index; return item });
+      originStoreList = temp_store_list.reverse()
       originStoreList.forEach((store) => {
         store.subList = [];
         rfidList.forEach((storeSub) => {
           if (store.id === storeSub.store_id) { store.subList.push(storeSub) }
         })
       })
+      calculSumCountAndPrice(originStoreList)
       setStoreList(originStoreList)
     }
     setIsLoading(false)
     let res_shelf = await HttpApi.getNfcShelfList();
     setShelfList(res_shelf)
-  }, [])
+  }, [calculSumCountAndPrice])
   useEffect(() => {
     listAllStore()
   }, [props.selectNode, listAllStore])
@@ -115,7 +101,6 @@ export default props => {
           }
           else { message.error('物品添加失败1') }
         } else {
-          setIsAdding(false)
           listAllStore()
           message.success('物品添加成功')
           checkStoreClassChange({ is_add: 1, content: [data] })
@@ -130,9 +115,7 @@ export default props => {
       let shelf_list_res = await HttpApi.getNFCShelflist()
       if (shelf_list_res) {
         const nfc_shelf_id = shelf_list_res[0].id
-        console.log(nfc_shelf_id)
         const data = { ...data_store, nfc_shelf_id }
-        console.log('data:', data)
         addData(data)
       }
     } else { message.error('货架添加失败') }
@@ -169,8 +152,8 @@ export default props => {
           }
         } else {
           message.success('修改成功')
-          console.log('data[count] :', data['count'])
-          console.log('currentItem[count] :', currentItem['count'])
+          // console.log('data[count] :', data['count'])
+          // console.log('currentItem[count] :', currentItem['count'])
           if (data['count'] !== currentItem['count']) {///数量发生变化
             checkStoreCountChange({ origin_store: currentItem, change_store: data, is_edit: 1 })
           }
@@ -219,31 +202,29 @@ export default props => {
   }
   const columns = [
     {
-      title: '物品编号',///物品自身编号
-      dataIndex: 'no',
-      key: 'no',
-      render: (text) => {
-        return text || '-'
-      }
-    },
-    // {
-    //   title: '编号',///NFC编号
-    //   dataIndex: 'nfc_shelf',
-    //   key: 'nfc_shelf_num',
-    //   render: (text) => {
-    //     console.log('text:', text)
-    //     if (text) {
-    //       return <Tag color='blue'>
-    //         {text.num}
-    //       </Tag>
-    //     }
-    //     return <div>-</div>
-    //   }
-    // },
-    {
-      title: '种类名称', dataIndex: 'name', width: 120, render: (text, record) => {
+      title: '名称', dataIndex: 'name', width: 120, render: (text, record) => {
         if (record['has_rfid']) return <div><Icon type="barcode" style={{ marginRight: 5 }} />{text}</div>
         return text
+      }
+    },
+    {
+      title: '编号',///货架nfc编号
+      dataIndex: 'nfc_shelf',
+      key: 'nfc_shelf_obj1',
+      render: (text) => {
+        if (text)
+          return text.num || '-'
+      }
+    },
+    {
+      title: '型号',
+      dataIndex: 'nfc_shelf',
+      key: 'nfc_shelf_obj2',
+      render: (text) => {
+        if (text) {
+          return text.model
+        }
+        return <div>-</div>
       }
     },
     {
@@ -260,22 +241,6 @@ export default props => {
         }
         if (!text) { return '-' }
         return <div>{tagList}</div>
-      }
-    },
-    {
-      title: '货架标签',
-      dataIndex: 'nfc_shelf',
-      key: 'nfc_shelf_obj',
-      render: (text) => {
-        if (text) {
-          return <Collapse accordion bordered={false}>
-            <Panel header={<Tag color='blue'>{text.name}</Tag>} style={styles.customPanelStyle} key={1} showArrow={false}>
-              <Tag>编号:{text.num || '-'}</Tag>
-              <Tag>型号:{text.model || '-'}</Tag>
-            </Panel>
-          </Collapse>
-        }
-        return <div>-</div>
       }
     },
     {
@@ -331,14 +296,6 @@ export default props => {
       }
     },
     {
-      title: '备注',
-      dataIndex: 'remark',
-      width: 140,
-      render: (text) => {
-        return <div>{text || '-'}</div>
-      }
-    },
-    {
       title: '操作',
       dataIndex: 'action',
       width: 80,
@@ -371,10 +328,8 @@ export default props => {
           let result = []
           if (JSON.stringify(conditionsValue) === '{}') {
             result = await api.listAllStore()
-            // console.log('result123:', result)
           } else {
             result = await api.listStore(conditionsValue)
-            // console.log('result456:', result)
           }
           if (result.code === 0) {
             let tempList = result.data.map((item, index) => { item.key = index; return item }).reverse()
@@ -385,31 +340,28 @@ export default props => {
               })
             })
             setStoreList(tempList)
+            calculSumCountAndPrice(tempList)
           }
           setIsLoading(false)
         }} />
+
       </div>
       <div style={styles.body}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <h3>物品管理</h3>
+          <h3>库存物品列表</h3>
           <div>
             {isStorehouseManager ? (selectedRowKeys.length === 0 ? (
               <>
-                {/* <Tooltip title={tooltipTxt}>
-                  <Icon type="question-circle" />
-                </Tooltip> */}
-                <Dropdown overlay={menu} >
-                  <Button
-                    style={styles.button}
-                    type='primary'
-                    icon={'plus'}
-                  // onClick={() => {
-                  //   setIsAdding(true)
-                  // }}
-                  >
-                    普通物品
+                <Button
+                  style={styles.button}
+                  type='primary'
+                  icon={'plus'}
+                  onClick={() => {
+                    setIsAdding2(true)
+                  }}
+                >
+                  普通物品
               </Button>
-                </Dropdown>
                 <Button
                   style={styles.button}
                   type='danger'
@@ -449,6 +401,11 @@ export default props => {
             type='info'
             showIcon
           /> : null}
+        <div style={{ ...styles.marginTop, textAlign: 'right' }}>
+          <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
+          <Tag color={'#fa541c'}>总价格¥: {sum_price}</Tag>
+          <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总税价¥: {sum_tax_price}</Tag>
+        </div>
         <Table
           loading={isLoading}
           style={styles.marginTop}
@@ -468,7 +425,7 @@ export default props => {
             pageSizeOptions: ['10', '50', '100']
           }}
         />
-        <AddForm
+        {/* <AddForm
           ref={addForm}
           title='新增普通物品'
           visible={isAdding}
@@ -487,7 +444,7 @@ export default props => {
               }
             })
           }}
-        />
+        /> */}
         <AddForm2
           ref={addForm2}
           title='新增普通物品和货架'
@@ -500,18 +457,11 @@ export default props => {
             addForm2.current.validateFields(async (error, data) => {
               if (!error) {
                 console.log('新数据：', data)
-                const { count, model, name, no, num, oprice, remark, tag_id, tax, tids, unit, shelf_name } = data
-                const data_store = { name, count, unit, oprice, tax, no, tids, remark }
-                const data_shelf = { model, num, tag_id, name: shelf_name }
-
-                console.log('data_store:', data_store)
-                console.log('data_shelf:', data_shelf)
-                ///测试 加上id
-                // data['id'] = 999
-                // checkStoreClassChange({ is_add: 1, content: [data] })
-                // addData(data_store)
+                const { count, model, name, num, oprice, remark, tag_id, tax, tids, unit } = data
+                const data_store = { name, count, unit, oprice, tax, tids, remark }
+                const data_shelf = { model, num, tag_id, name }
                 addShelfAndStoreHandler(data_shelf, data_store)
-                // addForm2.current.resetFields()
+                addForm2.current.resetFields()
               }
             })
           }}

@@ -2,9 +2,11 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Alert, Row, Col, Divider, Tooltip, Icon } from 'antd';
 import moment from 'moment';
 import api from '../../http';
-import AddForm from '../storehouse/AddFrom';
+// import AddForm from '../storehouse/AddFrom';
 import HttpApi from '../../http/HttpApi';
 import { checkStoreClassChange, userinfo } from '../../util/Tool';
+import AddForm2 from '../storehouse/AddFrom2';
+const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 const { Option } = Select;
 var storeList = [{ key: 0 }]
 const starIcon = <span style={{ color: 'red' }}>* </span>
@@ -43,6 +45,18 @@ export default Form.create({ name: 'form' })(props => {
                 checkStoreClassChange({ is_add: 1, content: [data] })
             }
         }, [listAllStore])
+    const addShelfAndStoreHandler = useCallback(async (data_shelf, data_store) => {
+        let res = await HttpApi.addNfcShelf({ name: data_shelf.name, tagId: data_shelf.tag_id, model: data_shelf.model || '', num: data_shelf.num, createdAt: moment().format(FORMAT) })
+        if (res) {
+            let shelf_list_res = await HttpApi.getNFCShelflist()
+            if (shelf_list_res) {
+                const nfc_shelf_id = shelf_list_res[0].id
+                const data = { ...data_store, nfc_shelf_id }
+                addData(data)
+            }
+        } else { message.error('货架添加失败') }
+        setIsAdding(false)
+    }, [addData])
     const columns = [
         { title: '编号', dataIndex: 'key', width: 50, align: 'center', render: (text) => <div>{text + 1}</div> },
         {
@@ -399,10 +413,10 @@ export default Form.create({ name: 'form' })(props => {
                 </Row>
             </Form>
         </div>
-        <AddForm
+        <AddForm2
             initData={{ count: 0, isRFIDStore }}
             ref={addForm}
-            title={isRFIDStore ? '创建标签物品' : '创建普通物品'}
+            title={isRFIDStore ? '创建标签物品' : '创建普通物品和货架'}
             visible={isAdding}
             onCancel={() => {
                 addForm.current.resetFields()
@@ -412,8 +426,14 @@ export default Form.create({ name: 'form' })(props => {
                 addForm.current.validateFields(async (error, data) => {
                     if (!error) {
                         if (isRFIDStore) { data['has_rfid'] = 1 } else { data['has_rfid'] = 0 }
-                        addData(data)
-                        addForm.current.resetFields()
+                        const { model, name, num, oprice, remark, tag_id, tax, tids, unit, has_rfid } = data
+                        const data_store = { name, unit, oprice, tax, tids, remark, has_rfid }
+                        const data_shelf = { model, num, tag_id, name }
+                        console.log('data_store1:', data_store)
+                        console.log('data_shelf1:', data_shelf)
+                        addShelfAndStoreHandler(data_shelf, data_store)
+                        // addData(data)
+                        // addForm.current.resetFields()
                     }
                 })
             }}

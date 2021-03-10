@@ -225,7 +225,18 @@ const HttpApi = {
         return []
     },
     updateNfcShelf: async ({ id, name, tagId, model, num, updatedAt }) => {
-        let sql = `update nfc_shelfs set name = '${name}', tag_id = ${tagId} ,model = ${model ? "'" + model + "'" : null},num = ${num ? "'" + num + "'" : null},updatedAt = '${updatedAt}' where id = '${id}'`
+        let block_name = ''
+        if (name) { block_name = `name = '${name}',` }
+        let block_tag = ''
+        if (tagId >= 0) { block_tag = `tag_id = ${tagId},` }
+        let block_model = ''
+        if (model) { block_model = `model = '${model}',` }
+        let block_num = ''
+        if (num) { block_num = `num = '${num}',` }
+        let block_update = ''
+        if (updatedAt) { block_update = `updatedAt = '${updatedAt}'` }
+        let set_sql = block_name + block_tag + block_model + block_num + block_update
+        let sql = `update nfc_shelfs set ${set_sql} where id = '${id}'`
         let res = await HttpApi.obs({ sql })
         if (res.code === 0) {
             return true

@@ -78,8 +78,8 @@ function AddNFCForm(props) {
         <Form.Item label="型号" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }}>
             {getFieldDecorator('model', {
                 initialValue: data ? data.model : null,
-                rules: [{ required: false, message: '请输入型号' }]
-            })(<Input placeholder='请输入型号【选填】'></Input>)}
+                rules: [{ required: true, message: '请输入型号' }]
+            })(<Input placeholder='请输入型号【必填】'></Input>)}
         </Form.Item>
     </Form>
 }

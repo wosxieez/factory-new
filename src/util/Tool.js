@@ -332,6 +332,11 @@ export function getTaxPrice(oprice, tax) {
   return parseFloat((oprice / (1 + tax / 100)).toFixed(2))
 }
 
+/**
+ * storeList 总税价
+ * @param {*} storeList 
+ * @returns 
+ */
 export function getListAllTaxPrice(storeList) {
   if (storeList) {
     let sum_price = 0;
@@ -344,6 +349,25 @@ export function getListAllTaxPrice(storeList) {
     return sum_price
   }
   return 0
+}
+
+/**
+ * storeList 总价
+ * @param {*} storeList 
+ * @returns 
+ */
+export function getListAllPriceAndCount(storeList) {
+  let sum_price = 0;
+  let sum_count = 0;
+  if (storeList) {
+    storeList.forEach((item) => {
+      const price = item.price
+      const count = item.count
+      sum_price = sum_price + price * count
+      sum_count = sum_count + count
+    })
+  }
+  return { sum_price, sum_count }
 }
 
 /**

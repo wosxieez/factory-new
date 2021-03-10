@@ -27,7 +27,7 @@ const UpdateForm = Form.create({ name: 'form' })((props) => {
     return (
         <Modal {...props} destroyOnClose>
             <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
-                <Form.Item label='种类名称' >
+                <Form.Item label='物品名称' >
                     {props.form.getFieldDecorator('name', {
                         initialValue: props.data.name,
                         rules: [{ required: true, message: '请输入名称' }]
@@ -73,12 +73,12 @@ const UpdateForm = Form.create({ name: 'form' })((props) => {
                         {shelfList.map((item, index) => { return <Option key={index} value={item.id}>{(item.num ? item.num + '-' : '') + item.name + (item.model ? '-' + item.model : '') + '-' + item.tag_name}</Option> })}
                     </Select>)}
                 </Form.Item>
-                <Form.Item label='物品编号' >
+                {/* <Form.Item label='物品编号' >
                     {props.form.getFieldDecorator('no', {
                         initialValue: props.data.no,
                         rules: [{ required: false, message: '请输入编号' }]
                     })(<Input placeholder='请输入编号' style={{ width: '100%' }} />)}
-                </Form.Item>
+                </Form.Item> */}
                 <Form.Item label='属性'>
                     {props.form.getFieldDecorator('tids', {
                         initialValue: props.data.tids || null,
@@ -96,7 +96,7 @@ const UpdateForm = Form.create({ name: 'form' })((props) => {
                             showCheckedStrategy={TreeSelect.SHOW_PARENT}
                         />)}
                 </Form.Item>
-                <Form.Item label='备注'>{props.form.getFieldDecorator('remark', { initialValue: props.data.remark })(<Input.TextArea rows={4} placeholder='选填' />)}</Form.Item>
+                {/* <Form.Item label='备注'>{props.form.getFieldDecorator('remark', { initialValue: props.data.remark })(<Input.TextArea rows={4} placeholder='选填' />)}</Form.Item> */}
             </Form>
         </Modal>
     )

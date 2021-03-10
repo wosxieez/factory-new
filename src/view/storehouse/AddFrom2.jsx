@@ -31,7 +31,7 @@ const AddForm2 = Form.create({ name: 'form' })((props) => {
         '创建的标签物品默认数量为 0；请在采购表单中的【数量列】进行标签的选择；若无数据，请先用PDA录入新的RFID标签'
         : '创建的普通物品默认数量为 0；请在采购表单中的【数量列】进行数量的填写'} /> : null}
       <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
-        <Form.Item label='种类名称' >
+        <Form.Item label='物品名称' >
           {props.form.getFieldDecorator('name', {
             rules: [{ required: true, message: '请输入名称' }]
           })(<Input placeholder='请输入名称' />)}
@@ -59,11 +59,6 @@ const AddForm2 = Form.create({ name: 'form' })((props) => {
             rules: [{ required: true, message: '请输入税率' }]
           })(<InputNumber placeholder='请输入税率' min={0} style={{ width: '100%' }} />)}
         </Form.Item>
-        <Form.Item label='物品编号' >
-          {props.form.getFieldDecorator('no', {
-            rules: [{ required: false, message: '请输入编号' }]
-          })(<Input placeholder='请输入编号' style={{ width: '100%' }} />)}
-        </Form.Item>
         <Form.Item label='属性'>
           {props.form.getFieldDecorator('tids', {
             rules: [{ required: false, message: '请选择属性' }]
@@ -81,22 +76,13 @@ const AddForm2 = Form.create({ name: 'form' })((props) => {
               showCheckedStrategy={TreeSelect.SHOW_PARENT}
             />)}
         </Form.Item>
-
-        <Form.Item label='备注'>{props.form.getFieldDecorator('remark')(<Input.TextArea rows={4} placeholder='选填' />)}</Form.Item>
-
-        <Form.Item label="货架编号">
+        <Form.Item label="编号">
           {props.form.getFieldDecorator('num', {
             initialValue: props.data ? props.data.num : null,
             rules: [{ required: true, message: '请输入编号' }]
           })(<Input placeholder='请输入编号'></Input>)}
         </Form.Item>
-        <Form.Item label="货架名称">
-          {props.form.getFieldDecorator('shelf_name', {
-            initialValue: props.data ? props.data.name : null,
-            rules: [{ required: true, message: '请输入名称' }]
-          })(<Input placeholder='请输入名称'></Input>)}
-        </Form.Item>
-        <Form.Item label="货架区域">
+        <Form.Item label="所在区域">
           {props.form.getFieldDecorator('tag_id', {
             initialValue: props.data ? props.data.tag_id : null,
             rules: [{ required: true, message: '请选择区域' }]
@@ -113,8 +99,8 @@ const AddForm2 = Form.create({ name: 'form' })((props) => {
         <Form.Item label="型号">
           {props.form.getFieldDecorator('model', {
             initialValue: props.data ? props.data.model : null,
-            rules: [{ required: false, message: '请输入型号' }]
-          })(<Input placeholder='请输入型号【选填】'></Input>)}
+            rules: [{ required: true, message: '请输入型号' }]
+          })(<Input placeholder='请输入型号【必填】'></Input>)}
         </Form.Item>
       </Form>
     </Modal>

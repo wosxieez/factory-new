@@ -4,7 +4,10 @@ import api from '../../http';
 import { getJsonTree, filterTag } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 const { Option } = Select;
-
+/**
+ * 原先 物品 绑定 货架 模式
+ * 暂时不用 改为 AddForm2 同时创建 物品和对应的货架
+ */
 const AddForm = Form.create({ name: 'form' })((props) => {
   // console.log('props.initData:', props.initData)///initData是【采购入库单】中添加物品的特殊情况 默认count = 0
   const [treeData, setTreeData] = useState([])

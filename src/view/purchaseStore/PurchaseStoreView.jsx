@@ -224,7 +224,7 @@ export default _ => {
         <div style={styles.body}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    <h3>采购物品记录</h3>
+                    <h3>采购入库物品记录</h3>
                     <Button icon="download" size='small' type='link' style={{ padding: 0, marginLeft: 10, marginTop: -6 }} onClick={() => {
                         Modal.confirm({
                             title: `确认导出当前页面中查询到的所有数据吗？`,

@@ -172,7 +172,7 @@ export default (props) => {
           </Menu.Item>
           <Menu.Item key={'/main/purchasetoreview'}>
             <Icon type="area-chart" />
-            <span className="nav-text">采购记录</span>
+            <span className="nav-text">采购入库记录</span>
             <Link to={`${props.match.url}/purchasetoreview`} />
           </Menu.Item>
           {/* <Menu.Item key={'/main/backstoreview'}>
@@ -182,10 +182,27 @@ export default (props) => {
           </Menu.Item> */}
           <Menu.Item key={'/main/returnstoreview'}>
             <Icon type="area-chart" />
-            <span className="nav-text">退料记录</span>
+            <span className="nav-text">退料入库记录</span>
             <Link to={`${props.match.url}/returnstoreview`} />
           </Menu.Item>
+          <Menu.Item key={'/main/record/storechange'}>
+            <Icon type="area-chart" />
+            <span className="nav-text">物品编辑记录</span>
+            <Link to={`${props.match.url}/record/storechange`} />
+          </Menu.Item>
         </SubMenu>
+        {hasPermission5 ? <SubMenu key={'记录'} title={<span><Icon type="reconciliation" /><span>盘存</span></span>}>
+          <Menu.Item key={'/main/record/shelfscanner'}>
+            <Icon type="hdd" />
+            <span className="nav-text">货架盘存</span>
+            <Link to={`${props.match.url}/record/shelfscanner`} />
+          </Menu.Item>
+          <Menu.Item key={'/main/record/storescanner'}>
+            <Icon type="switcher" />
+            <span className="nav-text">标签盘存</span>
+            <Link to={`${props.match.url}/record/storescanner`} />
+          </Menu.Item>
+        </SubMenu> : null}
         {/* <Menu.Item key="/main/departmentview">
           <Icon type="apartment" />
           <span>部门管理</span>
@@ -231,23 +248,7 @@ export default (props) => {
             <Link to={`${props.match.url}/approve/outboundcheckview`} />
           </Menu.Item>
         </SubMenu>
-        {hasPermission5 ? <SubMenu key={'记录'} title={<span><Icon type="reconciliation" /><span>记录</span></span>}>
-          <Menu.Item key={'/main/record/storechange'}>
-            <Icon type="area-chart" />
-            <span className="nav-text">物品变动</span>
-            <Link to={`${props.match.url}/record/storechange`} />
-          </Menu.Item>
-          <Menu.Item key={'/main/record/shelfscanner'}>
-            <Icon type="hdd" />
-            <span className="nav-text">货架盘存</span>
-            <Link to={`${props.match.url}/record/shelfscanner`} />
-          </Menu.Item>
-          <Menu.Item key={'/main/record/storescanner'}>
-            <Icon type="switcher" />
-            <span className="nav-text">标签盘存</span>
-            <Link to={`${props.match.url}/record/storescanner`} />
-          </Menu.Item>
-        </SubMenu> : null}
+
         {hasPermission5 ?
           <SubMenu key={'设置'} title={<span><Icon type="setting" /><span>设置</span></span>}>
             <Menu.Item key={'/main/setting/rfid'}>

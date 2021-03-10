@@ -139,7 +139,9 @@ export default function StoreChangeRecordView() {
                 init();
             }} /></div>
             <div style={styles.body}>
-                <Alert type='info' showIcon message='物品数量变动的历史记录【只针对物品的数量、种类的创建编辑和PDA端的数据修订的记录】' />
+                <Alert type='info' showIcon message={<div>
+                    物品数量变动的历史记录【只针对物品的数量与种类的<span style={styles.alertText}>创建、编辑、删除</span>和PDA端的<span style={styles.alertText}>数据修订</span>的记录】
+                </div>} />
                 <Table
                     style={styles.marginTop}
                     loading={isLoading}
@@ -303,5 +305,8 @@ const styles = {
     },
     badgestyle: {
         marginLeft: 10
+    },
+    alertText: {
+        color: '#fa541c'
     }
 }
