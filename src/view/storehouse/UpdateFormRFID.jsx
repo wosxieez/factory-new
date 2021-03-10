@@ -33,7 +33,7 @@ const UpdateFormRFID = Form.create({ name: 'form' })((props) => {
     }, [listData])
     return (
         <Modal {...props} destroyOnClose>
-            <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
+            <Form labelCol={{ span: 6 }} wrapperCol={{ span: 16 }}>
                 <Form.Item label='物品名称' >
                     {props.form.getFieldDecorator('name', {
                         initialValue: props.data.name,
@@ -62,7 +62,7 @@ const UpdateFormRFID = Form.create({ name: 'form' })((props) => {
                         })}
                     </Select>)}
                 </Form.Item>
-                <Form.Item label='单价[元]' >
+                <Form.Item label='含税单价[元]' >
                     {props.form.getFieldDecorator('oprice', {
                         initialValue: props.data.oprice,
                         rules: [{ required: true, message: '请输入单价' }]

@@ -277,7 +277,7 @@ export default props => {
                     <h3>自行出库单记录</h3>
                     <div>
                         <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
-                        <Tag color={'#fa541c'} style={{ marginRight: 0 }}>总价格¥: {sum_price}</Tag>
+                        <Tag color={'#fa541c'} style={{ marginRight: 0 }}>总含税价格¥: {sum_price}</Tag>
                     </div>
                 </div>
                 <HandlerPanel visible={isUpdating} onCancel={() => { setIsUpdating(false) }} onOk={async (data) => {

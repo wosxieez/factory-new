@@ -202,18 +202,18 @@ export default props => {
   }
   const columns = [
     {
-      title: '名称', dataIndex: 'name', width: 120, render: (text, record) => {
-        if (record['has_rfid']) return <div><Icon type="barcode" style={{ marginRight: 5 }} />{text}</div>
-        return text
-      }
-    },
-    {
       title: '编号',///货架nfc编号
       dataIndex: 'nfc_shelf',
       key: 'nfc_shelf_obj1',
       render: (text) => {
         if (text)
           return text.num || '-'
+      }
+    },
+    {
+      title: '名称', dataIndex: 'name', width: 120, render: (text, record) => {
+        if (record['has_rfid']) return <div><Icon type="barcode" style={{ marginRight: 5 }} />{text}</div>
+        return text
       }
     },
     {
@@ -253,28 +253,28 @@ export default props => {
         return <div>{text + ' ' + unit || ''}</div>
       }
     },
+    // {
+    //   title: '明细',
+    //   dataIndex: 'subList',
+    //   width: 100,
+    //   render: (text, record) => {
+    //     if (text && text.length > 0) {
+    //       return text.map((item, index) => { return <Tag color='tomato' key={index}>{item.name}</Tag> })
+    //     }
+    //     return <div>{'-'}</div>
+    //   }
+    // },
     {
-      title: '明细',
-      dataIndex: 'subList',
-      width: 100,
-      render: (text, record) => {
-        if (text && text.length > 0) {
-          return text.map((item, index) => { return <Tag color='tomato' key={index}>{item.name}</Tag> })
-        }
-        return <div>{'-'}</div>
-      }
-    },
-    {
-      title: '参考单价[元]',
+      title: '含税单价[元]',
       dataIndex: 'oprice',
       align: 'center',
-      width: 120,
+      width: 100,
       render: (text) => {
         return <div>{text}</div>
       }
     },
     {
-      title: '税价[元]',
+      title: '单价[元]',
       dataIndex: 'tax',
       align: 'center',
       width: 100,
@@ -287,12 +287,42 @@ export default props => {
       }
     },
     {
+      title: '含税总价[元]',
+      dataIndex: 'tax_sum_price',
+      align: 'center',
+      width: 100,
+      render: (text, record) => {
+        return <div>{parseFloat(record.oprice * record.count).toFixed(2)}</div>
+      }
+    },
+    {
+      title: '总单价[元]',
+      dataIndex: 'sum_price',
+      align: 'center',
+      width: 100,
+      render: (text, record) => {
+        if (record.oprice && text) {
+          let tax_p = getTaxPrice(record.oprice, text) * record.count
+          return <div>{parseFloat(tax_p).toFixed(2)}</div>
+        }
+        return <div>-</div>
+      }
+    },
+    {
       title: '入库时间',
       dataIndex: 'createdAt',
       align: 'center',
       width: 140,
       render: (text) => {
         return <div>{text ? moment(text).format(FORMAT) : ''}</div>
+      }
+    },
+    {
+      title: '备注',
+      dataIndex: 'remark',
+      align: 'center',
+      render: (text) => {
+        return <div>{text || '-'}</div>
       }
     },
     {
@@ -403,8 +433,8 @@ export default props => {
           /> : null}
         <div style={{ ...styles.marginTop, textAlign: 'right' }}>
           <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
-          <Tag color={'#fa541c'}>总价格¥: {sum_price}</Tag>
-          <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总税价¥: {sum_tax_price}</Tag>
+          <Tag color={'#fa541c'}>总含税价格¥: {sum_price}</Tag>
+          <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
         </div>
         <Table
           loading={isLoading}

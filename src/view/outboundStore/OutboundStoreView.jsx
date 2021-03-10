@@ -107,7 +107,7 @@ export default _ => {
                 sheetData: new_list,
                 sheetName: `出库记录`,
                 sheetFilter: ["date", "code_num", "code", "store_name", "price", "tax", "tax_price", "count", "unit", "sum_oprice", "out_user_name", "record_user_name", "remark"],
-                sheetHeader: ["出库时间", "单号", "流水", "物品", "出库单价[元]", "税率", "单税价[元]", "出库数量", "单位", "出库总价[元]", "出库人员", "记录人员", "出库备注"],
+                sheetHeader: ["出库时间", "单号", "流水", "物品", "含税单价[元]", "税率", "单价[元]", "出库数量", "单位", "含税总价[元]", "出库人员", "记录人员", "出库备注"],
                 columnWidths: [8, 5, 8, 10, 5, 5, 5, 5, 3, 5, 5, 5, 5],
             }
         ];
@@ -155,7 +155,7 @@ export default _ => {
             }
         },
         {
-            title: '出库单价[元]',
+            title: '含税单价[元]',
             dataIndex: 'price',
             key: 'price',
             render: (text) => {
@@ -163,7 +163,7 @@ export default _ => {
             }
         },
         {
-            title: '单税价[元]',
+            title: '单价[元]',
             dataIndex: 'tax_price',
             key: 'tax_price',
             render: (text) => {
@@ -187,11 +187,22 @@ export default _ => {
             }
         },
         {
-            title: '出库总价[元]',
+            title: '含税总价[元]',
             dataIndex: 'sum_price',
             key: 'sum_price',
             render: (_, record) => {
                 return <Tag color='#fa541c' style={{ marginRight: 0 }}>{parseFloat((record.count * record.price || 0).toFixed(2))}</Tag>
+            }
+        },
+        {
+            title: '总价[元]',
+            dataIndex: 'sum_tax_price',
+            key: 'sum_tax_price',
+            render: (_, record) => {
+                const price = record.price
+                const tax = record.tax
+                const count = record.count
+                return <Tag color='#722ed1' style={{ marginRight: 0 }}>{parseFloat(getTaxPrice(price, tax) * count).toFixed(2)}</Tag>
             }
         },
         {
@@ -241,8 +252,8 @@ export default _ => {
                 </div>
                 <div>
                     <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
-                    <Tag color={'#fa541c'}>总价格¥: {sum_price}</Tag>
-                    <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总税价¥: {sum_tax_price}</Tag>
+                    <Tag color={'#fa541c'}>总含税价格¥: {sum_price}</Tag>
+                    <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
                 </div>
             </div>
             <Table

@@ -31,7 +31,7 @@ const AddFromRFID = Form.create({ name: 'form' })((props) => {
   return (
     <Modal {...props} destroyOnClose>
       <Alert style={{ marginBottom: 10 }} type="warning" showIcon message='标签物品数量为绑定的【物品标签】数量；若【物品标签】无数据，请先用PDA录入新的RFID标签' />
-      <Form labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
+      <Form labelCol={{ span: 6 }} wrapperCol={{ span: 16 }}>
         <Form.Item label='物品名称' >
           {props.form.getFieldDecorator('name', {
             rules: [{ required: true, message: '请输入名称' }]
@@ -58,7 +58,7 @@ const AddFromRFID = Form.create({ name: 'form' })((props) => {
             })}
           </Select>)}
         </Form.Item>
-        <Form.Item label='单价[元]' >
+        <Form.Item label='含税单价[元]' >
           {props.form.getFieldDecorator('oprice', {
             rules: [{ required: true, message: '请输入单价' }]
           })(<InputNumber placeholder='请输入单价' min={0} style={{ width: '100%' }} />)}

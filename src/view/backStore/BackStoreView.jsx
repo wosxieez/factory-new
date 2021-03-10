@@ -70,7 +70,7 @@ export default _ => {
             }
         },
         {
-            title: '单价[元]',
+            title: '含税单价[元]',
             dataIndex: 'store.avg_price',
             key: 'avg_price',
             render: (text) => {
@@ -86,7 +86,7 @@ export default _ => {
             }
         },
         {
-            title: '总价[元]',
+            title: '含税总价[元]',
             dataIndex: 'store',
             key: 'sum_oprice',
             render: (_, record) => {
@@ -122,7 +122,7 @@ export default _ => {
                 <h3>退库物品记录</h3>
                 <div>
                     <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
-                    <Tag color={'#fa541c'}>总价格¥: {sum_price}</Tag>
+                    <Tag color={'#fa541c'}>总含税价格¥: {sum_price}</Tag>
                 </div>
             </div>
             <Table

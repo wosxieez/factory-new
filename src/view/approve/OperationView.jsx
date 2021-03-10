@@ -223,7 +223,7 @@ function RenderDetail({ record, workflok, orderStepLog, getOrderData, rfidList, 
         }
     },
     {
-        title: '单价[元]', dataIndex: 'price',
+        title: '含税单价[元]', dataIndex: 'price',
         render: (text, record) => {
             if (record.isSum) {
                 return <Tag color={'red'}>{xiaomeiParseFloat(text)}</Tag>
@@ -232,7 +232,7 @@ function RenderDetail({ record, workflok, orderStepLog, getOrderData, rfidList, 
         }
     },
     {
-        title: '税单价[元]', dataIndex: 'tax_price',
+        title: '税含税单价[元]', dataIndex: 'tax_price',
         render: (text, record) => {
             if (record.isSum) {
                 return <Tag color={'#722ed1'}>{xiaomeiParseFloat(text)}</Tag>

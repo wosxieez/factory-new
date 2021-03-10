@@ -55,7 +55,7 @@ const AddForm = Form.create({ name: 'form' })((props) => {
             rules: [{ required: true, message: '请输入单位' }]
           })(<Input placeholder='请输入单位' style={{ width: '100%' }} />)}
         </Form.Item>
-        <Form.Item label='单价[元]' >
+        <Form.Item label='含税单价[元]' >
           {props.form.getFieldDecorator('oprice', {
             rules: [{ required: true, message: '请输入单价' }]
           })(<InputNumber placeholder='请输入单价' min={0} style={{ width: '100%' }} />)}
