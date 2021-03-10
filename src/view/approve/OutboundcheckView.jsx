@@ -27,6 +27,7 @@ export default props => {
     const { appDispatch } = useContext(AppDataContext)
     const [sum_price, setSumPrice] = useState(0)
     const [sum_count, setSumCount] = useState(0)
+    const [sum_tax_price, setSumTaxPrice] = useState(0)
     const [isLoading, setIsLoading] = useState(false)
     const [dataSource, setDataSource] = useState([])
     const [currentItem, setCurrentItem] = useState({})
@@ -85,6 +86,12 @@ export default props => {
                 item.key = index;
                 return item
             }))
+            let tempSumTaxPrice = 0
+            result.data[0].forEach((item) => {
+                const content = JSON.parse(item.content)
+                tempSumTaxPrice = tempSumTaxPrice + getListAllTaxPrice(content)
+            })
+            setSumTaxPrice(tempSumTaxPrice.toFixed(2))
             // console.log('tempSumcount:', tempSumcount.toFixed(0))
             // console.log('tempSumprice:', tempSumprice.toFixed(2))
             setSumCount(tempSumcount.toFixed(0))
@@ -141,7 +148,7 @@ export default props => {
             }
         },
         {
-            title: '总价格',
+            title: '总含税价',
             dataIndex: 'sum_price',
             key: 'sum_price',
             align: 'center',
@@ -151,7 +158,7 @@ export default props => {
             }
         },
         {
-            title: '总税价',
+            title: '总价',
             dataIndex: 'content',
             key: 'content1',
             align: 'center',
@@ -277,7 +284,8 @@ export default props => {
                     <h3>自行出库单记录</h3>
                     <div>
                         <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
-                        <Tag color={'#fa541c'} style={{ marginRight: 0 }}>总含税价格¥: {sum_price}</Tag>
+                        <Tag color={'#fa541c'}>总含税价格¥: {sum_price}</Tag>
+                        <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
                     </div>
                 </div>
                 <HandlerPanel visible={isUpdating} onCancel={() => { setIsUpdating(false) }} onOk={async (data) => {
