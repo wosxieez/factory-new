@@ -132,7 +132,7 @@ export default Form.create({ name: 'form' })(props => {
             }
         }
         const { date, storeList, remark, return_user_id, record_user_id, code_num } = formData;
-        const code = 'TL' + moment().toDate().getTime()
+        const code = moment().toDate().getTime() + 'TL'
         let sql = `insert into return_record (date,code,code_num,content,return_user_id,record_user_id,remark,sum_count,sum_price) values ('${date.format('YYYY-MM-DD HH:mm:ss')}','${code}',${code_num ? '\'' + code_num + '\'' : null},'${JSON.stringify(storeList)}',${return_user_id || null},${record_user_id},${remark ? '\'' + remark + '\'' : null},${sumCount},${sumPrice})`
         let result = await api.query(sql)
         if (result.code === 0) { ///记录入库成功-开始循环修改store表中物品的信息。条件:store_id---数据:avg_price all_count remark 等
