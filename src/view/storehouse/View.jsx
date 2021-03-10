@@ -461,7 +461,7 @@ export default props => {
                 const data_store = { name, count, unit, oprice, tax, tids, remark }
                 const data_shelf = { model, num, tag_id, name }
                 addShelfAndStoreHandler(data_shelf, data_store)
-                addForm2.current.resetFields()
+                // addForm2.current.resetFields()
               }
             })
           }}

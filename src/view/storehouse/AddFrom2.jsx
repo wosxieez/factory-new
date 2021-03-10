@@ -26,7 +26,7 @@ const AddForm2 = Form.create({ name: 'form' })((props) => {
   }, [listData])
 
   return (
-    <Modal {...props} destroyOnClose>
+    <Modal {...props}>
       {props.initData ? <Alert style={{ marginBottom: 10 }} type="warning" showIcon message={props.initData['isRFIDStore'] ?
         '创建的标签物品默认数量为 0；请在采购表单中的【数量列】进行标签的选择；若无数据，请先用PDA录入新的RFID标签'
         : '创建的普通物品默认数量为 0；请在采购表单中的【数量列】进行数量的填写'} /> : null}
