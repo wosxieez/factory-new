@@ -80,7 +80,10 @@ export default Form.create({ name: 'form' })(props => {
                     )}>
                     {
                         storeOptionList.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item} disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}>{item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null}{item.name + '--库存' + item.count}</Select.Option>
+                            return <Select.Option value={item.id} key={index} all={item} disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}>
+                                {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null}
+                                {item.name + '--库存' + item.count}
+                            </Select.Option>
                         })
                     }
                 </Select >

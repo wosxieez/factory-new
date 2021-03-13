@@ -41,18 +41,17 @@ export default Form.create({ name: 'form' })(props => {
         //     return item.permission && item.permission.indexOf('4') !== -1 ///采购权限4 过滤
         // })
         setUserOptionList(result_user)
-        // console.log('response_store:', response_store.data)
         setStoreOptionList(response_store.data)
     }, [])
     const columns = [
         { title: '编号', dataIndex: 'key', width: 50, align: 'center', render: (text) => <div>{text + 1}</div> },
         {
             title: <div>{starIcon}物品</div>, dataIndex: 'store_id', width: 400, align: 'center', render: (text, record) => {
-                return <Select placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children" value={text} onChange={(_, option) => { handleSelectChange(option, record.key) }}>
+                return <Select placeholder='选择物品-支持名称搜索2' showSearch optionFilterProp="children" value={text} onChange={(_, option) => { handleSelectChange(option, record.key) }}>
                     {
                         storeOptionList.map((item, index) => {
                             return <Select.Option value={item.id} key={index} all={item} disabled={(storeList.map((item) => item.store_id).indexOf(item.id) !== -1) || (item.count === 0)}>
-                                <div> {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null} {item.name + '--剩余' + item.count}</div>
+                                {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null} {item.name + '--剩余' + item.count}
                             </Select.Option>
                         })
                     }
