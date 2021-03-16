@@ -204,8 +204,8 @@ const HttpApi = {
             sql_name = ` and nfc_shelfs.name like  '%${condition.name}%'`
         }
         let sql_tag_id = ''
-        if (condition && condition.tag_id) {
-            sql_tag_id = ` and nfc_shelfs.tag_id in (${condition.tag_id.join(',')})`
+        if (condition && condition.store_area_id) {
+            sql_tag_id = ` and nfc_shelfs.store_area_id = (${condition.store_area_id})`
         }
         let sql_num = ''
         if (condition && condition.num) {
@@ -215,8 +215,8 @@ const HttpApi = {
         if (condition && condition.model) {
             sql_model = ` and nfc_shelfs.model like  '%${condition.model}%'`
         }
-        let sql = `select nfc_shelfs.*,tags.name as tag_name from nfc_shelfs 
-        left join (select * from tags where isdelete = 0) tags on tags.id = nfc_shelfs.tag_id
+        let sql = `select nfc_shelfs.*,store_areas.name as store_area_name from nfc_shelfs 
+        left join (select * from store_areas where isdelete = 0) store_areas on store_areas.id = nfc_shelfs.store_area_id
         where nfc_shelfs.isdelete = 0 ${sql_name}${sql_tag_id}${sql_model}${sql_num} order by nfc_shelfs.id desc`
         let result = await HttpApi.obs({ sql })
         if (result.code === 0) {
@@ -224,18 +224,18 @@ const HttpApi = {
         }
         return []
     },
-    updateNfcShelf: async ({ id, name, tagId, model, num, updatedAt }) => {
+    updateNfcShelf: async ({ id, name, model, num, store_area_id, updatedAt }) => {
         let block_name = ''
         if (name) { block_name = `name = '${name}',` }
-        let block_tag = ''
-        if (tagId >= 0) { block_tag = `tag_id = ${tagId},` }
         let block_model = ''
         if (model) { block_model = `model = '${model}',` }
         let block_num = ''
         if (num) { block_num = `num = '${num}',` }
+        let block_store_area_id = ''
+        if (store_area_id) { block_store_area_id = `store_area_id = ${store_area_id},` }
         let block_update = ''
         if (updatedAt) { block_update = `updatedAt = '${updatedAt}'` }
-        let set_sql = block_name + block_tag + block_model + block_num + block_update
+        let set_sql = block_name + block_store_area_id + block_model + block_num + block_update
         let sql = `update nfc_shelfs set ${set_sql} where id = '${id}'`
         let res = await HttpApi.obs({ sql })
         if (res.code === 0) {
@@ -243,17 +243,17 @@ const HttpApi = {
         }
         return false
     },
-    addNfcShelf: async ({ name, tagId, model, num, createdAt }) => {
-        let sql = `insert into nfc_shelfs (name, tag_id, model, num, createdAt) values 
-        (${"'" + name + "'"}, ${"'" + tagId + "'"}, ${"'" + model + "'"}, ${"'" + num + "'"}, ${"'" + createdAt + "'"})`
+    addNfcShelf: async ({ name, model, num, store_area_id, createdAt }) => {
+        let sql = `insert into nfc_shelfs (name, model, num,store_area_id, createdAt) values 
+        ('${name}', '${model}', '${num}','${store_area_id}','${createdAt}')`
         let res = await HttpApi.obs({ sql })
         if (res.code === 0) {
             return true
         }
         return false
     },
-    deleteNfcShelf: async ({ id }) => {
-        let sql = `update nfc_shelfs set isdelete = 1 where id = '${id}'`
+    deleteNfcShelf: async ({ idList }) => {
+        let sql = `update nfc_shelfs set isdelete = 1 where id in (${idList.join(',')})`
         let res = await HttpApi.obs({ sql })
         if (res.code === 0) {
             return true
@@ -388,5 +388,71 @@ const HttpApi = {
         }
         return false
     },
+
+
+    getStoreAttributeList: async ({ table_index = 0 }) => {
+        const table_list = ['store_areas', 'store_types', 'store_majors', 'store_suppliers']
+        const table_name = table_list[table_index]
+        let sql = `select * from ${table_name} where isdelete = 0`
+        return await HttpApi.obs({ sql })
+    },
+
+    /**
+     * 新增各种物品的属性表
+     * 包括 store_areas store_type store_majors store_suppliers
+     * @param {*} param0 
+     */
+    addAttributeTable: async ({ table_index = 0, pid = null, name = '' }) => {
+        const table_list = ['store_areas', 'store_types', 'store_majors', 'store_suppliers']
+        const table_name = table_list[table_index]
+        let sql = `insert into ${table_name} (name,pid) values ('${name}',${pid}) `
+        return await HttpApi.obs({ sql })
+    },
+    /**
+     * 修改各种物品的属性表
+     * 包括 store_areas store_type store_majors store_suppliers
+     * @param {*} param0 
+     */
+    updateAttributeTable: async ({ table_index = 0, pid = null, name = '', id }) => {
+        const table_list = ['store_areas', 'store_types', 'store_majors', 'store_suppliers']
+        const table_name = table_list[table_index]
+        let sql = `update ${table_name} set name = '${name}', pid = ${pid} where id = ${id} `
+        return await HttpApi.obs({ sql })
+    },
+    /**
+     * 删除各种物品的属性表
+     * 包括 store_areas store_type store_majors store_suppliers
+     * @param {*} param0 
+     */
+    deleteAttributeTable: async ({ table_index = 0, id }) => {
+        const table_list = ['store_areas', 'store_types', 'store_majors', 'store_suppliers']
+        const table_name = table_list[table_index]
+        let sql = `update ${table_name} set isdelete = 1 where id = ${id} `
+        return await HttpApi.obs({ sql })
+    },
+
+    /**
+     * 获取所有store 关联上 store_areas,store_majors,store_types
+     */
+    getAllStoreList: async ({ store_area_id, store_type_id, store_major_id, date, keyword }) => {
+        let sql_keyword = !keyword ? `` : ` and (stores.name like '%${keyword}%' or stores.remark like '%${keyword}%' or  stores.num like '%${keyword}%' or stores.model like '%${keyword}%')`
+        let sql_store_area_id = !store_area_id ? `` : ` and store_area_id = ${store_area_id}`
+        let sql_store_type_id = !store_type_id ? `` : ` and store_type_id = ${store_type_id}`
+        let sql_store_major_id = !store_major_id ? `` : ` and store_major_id = ${store_major_id}`
+        let sql_createdAtRange = !date ? `` : ` and createdAt >= '${date[0]}' and createdAt <= '${date[1]}'`
+        let conditon_sql = sql_keyword + sql_store_area_id + sql_store_type_id + sql_store_major_id + sql_createdAtRange
+        let sql = `select stores.*,store_areas.name as store_area_name,store_majors.name as store_major_name,store_types.name as store_type_name from stores
+        left join (select * from store_areas where isdelete = 0) store_areas on store_areas.id = stores.store_area_id
+        left join (select * from store_majors where isdelete = 0) store_majors on store_majors.id = stores.store_major_id
+        left join (select * from store_types where isdelete = 0) store_types on store_types.id = stores.store_type_id
+        where stores.isdelete = 0 ${conditon_sql} order by stores.id desc
+        `
+        return await HttpApi.obs({ sql })
+    },
+
+    // updateAllstoreModelNumStoreAreaId: async ({ nfc_shelf_id, model, num, store_area_id }) => {
+    //     let sql = `update stores set model = '${model}',num='${num}',store_area_id=${store_area_id} where nfc_shelf_id=${nfc_shelf_id}`
+    //     return await HttpApi.obs({ sql })
+    // }
 }
 export default HttpApi

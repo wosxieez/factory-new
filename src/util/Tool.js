@@ -23,6 +23,30 @@ export const getJsonTree = function (data, pId) {
   return itemArr
 }
 
+/**
+ * json 2 tree 新数据情况下
+ * @param {*} data 
+ * @param {*} pid 
+ * @returns 
+ */
+export const getJson2Tree = function (data, pid) {
+  let itemArr = [];
+  for (let i = 0; i < data.length; i++) {
+    let node = data[i];
+    if (node.pid === pid) {
+      let newNode = {};
+      newNode.id = node.id;
+      newNode.key = node.id;
+      newNode.value = node.id;
+      newNode.title = node.name;
+      newNode.pid = node.pid;
+      newNode.children = getJson2Tree(data, node.id);
+      itemArr.push(newNode);
+    }
+  }
+  return itemArr;
+}
+
 const getSubDepartmentTree = (departments, parentDepartment) => {
   const subTree = []
 
@@ -382,4 +406,17 @@ export function calculOrderListStoreTaxAllPrice(list) {
     sum_tax_price += store.tax_price * store.count
   })
   return sum_tax_price
+}
+
+export function undefined2null(data) {
+  let tempObj = {}
+  for (const key in data) {
+    const element = data[key];
+    if (element === undefined) {
+      tempObj[key] = null
+    } else {
+      tempObj[key] = element
+    }
+  }
+  return tempObj
 }

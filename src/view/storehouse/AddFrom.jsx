@@ -102,7 +102,6 @@ const AddForm = Form.create({ name: 'form' })((props) => {
               showCheckedStrategy={TreeSelect.SHOW_PARENT}
             />)}
         </Form.Item>
-
         <Form.Item label='备注'>{props.form.getFieldDecorator('remark')(<Input.TextArea rows={4} placeholder='选填' />)}</Form.Item>
       </Form>
     </Modal>

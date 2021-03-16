@@ -31,6 +31,7 @@ import StoreChangeRecordView from './storeChangeRecord/StoreChangeRecordView';
 import OutboundStorageView from './outboundStorage/OutboundStorageView';
 import OutboundcheckView, { getCountZC } from './approve/OutboundcheckView';
 import OutboundStoreView from './outboundStore/OutboundStoreView';
+import AttributeRoot from './attributemode/AttributeRoot';
 const weather = <div id="tp-weather-widget"></div>
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 // import CamView from './cam/CamView';
@@ -261,10 +262,15 @@ export default (props) => {
               <span className="nav-text">货架标签</span>
               <Link to={`${props.match.url}/setting/nfc`} />
             </Menu.Item>
-            <Menu.Item key={'/main/setting/storetag'}>
+            {/* <Menu.Item key={'/main/setting/storetag'}>
               <Icon type="tags" />
               <span className="nav-text">物品属性</span>
               <Link to={`${props.match.url}/setting/storetag`} />
+            </Menu.Item> */}
+            <Menu.Item key={'/main/setting/storeattribute'}>
+              <Icon type="tags" />
+              <span className="nav-text">属性设置</span>
+              <Link to={`${props.match.url}/setting/storeattribute`} />
             </Menu.Item>
             <Menu.Item key={'/main/setting/specialtime'}>
               <Icon type="history" />
@@ -323,6 +329,7 @@ export default (props) => {
         <Route path={`${props.match.url}/returnstoreview`} component={ReturnStoreView} />
         <Route path={`${props.match.url}/setting/selfcenterview`} component={SelfCenterView} />
         <Route path={`${props.match.url}/setting/storetag`} component={() => { return <TagView type={0} /> }} />
+        <Route path={`${props.match.url}/setting/storeattribute`} component={AttributeRoot} />
         <Route path={`${props.match.url}/setting/specialtime`} component={SpecialTime} />
         <Route path={`${props.match.url}/setting/nfc`} component={NFCShelfs} />
         <Route path={`${props.match.url}/setting/rfid`} component={RfidView} />

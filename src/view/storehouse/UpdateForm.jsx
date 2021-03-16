@@ -1,37 +1,51 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Modal, Form, Input, TreeSelect, InputNumber, Select } from 'antd'
+import { Modal, Form, Input, TreeSelect, InputNumber } from 'antd'
 import api from '../../http';
 import { getJsonTree, filterTag } from '../../util/Tool';
-import HttpApi from '../../http/HttpApi';
-const { Option } = Select;
 
 const UpdateForm = Form.create({ name: 'form' })((props) => {
     const [treeData, setTreeData] = useState([])
-    const [shelfList, setShelfList] = useState([])
+    const [areaTreeData, setAreaTreeData] = useState([])///区域属性树
+    // const [shelfList, setShelfList] = useState([])
     const listData = useCallback(async () => {
         if (!props.visible) { return }
+        console.log('props:', props)
         let result = await api.listAllTag()
         if (result.code === 0) {
             result.data = filterTag(result.data, 0)
-            let treeResult = result.data.map((item) => { return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name } })
+            let treeResult = result.data.map((item) => {
+                return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name }
+            })
             let temp = getJsonTree(treeResult, 0);
             let afterFilter = temp.filter((item) => item.value !== 1)
             setTreeData(afterFilter)
+            let afterFilterArea = temp.filter((item) => item.value === 1)
+            setAreaTreeData(afterFilterArea)
         }
-        let res_shelf = await HttpApi.getNfcShelfList();
-        setShelfList(res_shelf)
-    }, [props.visible])
+    }, [props])
     useEffect(() => {
         listData();
     }, [listData])
     return (
         <Modal {...props} destroyOnClose>
             <Form labelCol={{ span: 6 }} wrapperCol={{ span: 16 }}>
+                <Form.Item label="编号">
+                    {props.form.getFieldDecorator('num', {
+                        initialValue: props.data.nfc_shelf ? props.data.nfc_shelf.num : null,
+                        rules: [{ required: true, message: '请输入编号' }]
+                    })(<Input placeholder='请输入编号'></Input>)}
+                </Form.Item>
                 <Form.Item label='物品名称' >
                     {props.form.getFieldDecorator('name', {
                         initialValue: props.data.name,
                         rules: [{ required: true, message: '请输入名称' }]
                     })(<Input placeholder='请输入名称' />)}
+                </Form.Item>
+                <Form.Item label="型号">
+                    {props.form.getFieldDecorator('model', {
+                        initialValue: props.data.nfc_shelf ? props.data.nfc_shelf.model : null,
+                        rules: [{ required: true, message: '请输入型号' }]
+                    })(<Input placeholder='请输入型号【必填】'></Input>)}
                 </Form.Item>
                 <Form.Item label='数量' >
                     {props.form.getFieldDecorator('count', {
@@ -57,28 +71,6 @@ const UpdateForm = Form.create({ name: 'form' })((props) => {
                         rules: [{ required: true, message: '请输入税率' }]
                     })(<InputNumber placeholder='请输入税率' min={0} style={{ width: '100%' }} />)}
                 </Form.Item>
-                <Form.Item label='货架标签' >
-                    {props.form.getFieldDecorator('nfc_shelf_id', {
-                        initialValue: props.data.nfc_shelf_id || null,
-                        rules: [{ required: false }]
-                    })(<Select style={{ width: '100%' }}
-                        placeholder="支持搜索"
-                        allowClear
-                        showSearch
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                            option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                    >
-                        {shelfList.map((item, index) => { return <Option key={index} value={item.id}>{(item.num ? item.num + '-' : '') + item.name + (item.model ? '-' + item.model : '') + '-' + item.tag_name}</Option> })}
-                    </Select>)}
-                </Form.Item>
-                {/* <Form.Item label='物品编号' >
-                    {props.form.getFieldDecorator('no', {
-                        initialValue: props.data.no,
-                        rules: [{ required: false, message: '请输入编号' }]
-                    })(<Input placeholder='请输入编号' style={{ width: '100%' }} />)}
-                </Form.Item> */}
                 <Form.Item label='属性'>
                     {props.form.getFieldDecorator('tids', {
                         initialValue: props.data.tids || null,
@@ -92,6 +84,23 @@ const UpdateForm = Form.create({ name: 'form' })((props) => {
                             style={{ width: '100%' }}
                             dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                             placeholder="请选择属性"
+                            // treeCheckable={true}
+                            showCheckedStrategy={TreeSelect.SHOW_PARENT}
+                        />)}
+                </Form.Item>
+                <Form.Item label='所在区域'>
+                    {props.form.getFieldDecorator('tag_id', {
+                        initialValue: props.data.nfc_shelf ? props.data.nfc_shelf.tag_id : null,
+                        rules: [{ required: true, message: '请选择所在区域' }]
+                    })(
+                        <TreeSelect
+                            multiple
+                            treeNodeFilterProp="title"
+                            showSearch
+                            treeData={areaTreeData}
+                            style={{ width: '100%' }}
+                            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                            placeholder="请选择所在区域"
                             // treeCheckable={true}
                             showCheckedStrategy={TreeSelect.SHOW_PARENT}
                         />)}

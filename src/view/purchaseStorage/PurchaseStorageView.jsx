@@ -4,8 +4,8 @@ import moment from 'moment';
 import api from '../../http';
 // import AddForm from '../storehouse/AddFrom';
 import HttpApi from '../../http/HttpApi';
-import { checkStoreClassChange, userinfo } from '../../util/Tool';
-import AddForm2 from '../storehouse/AddFrom2';
+import { checkStoreClassChange, undefined2null, userinfo } from '../../util/Tool';
+import AddForm2 from '../storehouse/AddForm2';
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 const { Option } = Select;
 var storeList = [{ key: 0 }]
@@ -21,7 +21,7 @@ export default Form.create({ name: 'form' })(props => {
     const [isAdding, setIsAdding] = useState(false)
     const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1)
     const [isRFIDStore, setIsRFIDStore] = useState(false)
-    const addForm = useRef()
+    const addForm2 = useRef()
     const listAllStore = useCallback(async () => {
         let result = await api.listAllStore()
         if (result.code === 0) { setStoreOptionList(result.data) }
@@ -37,26 +37,36 @@ export default Form.create({ name: 'form' })(props => {
         async data => {
             const response = await api.addStore(data)
             if (response.code === 0) {
-                setIsAdding(false)
-                message.success('创建物品成功')
-                listAllStore();
+                message.success('物品添加成功')
+                listAllStore()
                 const store_id = response.data.id
                 data['id'] = store_id
                 checkStoreClassChange({ is_add: 1, content: [data] })
-            }
+            } else { message.error('物品添加失败') }
+            // const response = await api.addStore(data)
+            // if (response.code === 0) {
+            //     setIsAdding(false)
+            //     message.success('创建物品成功')
+            //     listAllStore();
+            //     const store_id = response.data.id
+            //     data['id'] = store_id
+            //     checkStoreClassChange({ is_add: 1, content: [data] })
+            // }
         }, [listAllStore])
     const addShelfAndStoreHandler = useCallback(async (data_shelf, data_store) => {
-        let res = await HttpApi.addNfcShelf({ name: data_shelf.name, tagId: data_shelf.tag_id, model: data_shelf.model || '', num: data_shelf.num, createdAt: moment().format(FORMAT) })
+
+        let res = await HttpApi.addNfcShelf({ name: data_shelf.name, model: data_shelf.model, num: data_shelf.num, store_area_id: data_shelf.store_area_id, createdAt: moment().format(FORMAT) })
         if (res) {
             let shelf_list_res = await HttpApi.getNFCShelflist()
             if (shelf_list_res) {
-                const nfc_shelf_id = shelf_list_res[0].id
+                const nfc_shelf_id = shelf_list_res[0].id///获取最新的nfcshelf的id
                 const data = { ...data_store, nfc_shelf_id }
                 addData(data)
             }
         } else { message.error('货架添加失败') }
         setIsAdding(false)
     }, [addData])
+
     const columns = [
         { title: '编号', dataIndex: 'key', width: 50, align: 'center', render: (text) => <div>{text + 1}</div> },
         {
@@ -73,7 +83,7 @@ export default Form.create({ name: 'form' })(props => {
                             >
                                 <div style={{ display: 'flex', justifyContent: 'space-around' }}>
                                     <Button onClick={() => { setIsRFIDStore(false); setIsAdding(true) }} disabled={!isStorehouseManager} size='small' type='primary' style={{ width: '48%' }} icon='plus'>普通物品</Button>
-                                    <Button onClick={() => { setIsRFIDStore(true); setIsAdding(true) }} disabled={!isStorehouseManager} size='small' type='danger' style={{ width: '48%' }} icon='plus'>标签物品</Button>
+                                    {/* <Button onClick={() => { setIsRFIDStore(true); setIsAdding(true) }} disabled={!isStorehouseManager} size='small' type='danger' style={{ width: '48%' }} icon='plus'>标签物品</Button> */}
                                 </div>
                             </div>
                         </div >
@@ -418,24 +428,27 @@ export default Form.create({ name: 'form' })(props => {
         </div>
         <AddForm2
             initData={{ count: 0, isRFIDStore }}
-            ref={addForm}
-            title={isRFIDStore ? '创建标签物品' : '创建普通物品和货架'}
+            ref={addForm2}
+            title={isRFIDStore ? '创建标签物品' : '创建普通物品'}
             visible={isAdding}
             onCancel={() => {
-                addForm.current.resetFields()
+                addForm2.current.resetFields()
                 setIsAdding(false)
             }}
             onOk={() => {
-                addForm.current.validateFields(async (error, data) => {
+                addForm2.current.validateFields(async (error, data) => {
                     if (!error) {
                         if (isRFIDStore) { data['has_rfid'] = 1 } else { data['has_rfid'] = 0 }
-                        const { model, name, num, oprice, remark, tag_id, tax, tids, unit, has_rfid } = data
-                        const data_store = { name, unit, oprice, tax, tids, remark, has_rfid }
-                        const data_shelf = { model, num, tag_id, name }
-                        console.log('data_store1:', data_store)
-                        console.log('data_shelf1:', data_shelf)
-                        addShelfAndStoreHandler(data_shelf, data_store)
-                        // addData(data)
+                        // const { model, name, num, oprice, remark, tag_id, tax, tids, unit, has_rfid } = data
+                        // const data_store = { name, unit, oprice, tax, tids, remark, has_rfid }
+                        // const data_shelf = { model, num, tag_id, name }
+                        // console.log('data_store1:', data_store)
+                        // console.log('data_shelf1:', data_shelf)
+                        const { count, model, name, num, oprice, remark, tax, unit, store_area_id, store_major_id, store_type_id } = data
+                        const data_store = { name, num, model, count, unit, oprice, tax, remark, store_area_id, store_major_id, store_type_id }
+                        const data_shelf = { name, num, model, store_area_id }
+                        let new_data_store = undefined2null(data_store)
+                        addShelfAndStoreHandler(data_shelf, new_data_store)
                         // addForm.current.resetFields()
                     }
                 })

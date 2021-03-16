@@ -2,14 +2,13 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import api from '../../http'
 import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Form, Icon, Tooltip } from 'antd'
 import moment from 'moment'
-// import AddForm from './AddFrom'
-import UpdateForm from './UpdateForm'
-import { getJsonTree, filterTag, checkStoreCountChange, checkStoreClassChange, getTaxPrice, getListAllTaxPrice, getListAllPriceAndCount } from '../../util/Tool'
+import { checkStoreCountChange, checkStoreClassChange, getTaxPrice, getListAllTaxPrice, getListAllPriceAndCount, undefined2null, getJson2Tree } from '../../util/Tool'
 import { userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi'
-import AddFromRFID from './AddFromRFID'
-import UpdateFormRFID from './UpdateFormRFID'
-import AddForm2 from './AddFrom2'
+// import AddFromRFID from './AddFromRFID'
+// import UpdateFormRFID from './UpdateFormRFID'
+import AddForm2 from './AddForm2'
+import UpdateForm2 from './UpdateForm2'
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 var originStoreList
 var rfidList = [];
@@ -21,19 +20,19 @@ export default props => {
   const [sum_price, setSumPrice] = useState(0)
   const [sum_tax_price, setSumTaxPrice] = useState(0)
   const [sum_count, setSumCount] = useState(0)
-
   const [isLoading, setIsLoading] = useState(false)
   // const [isAdding, setIsAdding] = useState(false)
   const [isAdding2, setIsAdding2] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
-  const [isAddingRFID, setIsAddingRFID] = useState(false)
-  const [isUpdatingRFID, setIsUpdatingRFID] = useState(false)
+  // const [isAddingRFID, setIsAddingRFID] = useState(false)
+  // const [isUpdatingRFID, setIsUpdatingRFID] = useState(false)
   // const addForm = useRef()
   const addForm2 = useRef()
-  const addFormRFID = useRef()
-  const updateForm = useRef()
-  const updateFormRFID = useRef()
-  const [shelfList, setShelfList] = useState([])
+  const udpateForm2 = useRef()
+  // const addFormRFID = useRef()
+  // const updateForm = useRef()
+  // const updateFormRFID = useRef()
+  // const [shelfList, setShelfList] = useState([])
   const [storeList, setStoreList] = useState([])
   const [currentItem, setCurrentItem] = useState({})
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
@@ -54,15 +53,14 @@ export default props => {
     setSelectedRows([])
     ///获取所有rfid。【理解为贴有rfid的标签物品】对应的store。就表示该标签物品的类型。如store 电脑 ; rfid 戴尔01 ...
     let res_rfid = await HttpApi.getRfidList({ hasBinded: true });
-    // console.log('获取所有rfid:', res_rfid)
-    // if (res_rfid.length > 0) { rfidList = res_rfid }
     rfidList = res_rfid
     ///获取所有store
-    let result = await api.listAllStore()
+    // let result = await api.listAllStore() ///旧api
+    let result = await HttpApi.getAllStoreList({})
     if (result.code === 0) {
       // console.log('result.data:', result.data)///不是分页查询。是总数据
       let temp_store_list = result.data.map((item, index) => { item.key = index; return item });
-      originStoreList = temp_store_list.reverse()
+      originStoreList = JSON.parse(JSON.stringify(temp_store_list))
       originStoreList.forEach((store) => {
         store.subList = [];
         rfidList.forEach((storeSub) => {
@@ -73,8 +71,8 @@ export default props => {
       setStoreList(originStoreList)
     }
     setIsLoading(false)
-    let res_shelf = await HttpApi.getNfcShelfList();
-    setShelfList(res_shelf)
+
+
   }, [calculSumCountAndPrice])
   useEffect(() => {
     listAllStore()
@@ -84,72 +82,76 @@ export default props => {
     async data => {
       const response = await api.addStore(data)
       if (response.code === 0) {
-        ///要拿到返回结果。id 作为rfid的store_id参数进行更新。
-        const store_id = response.data.id
-        //////////////////////
-        shelfList.forEach((item) => { if (item['id'] === data['nfc_shelf_id']) { data['shelf_name'] = item['name'] } })
-        data['id'] = store_id
-        //////////////////////
-        if (data['has_rfid'] === 1) {
-          const rfids = data['rfids']
-          let res_bind = await HttpApi.bindRfidToStore({ rfids, store_id })
-          if (res_bind) {
-            setIsAddingRFID(false);
-            listAllStore();
-            message.success('物品添加成功')
-            checkStoreClassChange({ is_add: 1, content: [data] })
-          }
-          else { message.error('物品添加失败1') }
-        } else {
-          listAllStore()
-          message.success('物品添加成功')
-          checkStoreClassChange({ is_add: 1, content: [data] })
-        }
-      } else { message.error('物品添加失败2') }
+        message.success('物品添加成功'); listAllStore()
+      } else { message.error('物品添加失败') }
+      // if (response.code === 0) {
+      //   ///要拿到返回结果。id 作为rfid的store_id参数进行更新。
+      //   const store_id = response.data.id
+      //   //////////////////////
+      //   shelfList.forEach((item) => { if (item['id'] === data['nfc_shelf_id']) { data['shelf_name'] = item['name'] } })
+      //   data['id'] = store_id
+      //   //////////////////////
+      //   if (data['has_rfid'] === 1) {
+      //     const rfids = data['rfids']
+      //     let res_bind = await HttpApi.bindRfidToStore({ rfids, store_id })
+      //     if (res_bind) {
+      //       setIsAddingRFID(false);
+      //       listAllStore();
+      //       message.success('物品添加成功')
+      //       checkStoreClassChange({ is_add: 1, content: [data] })
+      //     }
+      //     else { message.error('物品添加失败1') }
+      //   } else {
+      //     listAllStore()
+      //     message.success('物品添加成功')
+      //     checkStoreClassChange({ is_add: 1, content: [data] })
+      //   }
+      // } else { message.error('物品添加失败2') }
     },
-    [listAllStore, shelfList]
+    [listAllStore]
   )
   const addShelfAndStoreHandler = useCallback(async (data_shelf, data_store) => {
-    let res = await HttpApi.addNfcShelf({ name: data_shelf.name, tagId: data_shelf.tag_id, model: data_shelf.model || '', num: data_shelf.num, createdAt: moment().format(FORMAT) })
+    let res = await HttpApi.addNfcShelf({ name: data_shelf.name, model: data_shelf.model, num: data_shelf.num, store_area_id: data_shelf.store_area_id, createdAt: moment().format(FORMAT) })
     if (res) {
       let shelf_list_res = await HttpApi.getNFCShelflist()
       if (shelf_list_res) {
-        const nfc_shelf_id = shelf_list_res[0].id
+        const nfc_shelf_id = shelf_list_res[0].id///获取最新的nfcshelf的id
         const data = { ...data_store, nfc_shelf_id }
         addData(data)
       }
     } else { message.error('货架添加失败') }
     setIsAdding2(false)
   }, [addData])
+
   const updateData = useCallback(
     async data => {
       let result = await api.updateStore({ id: currentItem.id, ...data })
       if (result.code === 0) {
         if (data['has_rfid'] === 1) {
           ///如果是标签物品，要根据物品的id，作为rfid的store_id参数进行更新。条件范围是data.rfids 数组
-          const store_id = currentItem.id
-          const rfids = data['rfids']
-          let res_clean = await HttpApi.unbindRfidToStore({ store_id_list: [store_id] })
-          if (!res_clean) { message.error('更新失败3') }
-          if (rfids.length > 0) {
-            let res_bind = await HttpApi.bindRfidToStore({ rfids, store_id })
-            if (res_bind) {
-              setIsUpdatingRFID(false);
-              listAllStore();
-              message.success('更新成功');
-              if (data['count'] !== currentItem['count']) {///数量发生变化
-                checkStoreCountChange({ origin_store: currentItem, change_store: data, is_edit: 1 })
-              }
-            }
-            else { message.error('更新失败4') }
-          } else {
-            message.success('更新成功')
-            if (data['count'] !== currentItem['count']) {///数量发生变化
-              checkStoreCountChange({ origin_store: currentItem, change_store: data, is_edit: 1 })
-            }
-            setIsUpdatingRFID(false);
-            listAllStore();
-          }
+          // const store_id = currentItem.id
+          // const rfids = data['rfids']
+          // let res_clean = await HttpApi.unbindRfidToStore({ store_id_list: [store_id] })
+          // if (!res_clean) { message.error('更新失败3') }
+          // if (rfids.length > 0) {
+          //   let res_bind = await HttpApi.bindRfidToStore({ rfids, store_id })
+          //   if (res_bind) {
+          //     setIsUpdatingRFID(false);
+          //     listAllStore();
+          //     message.success('更新成功');
+          //     if (data['count'] !== currentItem['count']) {///数量发生变化
+          //       checkStoreCountChange({ origin_store: currentItem, change_store: data, is_edit: 1 })
+          //     }
+          //   }
+          //   else { message.error('更新失败4') }
+          // } else {
+          //   message.success('更新成功')
+          //   if (data['count'] !== currentItem['count']) {///数量发生变化
+          //     checkStoreCountChange({ origin_store: currentItem, change_store: data, is_edit: 1 })
+          //   }
+          //   setIsUpdatingRFID(false);
+          //   listAllStore();
+          // }
         } else {
           message.success('修改成功')
           // console.log('data[count] :', data['count'])
@@ -165,6 +167,13 @@ export default props => {
     [currentItem, listAllStore]
   )
 
+  const updateShelfAndStoreHandler = useCallback(async (data_shelf, data_store) => {
+    let res = await HttpApi.updateNfcShelf({ id: currentItem.nfc_shelf_id, name: data_shelf.name, model: data_shelf.model, num: data_shelf.num, store_area_id: data_shelf.store_area_id, updatedAt: moment().format(FORMAT) })
+    if (res) {
+      updateData(data_store)
+    } else { message.error('修改失败') }
+  }, [currentItem, updateData])
+
   const batchDelete = useCallback(() => {
     Modal.confirm({
       title: `确认要批量删除这${selectedRows.length}条记录吗？`,
@@ -179,6 +188,8 @@ export default props => {
           }
         })
         let idList = selectedRows.map(item => item.id)
+        let shelfIdList = selectedRows.map(item => item.nfc_shelf_id)
+        await HttpApi.deleteNfcShelf({ idList: shelfIdList })
         let result = await api.removeStore(idList)
         if (result.code === 0) {
           if (store_id_list.length > 0) {
@@ -203,11 +214,11 @@ export default props => {
   const columns = [
     {
       title: '编号',///货架nfc编号
-      dataIndex: 'nfc_shelf',
-      key: 'nfc_shelf_obj1',
+      dataIndex: 'num',
+      key: 'num',
       render: (text) => {
         if (text)
-          return text.num || '-'
+          return text || '-'
       }
     },
     {
@@ -218,29 +229,27 @@ export default props => {
     },
     {
       title: '型号',
-      dataIndex: 'nfc_shelf',
-      key: 'nfc_shelf_obj2',
+      dataIndex: 'model',
+      key: 'model',
       render: (text) => {
-        if (text) {
-          return text.model
-        }
-        return <div>-</div>
+        return text || '-'
       }
     },
     {
       title: '属性',
-      dataIndex: 'tags',
-      render: (text) => {
-        let tagList = []
-        if (text && text.length > 0) {
-          tagList = text.map((item, index) => (
-            <Tag key={index} color={item.color}>
-              {item.name}
-            </Tag>
-          ))
+      dataIndex: 'attribute',
+      render: (text, record) => {
+        let { store_area_name, store_type_name, store_major_name } = record
+        let obj = { store_area_name, store_type_name, store_major_name }
+        let cpts = []
+        for (const key in obj) {
+          if (Object.hasOwnProperty.call(obj, key)) {
+            const element = obj[key];
+            if (element) { cpts.push(<Tag key={key}>{element}</Tag>) }
+          }
         }
-        if (!text) { return '-' }
-        return <div>{tagList}</div>
+
+        return <div>{cpts}</div>
       }
     },
     {
@@ -339,7 +348,7 @@ export default props => {
               icon='form'
               onClick={() => {
                 setCurrentItem(record)
-                if (record['has_rfid']) { setIsUpdatingRFID(true); return }
+                // if (record['has_rfid']) { setIsUpdatingRFID(true); return }
                 setIsUpdating(true)
               }}>
               编辑
@@ -353,16 +362,11 @@ export default props => {
     <div style={styles.root}>
       <div style={styles.header}>
         <Searchfrom startSearch={async (conditionsValue) => {
-          // console.log('conditionsValue:', conditionsValue)
           setIsLoading(true)
           let result = []
-          if (JSON.stringify(conditionsValue) === '{}') {
-            result = await api.listAllStore()
-          } else {
-            result = await api.listStore(conditionsValue)
-          }
+          result = await HttpApi.getAllStoreList(conditionsValue)
           if (result.code === 0) {
-            let tempList = result.data.map((item, index) => { item.key = index; return item }).reverse()
+            let tempList = result.data.map((item, index) => { item.key = index; return item })
             tempList.forEach((store) => {
               store.subList = [];
               rfidList.forEach((storeSub) => {
@@ -374,7 +378,6 @@ export default props => {
           }
           setIsLoading(false)
         }} />
-
       </div>
       <div style={styles.body}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -392,7 +395,7 @@ export default props => {
                 >
                   普通物品
               </Button>
-                <Button
+                {/* <Button
                   style={styles.button}
                   type='danger'
                   icon={'plus'}
@@ -400,7 +403,7 @@ export default props => {
                     setIsAddingRFID(true)
                   }}>
                   标签物品
-            </Button>
+            </Button> */}
               </>
             ) : (
               <Button style={styles.button} type='danger' onClick={batchDelete}>
@@ -455,29 +458,9 @@ export default props => {
             pageSizeOptions: ['10', '50', '100']
           }}
         />
-        {/* <AddForm
-          ref={addForm}
-          title='新增普通物品'
-          visible={isAdding}
-          onCancel={() => {
-            addForm.current.resetFields()
-            setIsAdding(false)
-          }}
-          onOk={() => {
-            addForm.current.validateFields(async (error, data) => {
-              if (!error) {
-                ///测试 加上id
-                // data['id'] = 999
-                // checkStoreClassChange({ is_add: 1, content: [data] })
-                addData(data)
-                addForm.current.resetFields()
-              }
-            })
-          }}
-        /> */}
         <AddForm2
           ref={addForm2}
-          title='新增普通物品和货架'
+          title='新增普通物品'
           visible={isAdding2}
           onCancel={() => {
             addForm2.current.resetFields()
@@ -486,17 +469,36 @@ export default props => {
           onOk={() => {
             addForm2.current.validateFields(async (error, data) => {
               if (!error) {
-                console.log('新数据：', data)
-                const { count, model, name, num, oprice, remark, tag_id, tax, tids, unit } = data
-                const data_store = { name, count, unit, oprice, tax, tids, remark }
-                const data_shelf = { model, num, tag_id, name }
+                const { count, model, name, num, oprice, remark, tax, unit, store_area_id, store_major_id, store_type_id } = data
+                const data_store = { name, num, model, count, unit, oprice, tax, remark, store_area_id, store_major_id, store_type_id }
+                const data_shelf = { name, num, model, store_area_id }
                 addShelfAndStoreHandler(data_shelf, data_store)
-                // addForm2.current.resetFields()
               }
             })
           }}
         />
-        <AddFromRFID
+        <UpdateForm2
+          data={currentItem}
+          ref={udpateForm2}
+          title='修改新增普通物品'
+          visible={isUpdating}
+          onCancel={() => {
+            udpateForm2.current.resetFields()
+            setIsUpdating(false)
+          }}
+          onOk={() => {
+            udpateForm2.current.validateFields(async (error, data) => {
+              if (!error) {
+                const { count, model, name, num, oprice, remark, tax, unit, store_area_id, store_major_id, store_type_id } = data
+                const data_store = { name, num, model, count, unit, oprice, tax, remark, store_area_id, store_major_id, store_type_id }
+                const data_shelf = { name, num, model, store_area_id }
+                let new_data_store = undefined2null(data_store)
+                updateShelfAndStoreHandler(data_shelf, new_data_store)
+              }
+            })
+          }}
+        />
+        {/* <AddFromRFID
           ref={addFormRFID}
           title='新增标签物品'
           visible={isAddingRFID}
@@ -514,26 +516,8 @@ export default props => {
               }
             })
           }}
-        />
-        <UpdateForm
-          data={currentItem}
-          ref={updateForm}
-          title='修改普通物品'
-          visible={isUpdating}
-          onCancel={() => {
-            updateForm.current.resetFields()
-            setIsUpdating(false)
-          }}
-          onOk={() => {
-            updateForm.current.validateFields(async (error, data) => {
-              if (!error) {
-                if (!data['nfc_shelf_id']) { data['nfc_shelf_id'] = null }
-                updateData(data)
-              }
-            })
-          }}
-        />
-        <UpdateFormRFID
+        /> */}
+        {/* <UpdateFormRFID
           data={currentItem}
           ref={updateFormRFID}
           title='修改标签物品'
@@ -553,19 +537,30 @@ export default props => {
               }
             })
           }}
-        />
+        /> */}
       </div>
     </div>
   )
 }
 const Searchfrom = Form.create({ name: 'form' })(props => {
-  const [treeData, setTreeData] = useState([])
+  const [areaTreeData, setAreaTreeData] = useState([])///区域属性树
+  const [typeTreeData, setTypeTreeData] = useState([])///类型属性树
+  const [majorTreeData, setMajorTreeData] = useState([])///专业属性树
   const getType = useCallback(async () => {
-    let result2 = await api.listAllTag()
-    if (result2.code === 0) {
-      result2.data = filterTag(result2.data, 0)
-      let treeResult = result2.data.map((item) => { return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name } })
-      setTreeData(getJsonTree(treeResult, 0))
+    let res1 = await HttpApi.getStoreAttributeList({ table_index: 0 })
+    if (res1.code === 0) {
+      let temp_tree = getJson2Tree(res1.data, null);
+      setAreaTreeData(temp_tree)
+    }
+    let res2 = await HttpApi.getStoreAttributeList({ table_index: 1 })
+    if (res2.code === 0) {
+      let temp_tree = getJson2Tree(res2.data, null);
+      setTypeTreeData(temp_tree)
+    }
+    let res3 = await HttpApi.getStoreAttributeList({ table_index: 2 })
+    if (res3.code === 0) {
+      let temp_tree = getJson2Tree(res3.data, null);
+      setMajorTreeData(temp_tree)
     }
   }, [])
   const listAllOptions = useCallback(async () => {
@@ -583,8 +578,8 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
       for (const key in values) {
         if (values.hasOwnProperty(key)) {
           const element = values[key];
-          if (element && element.length > 0) {
-            if (key === 'date') {
+          if (element) {
+            if (key === 'date' && element.length > 1) {
               newObj[key] = [element[0].startOf('day').format('YYYY-MM-DD HH:mm:ss'), element[1].endOf('day').format('YYYY-MM-DD HH:mm:ss')]
             } else {
               newObj[key] = values[key]
@@ -618,30 +613,63 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
         </Form.Item>
       </Col>
       <Col span={6}>
-        <Form.Item label='属性' {...itemProps}>
-          {props.form.getFieldDecorator('tids', {
+        <Form.Item label='区域' {...itemProps}>
+          {props.form.getFieldDecorator('store_area_id', {
             rules: [{ required: false }]
           })(<TreeSelect
             allowClear
-            multiple
             treeNodeFilterProp='title'
             showSearch
-            treeData={treeData}
+            treeData={areaTreeData}
             style={{ width: '100%' }}
             dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-            placeholder='请选择属性-支持搜索'
+            placeholder='请选择区域-支持搜索'
             showCheckedStrategy={TreeSelect.SHOW_PARENT}
           />)}
         </Form.Item>
       </Col>
       <Col span={6}>
-        <Form.Item label='关键字' {...itemProps}>
-          {props.form.getFieldDecorator('key', {
+        <Form.Item label='类型' {...itemProps}>
+          {props.form.getFieldDecorator('store_type_id', {
             rules: [{ required: false }]
-          })(<Input allowClear placeholder="请输入名称或备注" />)}
+          })(<TreeSelect
+            allowClear
+            treeNodeFilterProp='title'
+            showSearch
+            treeData={typeTreeData}
+            style={{ width: '100%' }}
+            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+            placeholder='请选择类型-支持搜索'
+            showCheckedStrategy={TreeSelect.SHOW_PARENT}
+          />)}
         </Form.Item>
       </Col>
       <Col span={6}>
+        <Form.Item label='专业' {...itemProps}>
+          {props.form.getFieldDecorator('store_major_id', {
+            rules: [{ required: false }]
+          })(<TreeSelect
+            allowClear
+            treeNodeFilterProp='title'
+            showSearch
+            treeData={majorTreeData}
+            style={{ width: '100%' }}
+            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+            placeholder='请选择专业-支持搜索'
+            showCheckedStrategy={TreeSelect.SHOW_PARENT}
+          />)}
+        </Form.Item>
+      </Col>
+    </Row>
+    <Row>
+      <Col span={6}>
+        <Form.Item label='关键字' {...itemProps}>
+          {props.form.getFieldDecorator('keyword', {
+            rules: [{ required: false }]
+          })(<Input allowClear placeholder="编号、型号、名称、备注" />)}
+        </Form.Item>
+      </Col>
+      <Col span={18}>
         <div style={{ textAlign: 'right', paddingTop: 3 }}>
           <Button type="primary" htmlType="submit">查询</Button>
           <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>

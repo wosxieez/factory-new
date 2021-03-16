@@ -1,34 +1,19 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import HttpApi from '../../http/HttpApi'
-import { Button, Col, Divider, Form, Input, message, Modal, Row, Table, TreeSelect } from 'antd'
-import UpdateNFC from './UpdateNFC'
-import AddNFC from './AddNFC'
-import api from '../../http'
-import { filterTag, getJsonTree } from '../../util/Tool'
+import { Button, Col, Form, Input, Row, Table, TreeSelect } from 'antd'
+import { getJson2Tree } from '../../util/Tool'
 import moment from 'moment'
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 export default () => {
     const [nfclist, setNfclist] = useState([])
-    const [visible, setVisible] = useState(false)
-    const [addVisible, setAddVisible] = useState(false)
-    const [currentItem, setCurrentItem] = useState({})
+    const [loading, setLoading] = useState(false)
     const init = useCallback(async () => {
+        setLoading(true)
         let res = await HttpApi.getNFCShelflist()
         let tempList = res.map((item, index) => { item.key = index; return item });
         setNfclist(tempList)
+        setLoading(false)
     }, [])
-    const updateHandler = useCallback(async (values) => {
-        // console.log('values:', values, currentItem)
-        // return;
-        let res = await HttpApi.updateNfcShelf({ id: currentItem.id, name: values.name, tagId: values.tag_id, model: values.model, num: values.num, updatedAt: moment().format(FORMAT) })
-        if (res) { message.success('修改成功'); init(); } else { message.error('修改失败') }
-        setVisible(false)
-    }, [currentItem.id, init])
-    const addHandler = useCallback(async (values) => {
-        let res = await HttpApi.addNfcShelf({ name: values.name, tagId: values.tag_id, model: values.model || '', num: values.num, createdAt: moment().format(FORMAT) })
-        if (res) { message.success('添加成功'); init(); } else { message.error('添加失败') }
-        setAddVisible(false)
-    }, [init])
     const startSearch = useCallback(async (v) => {
         let res = await HttpApi.getNFCShelflist(v)
         let tempList = res.map((item, index) => { item.key = index; return item });
@@ -65,60 +50,41 @@ export default () => {
         {
             title: '区域', dataIndex: 'tag_name', key: 'tag_name',
             render: (text, record) => {
-                return text || '-'
-            }
-        },
-        {
-            title: '操作', dataIndex: 'action', key: 'action', width: 180,
-            render: (text, record) => {
-                return <div>
-                    <Button type='primary' size='small' icon='edit' onClick={() => { setVisible(true); setCurrentItem(record) }}>编辑</Button>
-                    <Divider type='vertical' />
-                    <Button type='danger' size='small' icon='delete' onClick={() => {
-                        Modal.confirm({
-                            title: `确认要删除当前对象吗？`,
-                            okText: '确定',
-                            okType: 'danger',
-                            onOk: async function () {
-                                let res = await HttpApi.deleteNfcShelf({ id: record.id })
-                                if (res) { message.success('删除成功'); init(); } else { message.error('删除失败') }
-                            }
-                        })
-                    }}>删除</Button>
-                </div>
+                if (record.store_area_name) {
+                    return record.store_area_name
+                } else if (text) {
+                    return text
+                } else {
+                    return '-'
+                }
             }
         },
     ]
     return (
         <div style={styles.root}>
             <div style={styles.header}>
-                <Searchfrom startSearch={startSearch} addNfc={() => { setAddVisible(true) }} />
+                <Searchfrom startSearch={startSearch} />
             </div>
             <div style={styles.body}>
                 <Table
+                    loading={loading}
                     columns={columns}
                     dataSource={nfclist}
                     size='small'
                     bordered
                     pagination={false}
                 />
-                <UpdateNFC visible={visible} onCancel={() => { setVisible(false) }} data={currentItem} onOk={updateHandler} />
-                <AddNFC visible={addVisible} onCancel={() => { setAddVisible(false) }} onOk={addHandler} />
             </div>
         </div>
     )
 }
 const Searchfrom = Form.create({ name: 'form' })(props => {
-    const [treeData, setTreeData] = useState([])
+    const [areaTreeData, setAreaTreeData] = useState([])
     const getType = useCallback(async () => {
-        let result2 = await api.listAllTag()
-        if (result2.code === 0) {
-            result2.data = filterTag(result2.data, 0)
-            let treeResult = result2.data.map((item) => { return { id: item.id, pId: item.tids ? item.tids[0] : 0, value: item.id, title: item.name } })
-            let temp_tree = getJsonTree(treeResult, 0);
-            let area_tree = temp_tree.filter((item) => item.id === 1)
-            setTreeData(area_tree)
-            // setTreeData(getJsonTree(treeResult, 0))
+        let res1 = await HttpApi.getStoreAttributeList({ table_index: 0 })
+        if (res1.code === 0) {
+            let temp_tree = getJson2Tree(res1.data, null);
+            setAreaTreeData(temp_tree)
         }
     }, [])
     const listAllOptions = useCallback(async () => {
@@ -136,7 +102,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                 for (const key in values) {
                     if (values.hasOwnProperty(key)) {
                         const element = values[key];
-                        if (element && element.length > 0) { tempObj[key] = element }
+                        if (element) { tempObj[key] = element }
                     }
                 }
                 props.startSearch(tempObj);
@@ -167,14 +133,13 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
             </Col>
             <Col span={6}>
                 <Form.Item label='区域' {...itemProps}>
-                    {props.form.getFieldDecorator('tag_id', {
+                    {props.form.getFieldDecorator('store_area_id', {
                         rules: [{ required: false }]
                     })(<TreeSelect
                         allowClear
-                        multiple
                         treeNodeFilterProp='title'
                         showSearch
-                        treeData={treeData}
+                        treeData={areaTreeData}
                         style={{ width: '100%' }}
                         dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                         placeholder='请选择区域-支持搜索'
@@ -187,9 +152,6 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
             <Col span={24}>
                 <div style={{ textAlign: 'right' }}>
                     <Button icon='search' type="primary" htmlType="submit">查询</Button>
-                    <Button icon='plus' style={{ marginLeft: 8 }} type="primary" onClick={() => {
-                        props.addNfc()
-                    }}>新增</Button>
                     <Button icon='redo' style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>
                 </div>
             </Col>
