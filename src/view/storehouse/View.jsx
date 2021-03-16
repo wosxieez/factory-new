@@ -82,7 +82,9 @@ export default props => {
     async data => {
       const response = await api.addStore(data)
       if (response.code === 0) {
-        message.success('物品添加成功'); listAllStore()
+        message.success('物品添加成功')
+        listAllStore()
+        checkStoreClassChange({ is_add: 1, content: [data] })
       } else { message.error('物品添加失败') }
       // if (response.code === 0) {
       //   ///要拿到返回结果。id 作为rfid的store_id参数进行更新。
