@@ -373,7 +373,7 @@ const styles = {
     },
     header: {
         backgroundColor: '#FFFFFF',
-        padding: '24px 24px 0px 24px',
+        padding: '24px 24px 24px 24px',
     },
     marginTop: { marginTop: 10 },
     headerCell: {
