@@ -267,13 +267,13 @@ export default _ => {
 }
 const Searchfrom = Form.create({ name: 'form' })(props => {
     const [storeOptionList, setStoreOptionList] = useState([])
-    const [userOptionList, setUserOptionList] = useState([])
+    // const [userOptionList, setUserOptionList] = useState([])
     const [userOptionList2, setUserOptionList2] = useState([])
     const listAllOptions = useCallback(async () => {
         let result = await api.listAllStore()
         if (result.code === 0) { setStoreOptionList(result.data) }
-        let result_user = await HttpApi.getUserListForPurchase(1)
-        setUserOptionList(result_user)
+        // let result_user = await HttpApi.getUserListForPurchase(1)
+        // setUserOptionList(result_user)
         let result_user2 = await HttpApi.getUserListForPurchase(2)
         setUserOptionList2(result_user2)
         // if (result_user.code === 0) { setUserOptionList(result_user.data) }
@@ -356,18 +356,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
             </Col>
         </Row>
         <Row>
-            <Col span={6}>
-                <Form.Item label='采购人'  {...itemProps}>
-                    {props.form.getFieldDecorator('bug_user_id_list', {
-                        rules: [{ required: false }]
-                    })(<Select mode='multiple' allowClear placeholder='选择人员-支持名称搜索' showSearch optionFilterProp="children">
-                        {userOptionList.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
-                        })}
-                    </Select>)}
-                </Form.Item>
-            </Col>
-            <Col span={18}>
+            <Col span={24}>
                 <div style={{ textAlign: 'right', paddingTop: 3 }}>
                     <Button type="primary" htmlType="submit">查看</Button>
                     <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>

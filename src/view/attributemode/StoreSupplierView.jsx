@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useState, useRef } from 'react'
 import { Button, Card, Col, message, Row, Tree, Modal, Alert } from 'antd';
 import HttpApi from '../../http/HttpApi';
 import { getJson2Tree } from '../../util/Tool';
-import AddAttributeModal from './AddAttributeModal';
-import UpdateAttributeModal from './UpdateAttributeModal';
+import UpdateAttributeModal2 from './UpdateAttributeModal2';
+import AddAttributeModal2 from './AddAttributeModal2';
 const { TreeNode, DirectoryTree } = Tree;
 const { confirm } = Modal
 export default function StoreSupplierView() {
@@ -21,12 +21,12 @@ export default function StoreSupplierView() {
         return data.map(item => {
             if (item.children) {
                 return (
-                    <TreeNode title={item.title} key={item.id} dataRef={item}>
+                    <TreeNode title={item.num + '-' + item.title} key={item.id} dataRef={item}>
                         {renderTreeNodes(item.children)}
                     </TreeNode>
                 );
             }
-            return <TreeNode key={item.id} {...item} dataRef={item} />;
+            return <TreeNode key={item.id} {...item} dataRef={item} title={item.num + '-' + item.title}/>;
         });
     }, [])
 
@@ -45,7 +45,7 @@ export default function StoreSupplierView() {
     useEffect(() => { init() }, [init])
     const addHandler = useCallback(async (data) => {
         const pid = selectData ? selectData.dataRef.id : null
-        const obj = { pid, name: data.title, table_index: 3 }
+        const obj = { pid, name: data.title, num: data.num, table_index: 3 }
         let res = await HttpApi.addAttributeTable(obj)
         if (res.code === 0) {
             message.success('新增成功')
@@ -107,7 +107,7 @@ export default function StoreSupplierView() {
                         : null}
                 </Col>
             </Row>
-            <AddAttributeModal ref={addAttributeRef} title='新增供应商' visible={addvisible} onCancel={() => { setAddvisible(false) }} onOk={() => {
+            <AddAttributeModal2 ref={addAttributeRef} title='新增供应商' visible={addvisible} onCancel={() => { setAddvisible(false) }} onOk={() => {
                 addAttributeRef.current.validateFields(async (error, data) => {
                     if (!error) {
                         addHandler(data)
@@ -115,7 +115,7 @@ export default function StoreSupplierView() {
                     }
                 })
             }} />
-            <UpdateAttributeModal ref={updateAttributeRef} title='修改供应商' treeData={treeDataExceptSelectKey} data={selectData} visible={updatevisible} onCancel={() => { setUpdatevisible(false) }} onOk={() => {
+            <UpdateAttributeModal2 ref={updateAttributeRef} title='修改供应商' treeData={treeDataExceptSelectKey} data={selectData} visible={updatevisible} onCancel={() => { setUpdatevisible(false) }} onOk={() => {
                 updateAttributeRef.current.validateFields(async (error, data) => {
                     if (!error) {
                         updateHandler(data)

@@ -29,6 +29,7 @@ export default Form.create({ name: 'form' })(props => {
         let res1 = await HttpApi.getStoreAttributeList({ table_index: 3 })
         if (res1.code === 0) {
             let temp_tree = getJson2Tree(res1.data, null);
+            temp_tree = temp_tree.map((item) => { item.title = item.num + '-' + item.title; return item })
             setSupplierTreeData(temp_tree)
         }
         let temp_code_num = await autoGetOrderNum({ type: 0 })///临时单号；实际单号要在插入数据库钱的一刻进行刷新

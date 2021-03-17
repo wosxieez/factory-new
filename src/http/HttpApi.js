@@ -403,10 +403,13 @@ const HttpApi = {
      * 包括 store_areas store_type store_majors store_suppliers
      * @param {*} param0 
      */
-    addAttributeTable: async ({ table_index = 0, pid = null, name = '' }) => {
+    addAttributeTable: async ({ table_index = 0, pid = null, name = '', num = '' }) => {
         const table_list = ['store_areas', 'store_types', 'store_majors', 'store_suppliers']
         const table_name = table_list[table_index]
         let sql = `insert into ${table_name} (name,pid) values ('${name}',${pid}) `
+        if (table_index === 3) {
+            sql = `insert into ${table_name} (name,pid,num) values ('${name}',${pid},${num}) `
+        }
         return await HttpApi.obs({ sql })
     },
     /**

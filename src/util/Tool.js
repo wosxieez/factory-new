@@ -35,6 +35,7 @@ export const getJson2Tree = function (data, pid) {
     let node = data[i];
     if (node.pid === pid) {
       let newNode = {};
+      newNode.num = node.num;
       newNode.id = node.id;
       newNode.key = node.id;
       newNode.value = node.id;
