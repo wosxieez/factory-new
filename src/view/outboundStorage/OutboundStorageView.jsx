@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Row, Col, Tooltip, Alert, Icon } from 'antd';
 import moment from 'moment';
 import api from '../../http';
-import { userinfo } from '../../util/Tool';
+import { autoGetOrderNum, userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 var storeList = [{ key: 0 }]
 const starIcon = <span style={{ color: 'red' }}>* </span>
@@ -10,6 +10,7 @@ const starIcon = <span style={{ color: 'red' }}>* </span>
  * 申请单界面
  */
 export default Form.create({ name: 'form' })(props => {
+    const [tempCodeNum, setTempCodeNum] = useState('')
     // console.log('AppData.userinfo:', userinfo())
     const [storeOptionList, setStoreOptionList] = useState([])
     const [userOptionList, setUserOptionList] = useState([])
@@ -42,6 +43,8 @@ export default Form.create({ name: 'form' })(props => {
         // })
         setUserOptionList(result_user)
         setStoreOptionList(response_store.data)
+        let temp_code_num = await autoGetOrderNum({ type: 1 })///临时单号；实际单号要在插入数据库钱的一刻进行刷新
+        setTempCodeNum(temp_code_num)
     }, [])
     const columns = [
         { title: '编号', dataIndex: 'key', width: 50, align: 'center', render: (text) => <div>{text + 1}</div> },
@@ -51,7 +54,7 @@ export default Form.create({ name: 'form' })(props => {
                     {
                         storeOptionList.map((item, index) => {
                             return <Select.Option value={item.id} key={index} all={item} disabled={(storeList.map((item) => item.store_id).indexOf(item.id) !== -1) || (item.count === 0)}>
-                                {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null} {item.name + '--剩余' + item.count}
+                                {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null} {item.num + '-' + item.name + '-' + item.model + '--剩余' + item.count}
                             </Select.Option>
                         })
                     }
@@ -126,7 +129,7 @@ export default Form.create({ name: 'form' })(props => {
 
     const handleSelectChange = useCallback((option, key) => {
         const selectObj = option.props.all;
-        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'max_count': selectObj.count, has_rfid: selectObj.has_rfid ? 1 : 0, tax: selectObj.tax }
+        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'max_count': selectObj.count, has_rfid: selectObj.has_rfid ? 1 : 0, tax: selectObj.tax, num: selectObj.num }
         changeTableListHandler(param)
     }, [changeTableListHandler])
 
@@ -157,9 +160,10 @@ export default Form.create({ name: 'form' })(props => {
         }
         // console.log('formData:', formData)
         // return
-        const { date, storeList, remark, out_user_id, record_user_id, code_num } = formData;
-        const code = moment().toDate().getTime() + 'ZC'
-        let sql = `insert into outbound_record (date,code,code_num,content,out_user_id,record_user_id,remark,sum_count,sum_price) values ('${date.format('YYYY-MM-DD HH:mm:ss')}','${code}',${code_num ? '\'' + code_num + '\'' : null},'${JSON.stringify(storeList)}',${out_user_id || null},${record_user_id},${remark ? '\'' + remark + '\'' : null},${sumCount},${sumPrice})`
+        const { date, storeList, remark, out_user_id, record_user_id } = formData;
+        const code = moment().toDate().getTime()
+        const new_code_num = await autoGetOrderNum({ type: 1 })
+        let sql = `insert into outbound_record (date,code,code_num,content,out_user_id,record_user_id,remark,sum_count,sum_price) values ('${date.format('YYYY-MM-DD HH:mm:ss')}','${code}',${new_code_num ? "'" + new_code_num + "'" : null},'${JSON.stringify(storeList)}',${out_user_id || null},${record_user_id},${remark ? "'" + remark + "'" : null},${sumCount},${sumPrice})`
         let result = await api.query(sql)
         if (result.code === 0) { ///记录入库成功-开始循环修改store表中物品的信息。条件:store_id---数据:avg_price all_count remark 等
             for (let index = 0; index < storeList.length; index++) {
@@ -238,8 +242,9 @@ export default Form.create({ name: 'form' })(props => {
                     <Col span={6}>
                         <Form.Item label='单号' >
                             {props.form.getFieldDecorator('code_num', {
-                                rules: [{ required: false }]
-                            })(<Input />)}
+                                initialValue: tempCodeNum,
+                                rules: [{ required: true }]
+                            })(<Input disabled />)}
                         </Form.Item>
                     </Col>
                     <Col span={6}>

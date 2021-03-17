@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Alert, Row, Col, Divider, Tooltip, Icon } from 'antd';
+import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Alert, Row, Col, Divider, Tooltip, Icon, TreeSelect } from 'antd';
 import moment from 'moment';
 import api from '../../http';
 // import AddForm from '../storehouse/AddFrom';
 import HttpApi from '../../http/HttpApi';
-import { checkStoreClassChange, undefined2null, userinfo } from '../../util/Tool';
+import { autoGetOrderNum, checkStoreClassChange, getJson2Tree, undefined2null, userinfo } from '../../util/Tool';
 import AddForm2 from '../storehouse/AddForm2';
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 const { Option } = Select;
@@ -14,8 +14,9 @@ const starIcon = <span style={{ color: 'red' }}>* </span>
  * 采购入库单界面
  */
 export default Form.create({ name: 'form' })(props => {
+    const [tempCodeNum, setTempCodeNum] = useState('')
     const [storeOptionList, setStoreOptionList] = useState([])
-    const [userOptionList, setUserOptionList] = useState([])
+    const [supplierTreeData, setSupplierTreeData] = useState([])
     const [sumCount, setSumCount] = useState(0)
     const [sumPrice, setSumPrice] = useState(0)
     const [isAdding, setIsAdding] = useState(false)
@@ -25,13 +26,13 @@ export default Form.create({ name: 'form' })(props => {
     const listAllStore = useCallback(async () => {
         let result = await api.listAllStore()
         if (result.code === 0) { setStoreOptionList(result.data) }
-        // let result_user = await api.listAllUser()
-        let result_user = await HttpApi.getUserList()
-        result_user = result_user.filter((item) => {
-            return item.permission && item.permission.indexOf('4') !== -1 ///采购权限4 过滤
-        })
-        setUserOptionList(result_user)
-        // if (result_user.code === 0) { setUserOptionList(result_user.data) }
+        let res1 = await HttpApi.getStoreAttributeList({ table_index: 3 })
+        if (res1.code === 0) {
+            let temp_tree = getJson2Tree(res1.data, null);
+            setSupplierTreeData(temp_tree)
+        }
+        let temp_code_num = await autoGetOrderNum({ type: 0 })///临时单号；实际单号要在插入数据库钱的一刻进行刷新
+        setTempCodeNum(temp_code_num)
     }, [])
     const addData = useCallback(
         async data => {
@@ -92,7 +93,7 @@ export default Form.create({ name: 'form' })(props => {
                         storeOptionList.map((item, index) => {
                             return <Select.Option value={item.id} key={index} all={item} disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}>
                                 {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null}
-                                {item.name + '--库存' + item.count}
+                                {item.num + '-' + item.name + '-' + item.model + '--库存' + item.count}
                             </Select.Option>
                         })
                     }
@@ -191,7 +192,7 @@ export default Form.create({ name: 'form' })(props => {
     ///生成物品对象
     const handleSelectChange = useCallback((option, key) => {
         const selectObj = option.props.all;
-        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': selectObj.has_rfid ? 0 : 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'o_count': selectObj.count, 'o_price': selectObj.oprice, 'remark': selectObj.remark, has_rfid: selectObj.has_rfid ? 1 : 0, rfid_list: [], tax: selectObj.tax }
+        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': selectObj.has_rfid ? 0 : 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'o_count': selectObj.count, 'o_price': selectObj.oprice, 'remark': selectObj.remark, has_rfid: selectObj.has_rfid ? 1 : 0, rfid_list: [], tax: selectObj.tax, num: selectObj.num }
         changeTableListHandler(param)
     }, [changeTableListHandler])
     ///对标签物品物品进行，rfid的关联
@@ -214,7 +215,8 @@ export default Form.create({ name: 'form' })(props => {
         props.form.resetFields();
         storeList = [{ key: 0 }]
         props.form.setFieldsValue({ storeList })
-    }, [props.form])
+        listAllStore()
+    }, [props.form, listAllStore])
 
     /**
      * 更新物品库存信息。同时要给记录表插入一条记录
@@ -236,9 +238,10 @@ export default Form.create({ name: 'form' })(props => {
         }
         // console.log('formData:', formData)
         // return
-        const { date, storeList, remark, buy_user_id, record_user_id, code_num } = formData;
-        const code = moment().toDate().getTime() + 'CG'
-        let sql = `insert into purchase_record (date,code,code_num,content,buy_user_id,record_user_id,remark,sum_count,sum_price) values ('${date.format('YYYY-MM-DD HH:mm:ss')}','${code}',${code_num ? '\'' + code_num + '\'' : null},'${JSON.stringify(storeList)}',${buy_user_id || null},${record_user_id},${remark ? '\'' + remark + '\'' : null},${sumCount},${sumPrice})`
+        const { date, storeList, remark, buy_user_id, record_user_id, store_supplier_id } = formData;
+        const code = moment().toDate().getTime()
+        const new_code_num = await autoGetOrderNum({ type: 0 })
+        let sql = `insert into purchase_record (date,code,code_num,content,buy_user_id,record_user_id,remark,sum_count,sum_price,store_supplier_id) values ('${date.format('YYYY-MM-DD HH:mm:ss')}','${code}','${new_code_num}','${JSON.stringify(storeList)}',${buy_user_id || null},${record_user_id},${remark ? "'" + remark + "'" : null},${sumCount},${sumPrice},${store_supplier_id})`
         let result = await api.query(sql)
         if (result.code === 0) { ///记录入库成功-开始循环修改store表中物品的信息。条件:store_id---数据:avg_price all_count remark 等
             for (let index = 0; index < storeList.length; index++) {
@@ -252,13 +255,13 @@ export default Form.create({ name: 'form' })(props => {
                 }
                 ///新增
                 ///针对storeList中存在 标签物品的 情况 进行处理
-                if (storeObj['has_rfid'] && storeObj['rfid_list'].length > 0) {
-                    const store_id = storeObj['store_id']
-                    const rfid_list = storeObj['rfid_list'];
-                    let sql = `update rfids set store_id = ${store_id} where id in (${rfid_list.join(',')})`
-                    let result = await api.query(sql)
-                    if (result.code === 0) { console.log('绑定成功') } else { console.log('绑定失败') }
-                }
+                // if (storeObj['has_rfid'] && storeObj['rfid_list'].length > 0) {
+                //     const store_id = storeObj['store_id']
+                //     const rfid_list = storeObj['rfid_list'];
+                //     let sql = `update rfids set store_id = ${store_id} where id in (${rfid_list.join(',')})`
+                //     let result = await api.query(sql)
+                //     if (result.code === 0) { console.log('绑定成功') } else { console.log('绑定失败') }
+                // }
             }
         }
 
@@ -317,7 +320,7 @@ export default Form.create({ name: 'form' })(props => {
                             message.error('不允许物品使用相同标签');
                             return;
                         }
-                        // console.log('没问题:', values)
+                        console.log('没问题:', values)
                         updateStoreAndrecordHandler(values)
                     },
                 })
@@ -348,19 +351,26 @@ export default Form.create({ name: 'form' })(props => {
                     <Col span={6}>
                         <Form.Item label='单号' >
                             {props.form.getFieldDecorator('code_num', {
-                                rules: [{ required: false }]
-                            })(<Input />)}
+                                initialValue: tempCodeNum,
+                                rules: [{ required: true }]
+                            })(<Input disabled />)}
                         </Form.Item>
                     </Col>
                     <Col span={6}>
-                        <Form.Item label='采购人' >
-                            {props.form.getFieldDecorator('buy_user_id', {
-                                rules: [{ required: false }]
-                            })(<Select allowClear placeholder='请选择采购人' showSearch optionFilterProp="children">
-                                {userOptionList.map((item, index) => {
-                                    return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
-                                })}
-                            </Select>)}
+                        <Form.Item label='供应商' >
+                            {props.form.getFieldDecorator('store_supplier_id', {
+                                rules: [{ required: true, message: '请选择供应商' }]
+                            })(<TreeSelect
+                                allowClear
+                                showSearch
+                                filterOption='children'
+                                treeNodeFilterProp="title"
+                                treeData={supplierTreeData}
+                                style={{ width: '100%' }}
+                                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                                placeholder="请选择供应商"
+                                showCheckedStrategy={TreeSelect.SHOW_PARENT}
+                            />)}
                         </Form.Item>
                     </Col>
                     <Col span={6}>
@@ -416,7 +426,7 @@ export default Form.create({ name: 'form' })(props => {
                 <Row>
                     <Form.Item wrapperCol={{ span: 24 }}>
                         <div style={{ textAlign: 'right' }}>
-                            <Tooltip title={`${!(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1) ? '需要库管权限' : ''}`}>
+                            <Tooltip title={`${!(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1) ? '需要库管权限' : '提交'} `}>
                                 <Button type="primary" htmlType="submit"
                                     disabled={!(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1)}
                                 >提交</Button>

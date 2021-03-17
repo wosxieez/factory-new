@@ -420,3 +420,30 @@ export function undefined2null(data) {
   }
   return tempObj
 }
+
+export function addCharToHead({ originString = '', targetString = '', Targetlength = 5 }) {
+  let count = 0
+  let result = originString
+  while (count < Targetlength - originString.length) {
+    result = targetString + result
+    count++;
+  }
+  return result
+}
+
+/**
+ * 自动计算单号
+ * ['JH', 'XS', 'TL']///进货(采购)、销售(出库)、退料
+ */
+export async function autoGetOrderNum({ type = 0 }) {
+  let type_list = ['JH', 'XS', 'TL']///进货(采购)、销售(出库)、退料
+  let type_des = type_list[type]
+  let year_des = moment().toDate().getFullYear()
+  let res = await HttpApi.getPurchaseOrOutboundOrReturnRecordListCount({ type })
+  if (res.code === 0) {
+    let new_count = res.data[0].count + 1
+    let no_str = addCharToHead({ originString: String(new_count), targetString: '0', Targetlength: 5 })
+    let result_res = type_des + '-' + year_des + '-' + no_str
+    return result_res
+  }
+}

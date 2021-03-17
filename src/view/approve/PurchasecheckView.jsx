@@ -111,19 +111,17 @@ export default props => {
             }
         },
         {
-            title: '流水', dataIndex: 'code', width: 120, align: 'center',
-            render: (text) => {
-                return <Tag color={'blue'} style={{ marginRight: 0 }}>{text}</Tag>
-            }
-        },
-        {
             title: '采购单',
             dataIndex: 'content',
             // align: 'center',
             render: (text, record) => {
                 let contentList = JSON.parse(text)
                 return contentList.map((item, index) => {
-                    return <Tooltip key={index} placement='left' title={item && item.tax ? '税率' + item.tax + '%' : '无税率'} >
+                    let tool_str = '编号' + item.num
+                    if (item.tax) {
+                        tool_str = tool_str + ' 税率' + item.tax + '%'
+                    } else { tool_str = tool_str + ' 无税率' }
+                    return <Tooltip key={index} placement='left' title={tool_str} >
                         <div key={index}>
                             <Tag key={index} color={'cyan'} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>{item.store_name} 采购价{item.price}元*{item.count}</Tag><br />
                         </div>
@@ -167,16 +165,16 @@ export default props => {
                 }
             }
         },
-        {
-            title: '采购人员',
-            dataIndex: 'buy_user_name',
-            key: 'buy_user_name',
-            align: 'center',
-            width: 80,
-            render: (text) => {
-                return text || '-'
-            }
-        },
+        // {
+        //     title: '采购人员',
+        //     dataIndex: 'buy_user_name',
+        //     key: 'buy_user_name',
+        //     align: 'center',
+        //     width: 80,
+        //     render: (text) => {
+        //         return text || '-'
+        //     }
+        // },
         {
             title: '记录人员',
             dataIndex: 'record_user_name',
@@ -380,13 +378,6 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                 </Form.Item>
             </Col>
             <Col span={6}>
-                <Form.Item label='流水' {...itemProps}>
-                    {props.form.getFieldDecorator('code', {
-                        rules: [{ required: false }]
-                    })(<Input allowClear placeholder="请输入流水号" />)}
-                </Form.Item>
-            </Col>
-            <Col span={6}>
                 <Form.Item label='单号' {...itemProps}>
                     {props.form.getFieldDecorator('code_num', {
                         rules: [{ required: false }]
@@ -399,6 +390,21 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                         rules: [{ required: false }]
                     })(<Select mode='multiple' allowClear placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children">
                         {storeOptionList.map((item, index) => {
+                            return <Select.Option value={item.id} key={index} all={item}>
+                                <Tooltip placement="left" key={index} title={item.num + '-' + item.name}>
+                                    {item.num + '-' + item.name}
+                                </Tooltip>
+                            </Select.Option>
+                        })}
+                    </Select>)}
+                </Form.Item>
+            </Col>
+            <Col span={6}>
+                <Form.Item label='记录人' {...itemProps}>
+                    {props.form.getFieldDecorator('record_user_id_list', {
+                        rules: [{ required: false }]
+                    })(<Select mode='multiple' allowClear placeholder='选择人员-支持名称搜索' showSearch optionFilterProp="children">
+                        {userOptionList2.map((item, index) => {
                             return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
                         })}
                     </Select>)}
@@ -418,17 +424,6 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                 </Form.Item>
             </Col>
             <Col span={6}>
-                <Form.Item label='记录人' {...itemProps}>
-                    {props.form.getFieldDecorator('record_user_id_list', {
-                        rules: [{ required: false }]
-                    })(<Select mode='multiple' allowClear placeholder='选择人员-支持名称搜索' showSearch optionFilterProp="children">
-                        {userOptionList2.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
-                        })}
-                    </Select>)}
-                </Form.Item>
-            </Col>
-            <Col span={6}>
                 <Form.Item label='审计状态' {...itemProps}>
                     {props.form.getFieldDecorator('check_status', {
                         initialValue: [0],
@@ -440,14 +435,14 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                     </Select>)}
                 </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col span={12}>
                 <div style={{ textAlign: 'right', paddingTop: 3 }}>
                     <Button type="primary" htmlType="submit">查看</Button>
                     <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>
                 </div>
             </Col>
         </Row>
-    </Form>
+    </Form >
 })
 
 function HandlerPanel(props) {

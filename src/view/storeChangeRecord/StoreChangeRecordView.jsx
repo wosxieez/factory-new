@@ -233,15 +233,13 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                     })(<Input allowClear placeholder="请输入物品名称" />)}
                 </Form.Item>
             </Col>
-            <Col span={6}>
+            {/* <Col span={6}>
                 <Form.Item label='货架' {...itemProps}>
                     {props.form.getFieldDecorator('shelf_name', {
                         rules: [{ required: false }]
                     })(<Input allowClear placeholder="请输入货架名称" />)}
                 </Form.Item>
-            </Col>
-        </Row>
-        <Row>
+            </Col> */}
             <Col span={6}>
                 <Form.Item label='操作端' {...itemProps}>
                     {props.form.getFieldDecorator('type', {
@@ -254,7 +252,9 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                     )}
                 </Form.Item>
             </Col>
-            <Col span={18}>
+        </Row>
+        <Row>
+            <Col span={24}>
                 <div style={{ textAlign: 'right', paddingTop: 3 }}>
                     <Button type="primary" htmlType="submit">查询</Button>
                     <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>
@@ -271,7 +271,7 @@ const styles = {
     },
     header: {
         backgroundColor: '#FFFFFF',
-        padding: '24px 24px 0px 24px',
+        padding: '24px 24px 24px 24px',
     },
     marginTop: { marginTop: 10 },
     headerCell: {

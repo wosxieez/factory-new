@@ -1,7 +1,8 @@
 import Axios from 'axios'
 import { userinfo } from '../util/Tool';
+import moment from 'moment'
 // import Qs from 'qs'
-
+const FORMAT = 'YYYY-MM-DD'
 export const Testuri = 'http://ixiaomu.cn:3010/'///小木服务器数据库 3008正式 3010测试
 export const permisstion = [{ name: '专工权限', value: 0 }, { name: '运行权限', value: 1 }, { name: '消费审批权限', value: 2 }, { name: '维修权限', value: 3 }]
 
@@ -454,5 +455,18 @@ const HttpApi = {
     //     let sql = `update stores set model = '${model}',num='${num}',store_area_id=${store_area_id} where nfc_shelf_id=${nfc_shelf_id}`
     //     return await HttpApi.obs({ sql })
     // }
+
+    /**
+     * 获取采购表、出库表、退料表的记录条数
+     * 用于生成单号
+     */
+    getPurchaseOrOutboundOrReturnRecordListCount: async ({ type }) => {
+        let date_range = [moment().startOf('year').format(FORMAT), moment().endOf('year').format(FORMAT)]
+        let type_list = ['purchase_record', 'outbound_record', 'return_record']///进货(采购)、销售(出库)、退料
+        let table_name = type_list[type]
+        let sql = `select count(*) as count from ${table_name} where date >='${date_range[0]}' and date <='${date_range[1]}'`
+        // console.log('sql:', sql)
+        return await HttpApi.obs({ sql })
+    }
 }
 export default HttpApi

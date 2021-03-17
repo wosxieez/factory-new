@@ -46,8 +46,8 @@ export default _ => {
         }
         let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_bug_user_id + sql_record_user_id
         // console.log('sql_condition:', sql_condition)
-        let sql = `select pr.*,users1.name as buy_user_name,users2.name as record_user_name from purchase_record as pr
-        left join (select * from users where effective = 1) users1 on users1.id = pr.buy_user_id
+        let sql = `select pr.*,store_suppliers.name as store_supplier_name,users2.name as record_user_name from purchase_record as pr
+        left join (select * from store_suppliers where isdelete = 0) store_suppliers on store_suppliers.id = pr.store_supplier_id
         left join (select * from users where effective = 1) users2 on users2.id = pr.record_user_id
         where pr.isdelete = 0${sql_condition} order by id desc`
         // console.log('sql:', sql)
@@ -135,20 +135,11 @@ export default _ => {
             }
         },
         {
-            title: '流水',
-            dataIndex: 'other.code',
-            key: 'other.code',
-            width: 120,
-            render: (text) => {
-                return <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
-            }
-        },
-        {
             title: '物品',
             dataIndex: 'store_name',
             key: 'store_name',
             render: (text, record) => {
-                return <Tooltip placement='left' title={record.tax ? '税率' + record.tax + '%' : '无税率'}>
+                return <Tooltip placement='left' title={record.num ? '编号' + record.num : '无编号'}>
                     <Tag color='cyan' style={{ marginRight: 0 }}>{text}</Tag>
                 </Tooltip>
             }
@@ -157,8 +148,10 @@ export default _ => {
             title: '含税单价[元]',
             dataIndex: 'price',
             key: 'price',
-            render: (text) => {
-                return <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
+            render: (text, record) => {
+                return <Tooltip placement='left' title={record.tax ? '税率' + record.tax + '%' : '无税率'}>
+                    <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
+                </Tooltip>
             }
         },
         {
@@ -205,11 +198,10 @@ export default _ => {
             }
         },
         {
-            title: '采购人员',
-            dataIndex: 'other.buy_user_name',
-            key: 'other.buy_user_name',
+            title: '供应商',
+            dataIndex: 'other.store_supplier_name',
+            key: 'other.store_supplier_name',
             align: 'center',
-            width: 100,
         },
         {
             title: '记录人员',
@@ -334,13 +326,6 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                 </Form.Item>
             </Col>
             <Col span={6}>
-                <Form.Item label='流水' {...itemProps}>
-                    {props.form.getFieldDecorator('code', {
-                        rules: [{ required: false }]
-                    })(<Input allowClear placeholder="请输入流水号" />)}
-                </Form.Item>
-            </Col>
-            <Col span={6}>
                 <Form.Item label='单号' {...itemProps}>
                     {props.form.getFieldDecorator('code_num', {
                         rules: [{ required: false }]
@@ -353,6 +338,17 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                         rules: [{ required: false }]
                     })(<Select mode='multiple' allowClear placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children">
                         {storeOptionList.map((item, index) => {
+                            return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
+                        })}
+                    </Select>)}
+                </Form.Item>
+            </Col>
+            <Col span={6}>
+                <Form.Item label='记录人' {...itemProps}>
+                    {props.form.getFieldDecorator('record_user_id_list', {
+                        rules: [{ required: false }]
+                    })(<Select mode='multiple' allowClear placeholder='选择人员-支持名称搜索' showSearch optionFilterProp="children">
+                        {userOptionList2.map((item, index) => {
                             return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
                         })}
                     </Select>)}
@@ -371,20 +367,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                     </Select>)}
                 </Form.Item>
             </Col>
-            <Col span={6}>
-                <Form.Item label='记录人' {...itemProps}>
-                    {props.form.getFieldDecorator('record_user_id_list', {
-                        rules: [{ required: false }]
-                    })(<Select mode='multiple' allowClear placeholder='选择人员-支持名称搜索' showSearch optionFilterProp="children">
-                        {userOptionList2.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
-                        })}
-                    </Select>)}
-                </Form.Item>
-            </Col>
-            <Col span={6}>
-            </Col>
-            <Col span={6}>
+            <Col span={18}>
                 <div style={{ textAlign: 'right', paddingTop: 3 }}>
                     <Button type="primary" htmlType="submit">查看</Button>
                     <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>

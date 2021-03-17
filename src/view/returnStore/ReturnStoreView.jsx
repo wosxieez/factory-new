@@ -137,20 +137,11 @@ export default _ => {
             }
         },
         {
-            title: '流水',
-            dataIndex: 'other.code',
-            key: 'other.code',
-            width: 120,
-            render: (text) => {
-                return <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
-            }
-        },
-        {
             title: '物品',
             dataIndex: 'store_name',
             key: 'store_name',
             render: (text, record) => {
-                return <Tooltip placement='left' title={record.tax ? '税率' + record.tax + '%' : '无税率'}>
+                return <Tooltip placement='left' title={record.num ? '编号' + record.num : '无编号'}>
                     <Tag color='cyan' style={{ marginRight: 0 }}>{text}</Tag>
                 </Tooltip>
             }
@@ -159,8 +150,10 @@ export default _ => {
             title: '含税单价[元]',
             dataIndex: 'price',
             key: 'price',
-            render: (text) => {
-                return <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
+            render: (text, record) => {
+                return <Tooltip placement='left' title={record.tax ? '税率' + record.tax + '%' : '无税率'}>
+                    <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
+                </Tooltip>
             }
         },
         {
@@ -339,13 +332,6 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                 </Form.Item>
             </Col>
             <Col span={6}>
-                <Form.Item label='流水' {...itemProps}>
-                    {props.form.getFieldDecorator('code', {
-                        rules: [{ required: false }]
-                    })(<Input allowClear placeholder="请输入流水号" />)}
-                </Form.Item>
-            </Col>
-            <Col span={6}>
                 <Form.Item label='单号' {...itemProps}>
                     {props.form.getFieldDecorator('code_num', {
                         rules: [{ required: false }]
@@ -358,6 +344,17 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                         rules: [{ required: false }]
                     })(<Select mode='multiple' allowClear placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children">
                         {storeOptionList.map((item, index) => {
+                            return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
+                        })}
+                    </Select>)}
+                </Form.Item>
+            </Col>
+            <Col span={6}>
+                <Form.Item label='记录人' {...itemProps}>
+                    {props.form.getFieldDecorator('record_user_id_list', {
+                        rules: [{ required: false }]
+                    })(<Select mode='multiple' allowClear placeholder='选择人员-支持名称搜索' showSearch optionFilterProp="children">
+                        {userOptionList2.map((item, index) => {
                             return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
                         })}
                     </Select>)}
@@ -376,20 +373,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                     </Select>)}
                 </Form.Item>
             </Col>
-            <Col span={6}>
-                <Form.Item label='记录人' {...itemProps}>
-                    {props.form.getFieldDecorator('record_user_id_list', {
-                        rules: [{ required: false }]
-                    })(<Select mode='multiple' allowClear placeholder='选择人员-支持名称搜索' showSearch optionFilterProp="children">
-                        {userOptionList2.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
-                        })}
-                    </Select>)}
-                </Form.Item>
-            </Col>
-            <Col span={6}>
-            </Col>
-            <Col span={6}>
+            <Col span={18}>
                 <div style={{ textAlign: 'right', paddingTop: 3 }}>
                     <Button type="primary" htmlType="submit">查看</Button>
                     <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>

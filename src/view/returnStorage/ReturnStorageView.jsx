@@ -3,7 +3,7 @@ import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, T
 import moment from 'moment';
 import api from '../../http';
 import HttpApi from '../../http/HttpApi';
-import { userinfo } from '../../util/Tool';
+import { autoGetOrderNum, userinfo } from '../../util/Tool';
 
 var storeList = [{ key: 0 }]
 const starIcon = <span style={{ color: 'red' }}>* </span>
@@ -11,6 +11,7 @@ const starIcon = <span style={{ color: 'red' }}>* </span>
  * 退料入库单界面
  */
 export default Form.create({ name: 'form' })(props => {
+    const [tempCodeNum, setTempCodeNum] = useState('')
     const [storeOptionList, setStoreOptionList] = useState([])
     const [userOptionList, setUserOptionList] = useState([])
     const [sumCount, setSumCount] = useState(0)
@@ -27,6 +28,8 @@ export default Form.create({ name: 'form' })(props => {
         // result_user = result_user.filter((item) => {
         // })
         setUserOptionList(result_user)
+        let temp_code_num = await autoGetOrderNum({ type: 2 })///临时单号；实际单号要在插入数据库钱的一刻进行刷新
+        setTempCodeNum(temp_code_num)
     }, [])
     const columns = [
         { title: '编号', dataIndex: 'key', width: 50, align: 'center', render: (text) => <div>{text + 1}</div> },
@@ -35,7 +38,7 @@ export default Form.create({ name: 'form' })(props => {
                 return <Select placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children" value={text} onChange={(_, option) => { handleSelectChange(option, record.key) }}>
                     {
                         storeOptionList.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item} disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}>{item.name}</Select.Option>
+                            return <Select.Option value={item.id} key={index} all={item} disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}>{item.num + '-' + item.name + '-' + item.model}</Select.Option>
                         })
                     }
                 </Select >
@@ -109,7 +112,7 @@ export default Form.create({ name: 'form' })(props => {
 
     const handleSelectChange = useCallback((option, key) => {
         const selectObj = option.props.all;
-        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'o_count': selectObj.count, 'o_price': selectObj.oprice, 'remark': selectObj.remark, 'tax': selectObj.tax }
+        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'o_count': selectObj.count, 'o_price': selectObj.oprice, 'remark': selectObj.remark, 'tax': selectObj.tax, num: selectObj.num }
         changeTableListHandler(param)
     }, [changeTableListHandler])
 
@@ -117,7 +120,8 @@ export default Form.create({ name: 'form' })(props => {
         props.form.resetFields();
         storeList = [{ key: 0 }]
         props.form.setFieldsValue({ storeList })
-    }, [props.form])
+        listAllStore()
+    }, [props.form, listAllStore])
 
     /**
      * 更新物品库存信息。同时要给记录表插入一条记录
@@ -131,9 +135,10 @@ export default Form.create({ name: 'form' })(props => {
                 }
             }
         }
-        const { date, storeList, remark, return_user_id, record_user_id, code_num } = formData;
-        const code = moment().toDate().getTime() + 'TL'
-        let sql = `insert into return_record (date,code,code_num,content,return_user_id,record_user_id,remark,sum_count,sum_price) values ('${date.format('YYYY-MM-DD HH:mm:ss')}','${code}',${code_num ? '\'' + code_num + '\'' : null},'${JSON.stringify(storeList)}',${return_user_id || null},${record_user_id},${remark ? '\'' + remark + '\'' : null},${sumCount},${sumPrice})`
+        const { date, storeList, remark, return_user_id, record_user_id } = formData;
+        const code = moment().toDate().getTime()
+        const new_code_num = await autoGetOrderNum({ type: 2 })
+        let sql = `insert into return_record (date,code,code_num,content,return_user_id,record_user_id,remark,sum_count,sum_price) values ('${date.format('YYYY-MM-DD HH:mm:ss')}','${code}',${new_code_num ? "'" + new_code_num + "'" : null},'${JSON.stringify(storeList)}',${return_user_id || null},${record_user_id},${remark ? "'" + remark + "'" : null},${sumCount},${sumPrice})`
         let result = await api.query(sql)
         if (result.code === 0) { ///记录入库成功-开始循环修改store表中物品的信息。条件:store_id---数据:avg_price all_count remark 等
             for (let index = 0; index < storeList.length; index++) {
@@ -207,8 +212,9 @@ export default Form.create({ name: 'form' })(props => {
                     <Col span={6}>
                         <Form.Item label='单号' >
                             {props.form.getFieldDecorator('code_num', {
-                                rules: [{ required: false }]
-                            })(<Input />)}
+                                initialValue: tempCodeNum,
+                                rules: [{ required: true }]
+                            })(<Input disabled />)}
                         </Form.Item>
                     </Col>
                     <Col span={6}>
