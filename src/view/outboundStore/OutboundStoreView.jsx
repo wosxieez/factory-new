@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useState } from 'react';
 import api from '../../http';
 import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip } from 'antd';
 import moment from 'moment';
-import { getTaxByOpriceAndTaxPrice, getTaxPrice, translatePurchaseRecordList } from '../../util/Tool';
+import { translatePurchaseRecordList } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 import ExportJsonExcel from 'js-export-excel'
 
