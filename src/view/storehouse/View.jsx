@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import api from '../../http'
 import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Form, Icon, Tooltip } from 'antd'
 import moment from 'moment'
-import { checkStoreCountChange, checkStoreClassChange, getTaxPrice, getListAllTaxPrice, getListAllPriceAndCount, undefined2null, getJson2Tree, getTaxByOpriceAndTaxPrice } from '../../util/Tool'
+import { checkStoreCountChange, checkStoreClassChange, getTaxPrice, getListAllTaxPrice2, getListAllPriceAndCount, undefined2null, getJson2Tree, getTaxByOpriceAndTaxPrice } from '../../util/Tool'
 import { userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi'
 // import AddFromRFID from './AddFromRFID'
@@ -41,7 +41,7 @@ export default props => {
 
   const calculSumCountAndPrice = useCallback((store_list) => {
     let temp_store_list = store_list.map((item) => { item.price = item.oprice; return item });
-    let all_tax_price = getListAllTaxPrice(temp_store_list)
+    let all_tax_price = getListAllTaxPrice2(temp_store_list)
     let { sum_price, sum_count } = getListAllPriceAndCount(temp_store_list)
     setSumTaxPrice(parseFloat(all_tax_price).toFixed(2))
     setSumPrice(parseFloat(sum_price).toFixed(2))
@@ -312,8 +312,8 @@ export default props => {
       align: 'center',
       width: 100,
       render: (text, record) => {
-        if (record.oprice && record.tax >= 0) {
-          let tax_p = parseFloat(getTaxPrice(record.oprice, record.tax)) * record.count
+        if (record.tax_price && record.tax >= 0) {
+          let tax_p = record.tax_price * record.count
           return <div>{parseFloat(tax_p).toFixed(2)}</div>
         }
         return <div>-</div>
