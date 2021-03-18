@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useState } from 'react';
 import api from '../../http';
 import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip } from 'antd';
 import moment from 'moment';
-import { getTaxPrice, translatePurchaseRecordList } from '../../util/Tool';
+import { getTaxByOpriceAndTaxPrice, getTaxPrice, translatePurchaseRecordList } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 import ExportJsonExcel from 'js-export-excel'
 
@@ -62,9 +62,10 @@ export default _ => {
             }
             let temp = storeData.map((item, index) => {
                 item.key = index;
-                item.tax_price = getTaxPrice(item.price, item.tax);
+                // item.tax_price = getTaxPrice(item.price, item.tax);
                 return item
             })
+            console.log('temp:', temp)
             setDataSource(temp)
             let records_sum_price = 0
             let records_sum_count = 0
@@ -150,7 +151,7 @@ export default _ => {
             dataIndex: 'price',
             key: 'price',
             render: (text, record) => {
-                return <Tooltip placement='left' title={record.tax ? '税率' + record.tax + '%' : '无税率'}>
+                return <Tooltip placement='left' title={record.temp_tax ? '税率' + record.temp_tax + '%' : '无税率'}>
                     <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
                 </Tooltip>
             }
@@ -192,10 +193,9 @@ export default _ => {
             dataIndex: 'sum_tax_price',
             key: 'sum_tax_price',
             render: (_, record) => {
-                const price = record.price
-                const tax = record.tax
+                const price = record.tax_price
                 const count = record.count
-                return <Tag color='#722ed1' style={{ marginRight: 0 }}>{parseFloat(getTaxPrice(price, tax) * count).toFixed(2)}</Tag>
+                return <Tag color='#722ed1' style={{ marginRight: 0 }}>{parseFloat(price * count).toFixed(2)}</Tag>
             }
         },
         {

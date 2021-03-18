@@ -3,7 +3,7 @@ import api from '../../http'
 import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Radio, Modal, message, Tooltip } from 'antd'
 import moment from 'moment'
 import HttpApi from '../../http/HttpApi';
-import { getListAllTaxPrice, userinfo } from '../../util/Tool';
+import { getListAllTaxPrice2, userinfo } from '../../util/Tool';
 import { AppDataContext } from '../../redux/AppRedux';
 export async function getCountRT(condition_sql) {
     let sql = `select count(id) count from return_record where isdelete = 0${condition_sql} `
@@ -84,7 +84,7 @@ export default props => {
             let tempSumTaxPrice = 0
             result.data[0].forEach((item) => {
                 const content = JSON.parse(item.content)
-                tempSumTaxPrice = tempSumTaxPrice + getListAllTaxPrice(content)
+                tempSumTaxPrice = tempSumTaxPrice + getListAllTaxPrice2(content)
             })
             setSumTaxPrice(tempSumTaxPrice.toFixed(2))
             // console.log('tempSumcount:', tempSumcount.toFixed(0))
@@ -118,8 +118,8 @@ export default props => {
                 let contentList = JSON.parse(text)
                 return contentList.map((item, index) => {
                     let tool_str = '编号' + item.num
-                    if (item.tax) {
-                        tool_str = tool_str + ' 税率' + item.tax + '%'
+                    if (item.temp_tax) {
+                        tool_str = tool_str + ' 税率' + item.temp_tax + '%'
                     } else { tool_str = tool_str + ' 无税率' }
                     return <Tooltip key={index} placement='left' title={tool_str} >
                         <div key={index}>
@@ -158,7 +158,7 @@ export default props => {
             render: (text) => {
                 try {
                     const contextList = JSON.parse(text)
-                    let sum_tax_price = parseFloat(getListAllTaxPrice(contextList)).toFixed(2)
+                    let sum_tax_price = parseFloat(getListAllTaxPrice2(contextList)).toFixed(2)
                     return <Tag color={'#722ed1'} style={{ marginRight: 0 }}>{sum_tax_price}</Tag>
                 } catch (error) {
                     return '-'

@@ -3,7 +3,7 @@ import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, T
 import moment from 'moment';
 import api from '../../http';
 import HttpApi from '../../http/HttpApi';
-import { autoGetOrderNum, userinfo } from '../../util/Tool';
+import { autoGetOrderNum, getTaxByOpriceAndTaxPrice, userinfo } from '../../util/Tool';
 
 var storeList = [{ key: 0 }]
 const starIcon = <span style={{ color: 'red' }}>* </span>
@@ -112,7 +112,20 @@ export default Form.create({ name: 'form' })(props => {
 
     const handleSelectChange = useCallback((option, key) => {
         const selectObj = option.props.all;
-        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'o_count': selectObj.count, 'o_price': selectObj.oprice, 'remark': selectObj.remark, 'tax': selectObj.tax, num: selectObj.num }
+        let param = {
+            'key': key,
+            'unit': selectObj.unit,
+            'price': selectObj.oprice,
+            'count': 1,
+            'store_id': selectObj.id,
+            'store_name': selectObj.name,
+            'o_count': selectObj.count,
+            'o_price': selectObj.oprice,
+            'remark': selectObj.remark,
+            'tax_price': selectObj.tax_price,
+            'num': selectObj.num,
+            'temp_tax': getTaxByOpriceAndTaxPrice(selectObj.oprice, selectObj.tax_price)
+        }
         changeTableListHandler(param)
     }, [changeTableListHandler])
 

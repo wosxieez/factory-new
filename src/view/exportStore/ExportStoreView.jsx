@@ -47,7 +47,7 @@ export default _ => {
             // console.log('ad:', result2.allStoreList.map((item, index) => { item.key = index; return item }))
             let temp = result2.allStoreList.map((item, index) => {
                 item.key = index;
-                item.store.tax_price = getTaxPrice(item.store.price, item.store.tax);
+                // item.store.tax_price = getTaxPrice(item.store.price, item.store.tax);
                 return item
             });
             let all_tax_price = calculOrderListStoreTaxAllPrice(temp)

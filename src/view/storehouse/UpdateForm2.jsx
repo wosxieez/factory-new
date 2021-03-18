@@ -43,11 +43,11 @@ const UpdateForm2 = Form.create({ name: 'form' })((props) => {
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item label='税率[%]' >
-              {props.form.getFieldDecorator('tax', {
-                initialValue: props.data ? props.data.tax : null,
-                rules: [{ required: true, message: '请输入税率' }]
-              })(<InputNumber placeholder='请输入税率' min={0} style={{ width: '100%' }} />)}
+            <Form.Item label='单价' >
+              {props.form.getFieldDecorator('tax_price', {
+                initialValue: props.data ? props.data.tax_price : null,
+                rules: [{ required: true, message: '请输入单价' }]
+              })(<InputNumber placeholder='请输入单价' min={0} style={{ width: '100%' }} />)}
             </Form.Item>
           </Col>
         </Row>

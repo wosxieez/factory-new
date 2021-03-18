@@ -358,7 +358,20 @@ export function getTaxPrice(oprice, tax) {
 }
 
 /**
- * storeList 总税价
+ * 根据原始价格和税后价格 算出税率
+ * @param {*} oprice 
+ * @param {*} taxprice 
+ * @returns 
+ */
+export function getTaxByOpriceAndTaxPrice(oprice, taxprice) {
+  if (oprice && taxprice) {
+    return parseFloat((((oprice / taxprice) - 1) * 100).toFixed(0))
+
+  }
+}
+
+/**
+ * storeList 总税价 针对采购单中存在temp_tax 和 temp_tax_price的情况
  * @param {*} storeList 
  * @returns 
  */
@@ -366,10 +379,27 @@ export function getListAllTaxPrice(storeList) {
   if (storeList) {
     let sum_price = 0;
     storeList.forEach((item) => {
-      const tax = item.tax
-      const price = item.price
+      const price = item.temp_tax_price
       const count = item.count
-      sum_price = sum_price + getTaxPrice(price, tax) * count
+      sum_price = sum_price + price * count
+    })
+    return sum_price
+  }
+  return 0
+}
+
+/**
+ * storeList 总税价 针对出库和退料单中存在temp_tax 和 tax_price的情况
+ * @param {*} storeList 
+ * @returns 
+ */
+export function getListAllTaxPrice2(storeList) {
+  if (storeList) {
+    let sum_price = 0;
+    storeList.forEach((item) => {
+      const price = item.tax_price
+      const count = item.count
+      sum_price = sum_price + price * count
     })
     return sum_price
   }

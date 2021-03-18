@@ -63,7 +63,6 @@ export default _ => {
             // setDataSource(storeData.map((item, index) => { item.key = index; return item }))
             let temp = storeData.map((item, index) => {
                 item.key = index;
-                item.tax_price = getTaxPrice(item.price, item.tax);
                 return item
             })
             setDataSource(temp)
@@ -151,7 +150,7 @@ export default _ => {
             dataIndex: 'price',
             key: 'price',
             render: (text, record) => {
-                return <Tooltip placement='left' title={record.tax ? '税率' + record.tax + '%' : '无税率'}>
+                return <Tooltip placement='left' title={record.temp_tax ? '税率' + record.temp_tax + '%' : '无税率'}>
                     <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
                 </Tooltip>
             }

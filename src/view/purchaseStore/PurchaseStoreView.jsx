@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import api from '../../http';
-import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip } from 'antd';
+import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip, Icon } from 'antd';
 import moment from 'moment';
 import { getTaxPrice, translatePurchaseRecordList } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
@@ -62,7 +62,7 @@ export default _ => {
             }
             let temp = storeData.map((item, index) => {
                 item.key = index;
-                item.tax_price = getTaxPrice(item.price, item.tax);
+                // item.tax_price = getTaxPrice(item.price, item.tax);
                 return item
             })
             setDataSource(temp)
@@ -72,7 +72,7 @@ export default _ => {
             storeData.forEach((item) => {
                 records_sum_price += parseFloat(item.count * item.price)
                 records_sum_count += parseFloat(item.count)
-                records_sum_tax_price += parseFloat(item.count * item.tax_price)
+                records_sum_tax_price += parseFloat(item.count * getTaxPrice(item.price, item.temp_tax))
             })
             setSumPrice(parseFloat(records_sum_price).toFixed(2))
             setSumCount(records_sum_count)
@@ -83,7 +83,7 @@ export default _ => {
     const exportHandler = useCallback(() => {
         let new_list = dataSource.map((item) => {
             let data = {};
-            data.tax_price = String(item.tax_price || '-')
+            data.tax_price = String(item.temp_tax_price || '-')
             data.tax = String(item.tax || '-')
             data.date = item.other.date;
             data.code_num = item.other.code_num || '-'
@@ -139,9 +139,14 @@ export default _ => {
             dataIndex: 'store_name',
             key: 'store_name',
             render: (text, record) => {
-                return <Tooltip placement='left' title={record.num ? '编号' + record.num : '无编号'}>
-                    <Tag color='cyan' style={{ marginRight: 0 }}>{text}</Tag>
-                </Tooltip>
+                return <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                    <Tooltip placement='left' title={record.num ? '编号' + record.num : '无编号'}>
+                        <Tag color='cyan' style={{ marginRight: 0 }}>{text}</Tag>
+                    </Tooltip>
+                    {record.temp_remark ? <Tooltip placement='top' title={record.temp_remark}>
+                        <Icon style={{ marginLeft: 10 }} type="exclamation-circle" theme="twoTone" />
+                    </Tooltip> : null}
+                </div>
             }
         },
         {
@@ -149,17 +154,18 @@ export default _ => {
             dataIndex: 'price',
             key: 'price',
             render: (text, record) => {
-                return <Tooltip placement='left' title={record.tax ? '税率' + record.tax + '%' : '无税率'}>
+                return <Tooltip placement='left' title={record.temp_tax ? '税率' + record.temp_tax + '%' : '无税率'}>
                     <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
                 </Tooltip>
             }
         },
         {
             title: '单价[元]',
-            dataIndex: 'tax_price',
-            key: 'tax_price',
-            render: (text) => {
+            dataIndex: 'temp_tax_price',
+            key: 'temp_tax_price',
+            render: (text, record) => {
                 return <Tag color='#722ed1' style={{ marginRight: 0 }}>{text}</Tag>
+
             }
         },
         {
@@ -192,7 +198,7 @@ export default _ => {
             key: 'sum_tax_price',
             render: (_, record) => {
                 const price = record.price
-                const tax = record.tax
+                const tax = record.temp_tax
                 const count = record.count
                 return <Tag color='#722ed1' style={{ marginRight: 0 }}>{parseFloat(getTaxPrice(price, tax) * count).toFixed(2)}</Tag>
             }

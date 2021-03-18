@@ -3,7 +3,7 @@ import api from '../../http'
 import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Radio, Modal, message, Tooltip } from 'antd'
 import moment from 'moment'
 import HttpApi from '../../http/HttpApi';
-import { getListAllTaxPrice, userinfo } from '../../util/Tool';
+import { getListAllTaxPrice2, userinfo } from '../../util/Tool';
 import { AppDataContext } from '../../redux/AppRedux';
 /**
  * 自行出库记录
@@ -89,7 +89,7 @@ export default props => {
             let tempSumTaxPrice = 0
             result.data[0].forEach((item) => {
                 const content = JSON.parse(item.content)
-                tempSumTaxPrice = tempSumTaxPrice + getListAllTaxPrice(content)
+                tempSumTaxPrice = tempSumTaxPrice + getListAllTaxPrice2(content)
             })
             setSumTaxPrice(tempSumTaxPrice.toFixed(2))
             // console.log('tempSumcount:', tempSumcount.toFixed(0))
@@ -126,8 +126,8 @@ export default props => {
                     if (item.num) {
                         tool_str = tool_str + item.num
                     } else { tool_str = '无编号' }
-                    if (item.tax) {
-                        tool_str = tool_str + ' 税率' + item.tax + '%'
+                    if (item.temp_tax) {
+                        tool_str = tool_str + ' 税率' + item.temp_tax + '%'
                     } else { tool_str = tool_str + ' 无税率' }
                     return <Tooltip key={index} placement='left' title={tool_str} >
                         <div key={index}>
@@ -166,7 +166,7 @@ export default props => {
             render: (text) => {
                 try {
                     const contextList = JSON.parse(text)
-                    let sum_tax_price = parseFloat(getListAllTaxPrice(contextList)).toFixed(2)
+                    let sum_tax_price = parseFloat(getListAllTaxPrice2(contextList)).toFixed(2)
                     return <Tag color={'#722ed1'} style={{ marginRight: 0 }}>{sum_tax_price}</Tag>
                 } catch (error) {
                     return '-'

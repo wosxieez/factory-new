@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Row, Col, Tooltip, Alert, Icon } from 'antd';
 import moment from 'moment';
 import api from '../../http';
-import { autoGetOrderNum, userinfo } from '../../util/Tool';
+import { autoGetOrderNum, getTaxByOpriceAndTaxPrice, userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 var storeList = [{ key: 0 }]
 const starIcon = <span style={{ color: 'red' }}>* </span>
@@ -129,7 +129,19 @@ export default Form.create({ name: 'form' })(props => {
 
     const handleSelectChange = useCallback((option, key) => {
         const selectObj = option.props.all;
-        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'max_count': selectObj.count, has_rfid: selectObj.has_rfid ? 1 : 0, tax: selectObj.tax, num: selectObj.num }
+        let param = {
+            'key': key,
+            'unit': selectObj.unit,
+            'price': selectObj.oprice,
+            'count': 1,
+            'store_id': selectObj.id,
+            'store_name': selectObj.name,
+            'max_count': selectObj.count,
+            'has_rfid': selectObj.has_rfid ? 1 : 0,
+            'tax_price': selectObj.tax_price,
+            'temp_tax': getTaxByOpriceAndTaxPrice(selectObj.oprice, selectObj.tax_price),
+            'num': selectObj.num
+        }
         changeTableListHandler(param)
     }, [changeTableListHandler])
 

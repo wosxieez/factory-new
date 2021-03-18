@@ -4,7 +4,7 @@ import moment from 'moment';
 import api from '../../http';
 // import AddForm from '../storehouse/AddFrom';
 import HttpApi from '../../http/HttpApi';
-import { autoGetOrderNum, checkStoreClassChange, getJson2Tree, undefined2null, userinfo } from '../../util/Tool';
+import { autoGetOrderNum, checkStoreClassChange, getJson2Tree, undefined2null, userinfo, getTaxByOpriceAndTaxPrice, getTaxPrice } from '../../util/Tool';
 import AddForm2 from '../storehouse/AddForm2';
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 const { Option } = Select;
@@ -102,7 +102,7 @@ export default Form.create({ name: 'form' })(props => {
             }
         },
         {
-            title: <div>{starIcon}数量</div>, dataIndex: 'count', width: 80, align: 'center', render: (text, record) => {
+            title: <div>{starIcon}数量</div>, dataIndex: 'count', width: 60, align: 'center', render: (text, record) => {
                 ///如果是标签物品，要关联rfid的就不显示数字输入框，要动态生成select选择器
                 if (record.has_rfid) {
                     // console.log('record.has_rfid:', record.has_rfid)
@@ -142,14 +142,22 @@ export default Form.create({ name: 'form' })(props => {
                 return <InputNumber disabled value={sum_price ? sum_price : ''}></InputNumber>
             }
         },
-        // {
-        //     title: '物品备注', dataIndex: 'remark', align: 'center', render: (text, record) => {
-        //         return <Input value={text} allowClear disabled={!record.store_id} onChange={(e) => {
-        //             let param = { 'key': record.key, 'remark': e.target.value }
-        //             changeTableListHandler(param)
-        //         }}></Input>
-        //     }
-        // },
+        {
+            title: <div>{starIcon}税率[%]</div>, dataIndex: 'temp_tax', width: 50, align: 'center', render: (text, record) => {
+                return <InputNumber placeholder='输入价格' value={text} min={0} disabled={!record.store_id} onChange={(v) => {
+                    let param = { 'key': record.key, 'temp_tax': v }
+                    changeTableListHandler(param)
+                }}></InputNumber>
+            }
+        },
+        {
+            title: '物品备注', dataIndex: 'temp_remark', align: 'center', render: (text, record) => {
+                return <Input value={text} allowClear disabled={!record.store_id} onChange={(e) => {
+                    let param = { 'key': record.key, 'temp_remark': e.target.value }
+                    changeTableListHandler(param)
+                }}></Input>
+            }
+        },
         {
             title: '操作', dataIndex: 'action', width: 100, align: 'center', render: (_, record) => {
                 return <Button size='small' type='danger' icon='delete' onClick={() => {
@@ -176,13 +184,17 @@ export default Form.create({ name: 'form' })(props => {
         setSumPrice(parseFloat((sum_price).toFixed(2)))
     }, [])
     const changeTableListHandler = useCallback((param) => {
+        // console.log('param:', param)
         let afterInsert = storeList.map((item) => {
             if (item.key === param.key) {
                 item = { ...item, ...param }
                 let all_count = item.o_count + item.count
                 let all_price = parseFloat(((item.o_price || 0) * item.o_count + item.price * item.count).toFixed(2))
                 let avg_price = parseFloat((all_price / all_count).toFixed(2))
-                item = { ...item, all_count, all_price, avg_price }
+                let temp_tax_price = getTaxPrice(item.price, item.temp_tax)
+                let all_tax_price = getTaxPrice(item.price, item.temp_tax) * item.count///当前物品的税价*数量
+                let avg_tax_price = parseFloat(((all_tax_price + item.o_count * item.tax_price) / (item.count + item.o_count)).toFixed(2))
+                item = { ...item, all_count, all_price, avg_price, all_tax_price, avg_tax_price, temp_tax_price }
             }
             return item
         })
@@ -193,7 +205,22 @@ export default Form.create({ name: 'form' })(props => {
     ///生成物品对象
     const handleSelectChange = useCallback((option, key) => {
         const selectObj = option.props.all;
-        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': selectObj.has_rfid ? 0 : 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'o_count': selectObj.count, 'o_price': selectObj.oprice, 'remark': selectObj.remark, has_rfid: selectObj.has_rfid ? 1 : 0, rfid_list: [], tax: selectObj.tax, num: selectObj.num }
+        let param = {
+            'key': key,
+            'unit': selectObj.unit,
+            'price': selectObj.oprice,
+            'count': selectObj.has_rfid ? 0 : 1,
+            'store_id': selectObj.id,
+            'store_name': selectObj.name,
+            'o_count': selectObj.count,
+            'o_price': selectObj.oprice,
+            'remark': selectObj.remark,
+            'has_rfid': selectObj.has_rfid ? 1 : 0,
+            'rfid_list': [],
+            'num': selectObj.num,
+            'tax_price': selectObj.tax_price,
+            'temp_tax': getTaxByOpriceAndTaxPrice(selectObj.oprice, selectObj.tax_price)
+        }
         changeTableListHandler(param)
     }, [changeTableListHandler])
     ///对标签物品物品进行，rfid的关联
@@ -247,7 +274,7 @@ export default Form.create({ name: 'form' })(props => {
         if (result.code === 0) { ///记录入库成功-开始循环修改store表中物品的信息。条件:store_id---数据:avg_price all_count remark 等
             for (let index = 0; index < storeList.length; index++) {
                 const storeObj = storeList[index]
-                let params = { 'oprice': storeObj.avg_price, 'count': storeObj.all_count, 'remark': storeObj.remark }
+                let params = { 'oprice': storeObj.avg_price, 'tax_price': storeObj.avg_tax_price, 'count': storeObj.all_count }
                 ///这里-用的是循环调用单次修改接口一次修改一个物品，所以会出现多次返回修改结果；后期接口需要升级。支持批量修改
                 let result = await api.updateStore({ id: storeObj.store_id, ...params })
                 if (result.code === 0) {

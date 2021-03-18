@@ -118,8 +118,8 @@ export default props => {
                 let contentList = JSON.parse(text)
                 return contentList.map((item, index) => {
                     let tool_str = '编号' + item.num
-                    if (item.tax) {
-                        tool_str = tool_str + ' 税率' + item.tax + '%'
+                    if (item.temp_tax) {
+                        tool_str = tool_str + ' 税率' + item.temp_tax + '%'
                     } else { tool_str = tool_str + ' 无税率' }
                     return <Tooltip key={index} placement='left' title={tool_str} >
                         <div key={index}>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import api from '../../http'
 import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Form, Icon, Tooltip } from 'antd'
 import moment from 'moment'
-import { checkStoreCountChange, checkStoreClassChange, getTaxPrice, getListAllTaxPrice, getListAllPriceAndCount, undefined2null, getJson2Tree } from '../../util/Tool'
+import { checkStoreCountChange, checkStoreClassChange, getTaxPrice, getListAllTaxPrice, getListAllPriceAndCount, undefined2null, getJson2Tree, getTaxByOpriceAndTaxPrice } from '../../util/Tool'
 import { userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi'
 // import AddFromRFID from './AddFromRFID'
@@ -286,13 +286,13 @@ export default props => {
     },
     {
       title: '单价[元]',
-      dataIndex: 'tax',
+      dataIndex: 'tax_price',
       align: 'center',
       width: 100,
       render: (text, record) => {
         if (record.oprice && text >= 0) {
-          let tax_p = getTaxPrice(record.oprice, text)
-          return <Tooltip title={'税率' + text + '%'}>{tax_p}</Tooltip>
+          let tax = getTaxByOpriceAndTaxPrice(record.oprice, text)
+          return <Tooltip title={'税率' + tax + '%'}>{text}</Tooltip>
         }
         return <div>-</div>
       }
@@ -472,7 +472,8 @@ export default props => {
             addForm2.current.validateFields(async (error, data) => {
               if (!error) {
                 const { count, model, name, num, oprice, remark, tax, unit, store_area_id, store_major_id, store_type_id } = data
-                const data_store = { name, num, model, count, unit, oprice, tax, remark, store_area_id, store_major_id, store_type_id }
+                const tax_price = getTaxPrice(oprice, tax)
+                const data_store = { name, num, model, count, unit, oprice, tax_price, remark, store_area_id, store_major_id, store_type_id }
                 const data_shelf = { name, num, model, store_area_id }
                 addShelfAndStoreHandler(data_shelf, data_store)
               }
@@ -491,8 +492,8 @@ export default props => {
           onOk={() => {
             udpateForm2.current.validateFields(async (error, data) => {
               if (!error) {
-                const { count, model, name, num, oprice, remark, tax, unit, store_area_id, store_major_id, store_type_id } = data
-                const data_store = { name, num, model, count, unit, oprice, tax, remark, store_area_id, store_major_id, store_type_id }
+                const { count, model, name, num, oprice, remark, tax_price, unit, store_area_id, store_major_id, store_type_id } = data
+                const data_store = { name, num, model, count, unit, oprice, tax_price, remark, store_area_id, store_major_id, store_type_id }
                 const data_shelf = { name, num, model, store_area_id }
                 let new_data_store = undefined2null(data_store)
                 updateShelfAndStoreHandler(data_shelf, new_data_store)
