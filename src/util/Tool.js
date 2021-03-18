@@ -365,8 +365,7 @@ export function getTaxPrice(oprice, tax) {
  */
 export function getTaxByOpriceAndTaxPrice(oprice, taxprice) {
   if (oprice && taxprice) {
-    return parseFloat((((oprice / taxprice) - 1) * 100).toFixed(0))
-
+    return parseFloat((((oprice / taxprice) - 1) * 100).toFixed(2))
   }
 }
 
