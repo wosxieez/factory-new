@@ -44,7 +44,11 @@ export default _ => {
         if (conditionObj.record_user_id_list) {
             sql_record_user_id = ' and record_user_id in (' + conditionObj.record_user_id_list.join(',') + ')'
         }
-        let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_bug_user_id + sql_record_user_id
+        let sql_abstract_remark = ''
+        if (conditionObj.abstract_remark) {
+            sql_abstract_remark = ` and abstract_remark like '%${conditionObj.abstract_remark}%'`
+        }
+        let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_bug_user_id + sql_record_user_id + sql_abstract_remark
         // console.log('sql_condition:', sql_condition)
         let sql = `select pr.*,users1.name as out_user_name,users2.name as record_user_name from outbound_record as pr
         left join (select * from users where effective = 1) users1 on users1.id = pr.out_user_id
@@ -65,7 +69,7 @@ export default _ => {
                 // item.tax_price = getTaxPrice(item.price, item.tax);
                 return item
             })
-            console.log('temp:', temp)
+            // console.log('temp:', temp)
             setDataSource(temp)
             let records_sum_price = 0
             let records_sum_count = 0
@@ -108,7 +112,7 @@ export default _ => {
                 sheetData: new_list,
                 sheetName: `出库记录`,
                 sheetFilter: ["date", "code_num", "code", "store_name", "price", "tax", "tax_price", "count", "unit", "sum_oprice", "out_user_name", "record_user_name", "remark"],
-                sheetHeader: ["出库时间", "单号", "流水", "物品", "含税单价[元]", "税率", "单价[元]", "出库数量", "单位", "含税总价[元]", "出库人员", "记录人员", "出库备注"],
+                sheetHeader: ["出库时间", "单号", "流水", "物品", "含税单价[元]", "税率", "单价[元]", "出库数量", "单位", "含税总价[元]", "领料人员", "记录人员", "出库备注"],
                 columnWidths: [8, 5, 8, 10, 5, 5, 5, 5, 3, 5, 5, 5, 5],
             }
         ];
@@ -129,11 +133,15 @@ export default _ => {
             }
         },
         {
-            title: '单号',
+            title: '单号/摘要',
             dataIndex: 'other.code_num',
             key: 'other.code_num',
-            render: (text) => {
-                return text ? <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag> : null
+            render: (text, record) => {
+                let tempCpt = record.other.abstract_remark ? <Tag color='blue' style={{ marginRight: 0 }}>{record.other.abstract_remark}</Tag> : null
+                return <div>
+                    <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                    {tempCpt}
+                </div>
             }
         },
         {
@@ -199,7 +207,7 @@ export default _ => {
             }
         },
         {
-            title: '出库人员',
+            title: '领料人员',
             dataIndex: 'other.out_user_name',
             key: 'other.out_user_name',
             align: 'center',
@@ -365,7 +373,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
         </Row>
         <Row>
             <Col span={6}>
-                <Form.Item label='出库人'  {...itemProps}>
+                <Form.Item label='领料人'  {...itemProps}>
                     {props.form.getFieldDecorator('bug_user_id_list', {
                         rules: [{ required: false }]
                     })(<Select mode='multiple' allowClear placeholder='选择人员-支持名称搜索' showSearch optionFilterProp="children">
@@ -375,7 +383,14 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                     </Select>)}
                 </Form.Item>
             </Col>
-            <Col span={18}>
+            <Col span={6}>
+                <Form.Item label='摘要'  {...itemProps}>
+                    {props.form.getFieldDecorator('abstract_remark', {
+                        rules: [{ required: false }]
+                    })(<Input allowClear placeholder="请输入摘要" />)}
+                </Form.Item>
+            </Col>
+            <Col span={12}>
                 <div style={{ textAlign: 'right', paddingTop: 3 }}>
                     <Button type="primary" htmlType="submit">查看</Button>
                     <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>

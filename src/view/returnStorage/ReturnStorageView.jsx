@@ -4,8 +4,7 @@ import moment from 'moment';
 import api from '../../http';
 import HttpApi from '../../http/HttpApi';
 import { autoGetOrderNum, getTaxByOpriceAndTaxPrice, userinfo } from '../../util/Tool';
-
-var storeList = [{ key: 0 }]
+var storeList = [{ key: 0 }, { key: 1 }, { key: 2 }, { key: 3 }, { key: 4 }, { key: 5 }, { key: 6 }, { key: 7 }, { key: 8 }, { key: 9 }]
 const starIcon = <span style={{ color: 'red' }}>* </span>
 /**
  * 退料入库单界面
@@ -148,10 +147,10 @@ export default Form.create({ name: 'form' })(props => {
                 }
             }
         }
-        const { date, storeList, remark, return_user_id, record_user_id } = formData;
+        const { date, storeList, remark, return_user_id, record_user_id, abstract_remark } = formData;
         const code = moment().toDate().getTime()
         const new_code_num = await autoGetOrderNum({ type: 2 })
-        let sql = `insert into return_record (date,code,code_num,content,return_user_id,record_user_id,remark,sum_count,sum_price) values ('${date.format('YYYY-MM-DD HH:mm:ss')}','${code}',${new_code_num ? "'" + new_code_num + "'" : null},'${JSON.stringify(storeList)}',${return_user_id || null},${record_user_id},${remark ? "'" + remark + "'" : null},${sumCount},${sumPrice})`
+        let sql = `insert into return_record (date,code,code_num,content,return_user_id,record_user_id,remark,sum_count,sum_price,abstract_remark) values ('${date.format('YYYY-MM-DD HH:mm:ss')}','${code}',${new_code_num ? "'" + new_code_num + "'" : null},'${JSON.stringify(storeList)}',${return_user_id},${record_user_id},${remark ? "'" + remark + "'" : null},${sumCount},${sumPrice},${abstract_remark ? "'" + abstract_remark + "'" : null})`
         let result = await api.query(sql)
         if (result.code === 0) { ///记录入库成功-开始循环修改store表中物品的信息。条件:store_id---数据:avg_price all_count remark 等
             for (let index = 0; index < storeList.length; index++) {
@@ -255,6 +254,15 @@ export default Form.create({ name: 'form' })(props => {
                     </Col>
                 </Row>
                 <Row>
+                    <Col span={6}>
+                        <Form.Item label='摘要' >
+                            {props.form.getFieldDecorator('abstract_remark', {
+                                rules: [{ required: false, message: '请输入摘要' }]
+                            })(<Input placeholder='请输入摘要' />)}
+                        </Form.Item>
+                    </Col>
+                </Row>
+                <Row>
                     <Form.Item label='单据明细' labelCol={{ span: 24 }} wrapperCol={{ span: 24 }}>
                         {props.form.getFieldDecorator('storeList', {
                             rules: [{ required: true, message: '请添加入库明细' }]
@@ -276,7 +284,13 @@ export default Form.create({ name: 'form' })(props => {
                                     bordered
                                     size='small'
                                     footer={() => <Button size='small' type='link' icon='plus' onClick={() => {
-                                        storeList.push({ key: storeList.length })
+                                        const addNewCount = 10
+                                        let tempEmptyList = []
+                                        for (let index = 0; index < addNewCount; index++) {
+                                            tempEmptyList.push({ key: storeList.length + index })
+                                        }
+                                        storeList = storeList.concat(tempEmptyList)
+                                        // storeList.push({ key: storeList.length })
                                         props.form.setFieldsValue({ storeList })
                                     }}>添加</Button>}
                                 />

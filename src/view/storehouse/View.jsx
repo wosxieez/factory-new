@@ -312,9 +312,9 @@ export default props => {
       align: 'center',
       width: 100,
       render: (text, record) => {
-        if (record.tax_price && record.tax >= 0) {
+        if (record.tax_price) {
           let tax_p = record.tax_price * record.count
-          return <div>{parseFloat(tax_p).toFixed(2)}</div>
+          return <div>{tax_p}</div>
         }
         return <div>-</div>
       }

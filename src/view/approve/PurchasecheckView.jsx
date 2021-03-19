@@ -60,7 +60,11 @@ export default props => {
         if (conditionObj.check_status) {
             sql_check_status = ' and check_status in (' + conditionObj.check_status.join(',') + ')'
         }
-        let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_buy_user_id + sql_record_user_id + sql_check_status
+        let sql_abstract_remark = ''
+        if (conditionObj.abstract_remark) {
+            sql_abstract_remark = ` and abstract_remark like '%${conditionObj.abstract_remark}%'`
+        }
+        let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_buy_user_id + sql_record_user_id + sql_check_status + sql_abstract_remark
         let sql = `select pr.*,users1.name as buy_user_name,users2.name as record_user_name,users3.name as check_user_name from purchase_record as pr
         left join (select * from users where effective = 1) users1 on users1.id = pr.buy_user_id
         left join (select * from users where effective = 1) users2 on users2.id = pr.record_user_id
@@ -101,13 +105,17 @@ export default props => {
     const columns = [
         { title: '采购时间', dataIndex: 'date', key: 'date', width: 120, align: 'center' },
         {
-            title: '单号',
+            title: '单号/摘要',
             dataIndex: 'code_num',
             key: 'code_num',
             align: 'center',
             width: 100,
-            render: (text) => {
-                return text ? <Tag color={'blue'} style={{ marginRight: 0 }}>{text}</Tag> : '-'
+            render: (text, record) => {
+                let tempCpt = record.abstract_remark ? <Tag color='blue' style={{ marginRight: 0 }}>{record.abstract_remark}</Tag> : null
+                return <div>
+                    <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                    {tempCpt}
+                </div>
             }
         },
         {
@@ -435,7 +443,14 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                     </Select>)}
                 </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={6}>
+                <Form.Item label='摘要'  {...itemProps}>
+                    {props.form.getFieldDecorator('abstract_remark', {
+                        rules: [{ required: false }]
+                    })(<Input allowClear placeholder="请输入摘要" />)}
+                </Form.Item>
+            </Col>
+            <Col span={6}>
                 <div style={{ textAlign: 'right', paddingTop: 3 }}>
                     <Button type="primary" htmlType="submit">查看</Button>
                     <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>

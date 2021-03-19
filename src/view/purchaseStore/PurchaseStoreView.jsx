@@ -44,7 +44,11 @@ export default _ => {
         if (conditionObj.record_user_id_list) {
             sql_record_user_id = ' and record_user_id in (' + conditionObj.record_user_id_list.join(',') + ')'
         }
-        let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_bug_user_id + sql_record_user_id
+        let sql_abstract_remark = ''
+        if (conditionObj.abstract_remark) {
+            sql_abstract_remark = ` and abstract_remark like '%${conditionObj.abstract_remark}%'`
+        }
+        let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_bug_user_id + sql_record_user_id + sql_abstract_remark
         // console.log('sql_condition:', sql_condition)
         let sql = `select pr.*,store_suppliers.name as store_supplier_name,users2.name as record_user_name from purchase_record as pr
         left join (select * from store_suppliers where isdelete = 0) store_suppliers on store_suppliers.id = pr.store_supplier_id
@@ -127,11 +131,15 @@ export default _ => {
             }
         },
         {
-            title: '单号',
+            title: '单号/摘要',
             dataIndex: 'other.code_num',
             key: 'other.code_num',
-            render: (text) => {
-                return text ? <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag> : null
+            render: (text, record) => {
+                let tempCpt = record.other.abstract_remark ? <Tag color='blue' style={{ marginRight: 0 }}>{record.other.abstract_remark}</Tag> : null
+                return <div>
+                    <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                    {tempCpt}
+                </div>
             }
         },
         {
@@ -362,7 +370,14 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
             </Col>
         </Row>
         <Row>
-            <Col span={24}>
+            <Col span={6}>
+                <Form.Item label='摘要'  {...itemProps}>
+                    {props.form.getFieldDecorator('abstract_remark', {
+                        rules: [{ required: false }]
+                    })(<Input allowClear placeholder="请输入摘要" />)}
+                </Form.Item>
+            </Col>
+            <Col span={18}>
                 <div style={{ textAlign: 'right', paddingTop: 3 }}>
                     <Button type="primary" htmlType="submit">查看</Button>
                     <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>
@@ -379,7 +394,7 @@ const styles = {
     },
     header: {
         backgroundColor: '#FFFFFF',
-        padding: '24px 24px 24px 24px',
+        padding: '24px 24px 0px 24px',
     },
     marginTop: { marginTop: 10 },
     headerCell: {
