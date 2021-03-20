@@ -88,10 +88,10 @@ export default _ => {
         let new_list = dataSource.map((item) => {
             let data = {};
             data.tax_price = String(item.temp_tax_price || '-')
-            data.tax = String(item.tax || '-')
+            data.tax = String(item.temp_tax || '-')
             data.date = item.other.date;
             data.code_num = item.other.code_num || '-'
-            data.code = item.other.code;
+            data.abstract_remark = item.other.abstract_remark || '-';
             data.store_name = item.store_name;
             data.price = String(item.price);
             data.count = String(item.count);
@@ -109,9 +109,9 @@ export default _ => {
             {
                 sheetData: new_list,
                 sheetName: `采购记录`,
-                sheetFilter: ["date", "code_num", "code", "store_name", "price", "tax", "tax_price", "count", "unit", "sum_oprice", "buy_user_name", "record_user_name", "remark"],
-                sheetHeader: ["采购时间", "单号", "流水", "物品", "含税单价[元]", "税率", "单价[元]", "采购数量", "单位", "含税总价[元]", "采购人员", "记录人员", "采购备注"],
-                columnWidths: [8, 5, 8, 10, 5, 5, 5, 5, 3, 5, 5, 5, 5],
+                sheetFilter: ["date", "code_num", "abstract_remark", "store_name", "price", "tax", "tax_price", "count", "unit", "sum_oprice", "buy_user_name", "record_user_name", "remark"],
+                sheetHeader: ["采购时间", "单号", "摘要", "物品", "含税单价[元]", "税率[%]", "单价[元]", "采购数量", "单位", "含税总价[元]", "采购人员", "记录人员", "采购备注"],
+                columnWidths: [8, 8, 8, 10, 5, 5, 5, 5, 3, 5, 5, 5, 5],
             }
         ];
         new ExportJsonExcel(option).saveExcel(); //保存

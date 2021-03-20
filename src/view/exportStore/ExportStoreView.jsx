@@ -62,7 +62,7 @@ export default _ => {
         let new_list = dataSource.map((item) => {
             let data = {};
             data.tax_price = String(item.store.tax_price || '-')
-            data.tax = String(item.store.tax || '-')
+            data.tax = String(getTaxByOpriceAndTaxPrice(item.store.price, item.store.tax_price) || '-')
             data.in_out_time = moment(item.order.in_out_time).format('YYYY-MM-DD HH:mm:ss');
             data.code = item.order.code;
             data.store_name = item.store.store_name;
