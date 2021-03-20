@@ -136,7 +136,7 @@ export default Form.create({ name: 'form' })(props => {
 
     const handleSelectChange = useCallback((option, key) => {
         const selectObj = option.props.all;
-        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'max_count': selectObj.count, has_rfid: selectObj.has_rfid ? 1 : 0, tax: selectObj.tax }
+        let param = { 'key': key, 'unit': selectObj.unit, 'price': selectObj.oprice, 'count': 1, 'store_id': selectObj.id, 'store_name': selectObj.name, 'max_count': selectObj.count, has_rfid: selectObj.has_rfid ? 1 : 0, tax_price: selectObj.tax_price }
         changeTableListHandler(param)
     }, [changeTableListHandler])
 

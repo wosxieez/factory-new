@@ -3,7 +3,7 @@ import { Modal, Table, Steps, Row, Col, Radio, Input, Divider, Button, Icon, mes
 import api from '../../http';
 import moment from 'moment'
 // import { xiaomeiParseFloat } from '../../util/Tool';
-import { getListAllTaxPrice, getTaxPrice, userinfo, xiaomeiParseFloat } from '../../util/Tool';
+import { getListAllTaxPrice2, getTaxByOpriceAndTaxPrice, userinfo, xiaomeiParseFloat } from '../../util/Tool';
 import '../../css/styles.css'
 import HttpApi from '../../http/HttpApi';
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
@@ -199,7 +199,7 @@ function RenderDetail({ record, workflok, orderStepLog, getOrderData, rfidList, 
         sum_count = sum_count + item.count;
     })
     let tempList = JSON.parse(record.content);
-    let listAllTaxPrice = getListAllTaxPrice(tempList)
+    let listAllTaxPrice = getListAllTaxPrice2(tempList)
     tempList.push({ store_name: '总计', count: sum_count, price: sum_price, isSum: true, tax_price: listAllTaxPrice })
     let data = tempList.map((item, index) => { item.key = index; return item })
     const columns = [{
@@ -237,8 +237,8 @@ function RenderDetail({ record, workflok, orderStepLog, getOrderData, rfidList, 
             if (record.isSum) {
                 return <Tag color={'#722ed1'}>{xiaomeiParseFloat(text)}</Tag>
             } else {
-                return <Tooltip placement='left' title={record.tax ? '税率' + record.tax + '%' : '无税率'}>
-                    <div>{getTaxPrice(record.price, record.tax)}</div>
+                return <Tooltip placement='left' title={'税率' + getTaxByOpriceAndTaxPrice(record.price, record.tax_price) + '%'}>
+                    <div>{text}</div>
                 </Tooltip>
             }
         }

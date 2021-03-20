@@ -144,7 +144,7 @@ export default Form.create({ name: 'form' })(props => {
         },
         {
             title: <div>{starIcon}税率[%]</div>, dataIndex: 'temp_tax', width: 50, align: 'center', render: (text, record) => {
-                return <InputNumber placeholder='输入价格' value={text} min={0} disabled={!record.store_id} onChange={(v) => {
+                return <InputNumber placeholder='输入税率' value={text} min={0} disabled={!record.store_id} onChange={(v) => {
                     let param = { 'key': record.key, 'temp_tax': v }
                     changeTableListHandler(param)
                 }}></InputNumber>
