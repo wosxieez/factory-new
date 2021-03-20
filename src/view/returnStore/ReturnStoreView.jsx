@@ -349,9 +349,16 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                 <Form.Item label='物品' {...itemProps}>
                     {props.form.getFieldDecorator('store_id_list', {
                         rules: [{ required: false }]
-                    })(<Select mode='multiple' allowClear placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children">
+                    })(<Select mode='multiple' allowClear placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children"
+                        filterOption={(input, option) => {
+                            return option.props.children.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }}>
                         {storeOptionList.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
+                            return <Select.Option value={item.id} key={index} all={item}>
+                                <Tooltip placement="left" key={index} title={item.num + '-' + item.name}>
+                                    {item.num + '-' + item.name}
+                                </Tooltip>
+                            </Select.Option>
                         })}
                     </Select>)}
                 </Form.Item>
