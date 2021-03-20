@@ -211,9 +211,11 @@ export default _ => {
             render: (text, record) => {
                 let result = JSON.parse(text).map((item, index) => {
                     return (
-                        <Tag color={'blue'} key={index} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>
-                            {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null}{item.store_name} 数量:{item.count}
-                        </Tag>
+                        <Tooltip key={index} placement='left' title={'编号' + item.num}>
+                            <Tag color={'blue'} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>
+                                {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null}{item.store_name} 数量:{item.count}
+                            </Tag>
+                        </Tooltip>
                     )
                 })
                 return <div>{result || '/'}</div>

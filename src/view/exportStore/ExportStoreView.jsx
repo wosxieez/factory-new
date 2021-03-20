@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useState } from 'react';
 import api from '../../http';
 import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip } from 'antd';
 import moment from 'moment';
-import { calculOrderListStoreTaxAllPrice, getTaxPrice, translateOrderList } from '../../util/Tool';
+import { calculOrderListStoreTaxAllPrice, getTaxByOpriceAndTaxPrice, getTaxPrice, translateOrderList } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 import ExportJsonExcel from 'js-export-excel'
 var date_range;
@@ -124,8 +124,7 @@ export default _ => {
             dataIndex: 'store.store_name',
             key: 'store_name',
             render: (text, record) => {
-                // return <Tag color='cyan' style={{ marginRight: 0 }}>{text}</Tag>
-                return <Tooltip placement='left' title={record.store.tax ? '税率' + record.store.tax + '%' : '无税率'}>
+                return <Tooltip placement='left' title={'编号' + record.store.num}>
                     <Tag color='cyan' style={{ marginRight: 0 }}>{text}</Tag>
                 </Tooltip>
             }
@@ -134,8 +133,10 @@ export default _ => {
             title: '含税单价[元]',
             dataIndex: 'store.price',
             key: 'price',
-            render: (text) => {
-                return <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
+            render: (text, record) => {
+                return <Tooltip placement='left' title={'税率' + getTaxByOpriceAndTaxPrice(record.store.price, record.store.tax_price)}>
+                    <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
+                </Tooltip>
             }
         },
         {
