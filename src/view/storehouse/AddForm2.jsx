@@ -54,7 +54,7 @@ const AddForm2 = Form.create({ name: 'form' })((props) => {
               {props.form.getFieldDecorator('num', {
                 initialValue: props.data ? props.data.num : null,
                 rules: [{ required: true, message: '请输入编号' }]
-              })(<Input placeholder='请输入编号'></Input>)}
+              })(<InputNumber style={{ width: '100%' }} placeholder='请输入编号'></InputNumber>)}
             </Form.Item>
           </Col>
           <Col span={12}>

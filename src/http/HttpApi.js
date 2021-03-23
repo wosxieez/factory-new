@@ -449,7 +449,7 @@ const HttpApi = {
         left join (select * from store_areas where isdelete = 0) store_areas on store_areas.id = stores.store_area_id
         left join (select * from store_majors where isdelete = 0) store_majors on store_majors.id = stores.store_major_id
         left join (select * from store_types where isdelete = 0) store_types on store_types.id = stores.store_type_id
-        where stores.isdelete = 0 ${conditon_sql} order by stores.id desc
+        where stores.isdelete = 0 ${conditon_sql} order by stores.num desc
         `
         return await HttpApi.obs({ sql })
     },
@@ -469,6 +469,15 @@ const HttpApi = {
         let table_name = type_list[type]
         let sql = `select count(*) as count from ${table_name} where date >='${date_range[0]}' and date <='${date_range[1]}'`
         // console.log('sql:', sql)
+        return await HttpApi.obs({ sql })
+    },
+
+    /**
+     * 检查store的编号是否已经存在过
+     * @param {*} param0 
+     */
+    checkStoreNumhasExisted: async ({ num }) => {
+        let sql = `select id from stores where num = ${num} and isdelete = 0`
         return await HttpApi.obs({ sql })
     }
 }

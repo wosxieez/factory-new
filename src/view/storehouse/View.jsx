@@ -475,7 +475,10 @@ export default props => {
                 const tax_price = getTaxPrice(oprice, tax)
                 const data_store = { name, num, model, count, unit, oprice, tax_price, remark, store_area_id, store_major_id, store_type_id }
                 const data_shelf = { name, num, model, store_area_id }
-                addShelfAndStoreHandler(data_shelf, data_store)
+                let res = await HttpApi.checkStoreNumhasExisted({ num })
+                if (res.code === 0 && res.data.length === 0) {
+                  addShelfAndStoreHandler(data_shelf, data_store)
+                } else { message.error('物品编号已经存在；请输入新的编号'); return }
               }
             })
           }}
@@ -496,6 +499,11 @@ export default props => {
                 const data_store = { name, num, model, count, unit, oprice, tax_price, remark, store_area_id, store_major_id, store_type_id }
                 const data_shelf = { name, num, model, store_area_id }
                 let new_data_store = undefined2null(data_store)
+                if (currentItem.num !== num) {
+                  let res = await HttpApi.checkStoreNumhasExisted({ num })
+                  if (res.code === 0 && res.data.length === 0) {
+                  } else { message.error('物品编号已经存在；请输入新的编号'); return }
+                }
                 updateShelfAndStoreHandler(data_shelf, new_data_store)
               }
             })

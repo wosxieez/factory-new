@@ -38,9 +38,9 @@ export default Form.create({ name: 'form' })(props => {
             })
         }
         let result_user = await HttpApi.getUserList()
-        // result_user = result_user.filter((item) => {
-        //     return item.permission && item.permission.indexOf('4') !== -1 ///采购权限4 过滤
-        // })
+        result_user = result_user.filter((item) => {
+            return item.permission && (item.permission.indexOf('0') !== -1 || item.permission.indexOf('3') !== -1)  ///专工权限0 维修权限3 过滤
+        })
         setUserOptionList(result_user)
         setStoreOptionList(response_store.data)
         let temp_code_num = await autoGetOrderNum({ type: 1 })///临时单号；实际单号要在插入数据库钱的一刻进行刷新
