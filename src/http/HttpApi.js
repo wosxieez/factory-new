@@ -449,7 +449,7 @@ const HttpApi = {
         left join (select * from store_areas where isdelete = 0) store_areas on store_areas.id = stores.store_area_id
         left join (select * from store_majors where isdelete = 0) store_majors on store_majors.id = stores.store_major_id
         left join (select * from store_types where isdelete = 0) store_types on store_types.id = stores.store_type_id
-        where stores.isdelete = 0 ${conditon_sql} order by stores.num desc
+        where stores.isdelete = 0 ${conditon_sql} order by stores.num
         `
         return await HttpApi.obs({ sql })
     },
