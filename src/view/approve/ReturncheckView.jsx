@@ -332,11 +332,10 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
     const listAllOptions = useCallback(async () => {
         let result = await api.listAllStore()
         if (result.code === 0) { setStoreOptionList(result.data) }
-        let result_user = await HttpApi.getUserListForPurchase(1)
+        let result_user = await HttpApi.getUserListForReturn(1)
         setUserOptionList(result_user)
-        let result_user2 = await HttpApi.getUserListForPurchase(2)
+        let result_user2 = await HttpApi.getUserListForReturn(2)
         setUserOptionList2(result_user2)
-        // if (result_user.code === 0) { setUserOptionList(result_user.data) }
     }, [])
     useEffect(() => {
         listAllOptions()

@@ -41,11 +41,12 @@ const HttpApi = {
         if (username && password) {
             condition_sql = `and username = '${username}' and password = '${password}'`
         }
-        let sql = `select users.* ,group_concat(u_m_j.mj_id) as major_id_all, group_concat(majors.name) as major_name_all,levels.name as level_name from users
+        let sql = `select users.* ,group_concat(u_m_j.mj_id) as major_id_all, group_concat(majors.name) as major_name_all,levels.name as level_name,group_concat(DISTINCT r_m_u.role_id) as role_all from users
         left join (select * from levels where effective = 1)levels on levels.id = users.level_id
         left join (select * from user_map_major where effective = 1) u_m_j on u_m_j.user_id = users.id
         left join (select * from majors  where effective = 1) majors on majors.id = u_m_j.mj_id
-        where users.effective = 1 ${condition_sql}
+        left join (select * from role_map_user where effective = 1) r_m_u on r_m_u.user_id = users.id
+        where users.effective = 1 ${condition_sql}      
         group by users.id
         order by level_id`
         let result = await HttpApi.obs({ sql })
@@ -105,7 +106,7 @@ const HttpApi = {
         return []
     },
     /***
-     * 查询采购记录中出现过的人员信息
+     * 查询出库记录中出现过的人员信息
      */
     getUserListForOutbound: async (type_id = 1) => {
         let sql = type_id === 1 ? `select distinct out_user_id as id,users.name from outbound_record
@@ -114,6 +115,22 @@ const HttpApi = {
         `: `select distinct record_user_id as id,users.name from outbound_record
         left join (select * from users where effective = 1) users on users.id = outbound_record.record_user_id
         where isdelete = 0 and outbound_record.record_user_id is not NULL`
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return result.data
+        }
+        return []
+    },
+    /***
+     * 查询退料记录中出现过的人员信息
+     */
+    getUserListForReturn: async (type_id = 1) => {
+        let sql = type_id === 1 ? `select distinct return_user_id as id,users.name from return_record
+        left join (select * from users where effective = 1) users on users.id = return_record.return_user_id
+        where isdelete = 0 and return_record.return_user_id is not NULL
+        `: `select distinct record_user_id as id,users.name from return_record
+        left join (select * from users where effective = 1) users on users.id = return_record.record_user_id
+        where isdelete = 0 and return_record.record_user_id is not NULL`
         let result = await HttpApi.obs({ sql })
         if (result.code === 0) {
             return result.data

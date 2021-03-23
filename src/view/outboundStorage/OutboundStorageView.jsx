@@ -39,7 +39,7 @@ export default Form.create({ name: 'form' })(props => {
         }
         let result_user = await HttpApi.getUserList()
         result_user = result_user.filter((item) => {
-            return item.permission && (item.permission.indexOf('0') !== -1 || item.permission.indexOf('3') !== -1)  ///专工权限0 维修权限3 过滤
+            return item.role_all && (item.role_all.indexOf('1') !== -1 || item.role_all.indexOf('4') !== -1)  ///专工权限_id 1 维修权限_id 4 过滤
         })
         setUserOptionList(result_user)
         setStoreOptionList(response_store.data)

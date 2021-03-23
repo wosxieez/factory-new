@@ -22,10 +22,10 @@ export default Form.create({ name: 'form' })(props => {
             let list = result.data.filter((item) => item['has_rfid'] !== 1)
             setStoreOptionList(list)
         }
-        // let result_user = await api.listAllUser()
-        let result_user = await HttpApi.getUserList() ///是否需要限制为那些已经领取过物品的人？
-        // result_user = result_user.filter((item) => {
-        // })
+        let result_user = await HttpApi.getUserList()
+        result_user = result_user.filter((item) => {
+            return item.role_all && (item.role_all.indexOf('1') !== -1 || item.role_all.indexOf('4') !== -1)  ///专工权限_id 1 维修权限_id 4 过滤
+        })
         setUserOptionList(result_user)
         let temp_code_num = await autoGetOrderNum({ type: 2 })///临时单号；实际单号要在插入数据库钱的一刻进行刷新
         setTempCodeNum(temp_code_num)
