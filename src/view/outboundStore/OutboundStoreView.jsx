@@ -36,9 +36,9 @@ export default _ => {
         if (conditionObj.code_num) {
             sql_code_num = ` and code_num like '%${conditionObj.code_num}%'`
         }
-        let sql_bug_user_id = ''
-        if (conditionObj.bug_user_id_list) {
-            sql_bug_user_id = ' and buy_user_id in (' + conditionObj.bug_user_id_list.join(',') + ')'
+        let sql_out_user_id = ''
+        if (conditionObj.out_user_id_list) {
+            sql_out_user_id = ' and out_user_id in (' + conditionObj.out_user_id_list.join(',') + ')'
         }
         let sql_record_user_id = ''
         if (conditionObj.record_user_id_list) {
@@ -48,7 +48,7 @@ export default _ => {
         if (conditionObj.abstract_remark) {
             sql_abstract_remark = ` and abstract_remark like '%${conditionObj.abstract_remark}%'`
         }
-        let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_bug_user_id + sql_record_user_id + sql_abstract_remark
+        let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_out_user_id + sql_record_user_id + sql_abstract_remark
         // console.log('sql_condition:', sql_condition)
         let sql = `select pr.*,users1.name as out_user_name,users2.name as record_user_name from outbound_record as pr
         left join (select * from users where effective = 1) users1 on users1.id = pr.out_user_id
@@ -237,6 +237,7 @@ export default _ => {
     return (<div style={styles.root}>
         <div style={styles.header}>
             <Searchfrom startSearch={(conditionsValue) => {
+                // console.log('conditionsValue:', conditionsValue)
                 listData(conditionsValue)
             }} />
         </div>
@@ -288,9 +289,9 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
     const listAllOptions = useCallback(async () => {
         let result = await api.listAllStore()
         if (result.code === 0) { setStoreOptionList(result.data) }
-        let result_user = await HttpApi.getUserListForPurchase(1)
+        let result_user = await HttpApi.getUserListForOutbound(1)
         setUserOptionList(result_user)
-        let result_user2 = await HttpApi.getUserListForPurchase(2)
+        let result_user2 = await HttpApi.getUserListForOutbound(2)
         setUserOptionList2(result_user2)
         // if (result_user.code === 0) { setUserOptionList(result_user.data) }
     }, [])
@@ -381,7 +382,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
         <Row>
             <Col span={6}>
                 <Form.Item label='领料人'  {...itemProps}>
-                    {props.form.getFieldDecorator('bug_user_id_list', {
+                    {props.form.getFieldDecorator('out_user_id_list', {
                         rules: [{ required: false }]
                     })(<Select mode='multiple' allowClear placeholder='选择人员-支持名称搜索' showSearch optionFilterProp="children">
                         {userOptionList.map((item, index) => {

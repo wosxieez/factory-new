@@ -37,8 +37,8 @@ export default _ => {
             sql_code_num = ` and code_num like '%${conditionObj.code_num}%'`
         }
         let sql_bug_user_id = ''
-        if (conditionObj.bug_user_id_list) {
-            sql_bug_user_id = ' and buy_user_id in (' + conditionObj.bug_user_id_list.join(',') + ')'
+        if (conditionObj.buy_user_id_list) {
+            sql_bug_user_id = ' and buy_user_id in (' + conditionObj.buy_user_id_list.join(',') + ')'
         }
         let sql_record_user_id = ''
         if (conditionObj.record_user_id_list) {
@@ -378,7 +378,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
         <Row>
             <Col span={6}>
                 <Form.Item label='退料人'  {...itemProps}>
-                    {props.form.getFieldDecorator('bug_user_id_list', {
+                    {props.form.getFieldDecorator('buy_user_id_list', {
                         rules: [{ required: false }]
                     })(<Select mode='multiple' allowClear placeholder='选择人员-支持名称搜索' showSearch optionFilterProp="children">
                         {userOptionList.map((item, index) => {

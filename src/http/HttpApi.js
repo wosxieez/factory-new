@@ -105,6 +105,22 @@ const HttpApi = {
         return []
     },
     /***
+     * 查询采购记录中出现过的人员信息
+     */
+    getUserListForOutbound: async (type_id = 1) => {
+        let sql = type_id === 1 ? `select distinct out_user_id as id,users.name from outbound_record
+        left join (select * from users where effective = 1) users on users.id = outbound_record.out_user_id
+        where isdelete = 0 and outbound_record.out_user_id is not NULL
+        `: `select distinct record_user_id as id,users.name from outbound_record
+        left join (select * from users where effective = 1) users on users.id = outbound_record.record_user_id
+        where isdelete = 0 and outbound_record.record_user_id is not NULL`
+        let result = await HttpApi.obs({ sql })
+        if (result.code === 0) {
+            return result.data
+        }
+        return []
+    },
+    /***
      * 获取工作时间区间表
      */
     getSpecialTime: async (type_id = 1) => {

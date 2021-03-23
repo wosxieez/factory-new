@@ -37,8 +37,8 @@ export default _ => {
             sql_code_num = ` and code_num like '%${conditionObj.code_num}%'`
         }
         let sql_bug_user_id = ''
-        if (conditionObj.bug_user_id_list) {
-            sql_bug_user_id = ' and buy_user_id in (' + conditionObj.bug_user_id_list.join(',') + ')'
+        if (conditionObj.buy_user_id_list) {
+            sql_bug_user_id = ' and buy_user_id in (' + conditionObj.buy_user_id_list.join(',') + ')'
         }
         let sql_record_user_id = ''
         if (conditionObj.record_user_id_list) {
