@@ -294,7 +294,7 @@ export default props => {
           let tax = getTaxByOpriceAndTaxPrice(record.oprice, text)
           return <Tooltip title={'税率' + tax + '%'}>{text}</Tooltip>
         }
-        return <div>-</div>
+        return <div>{text}</div>
       }
     },
     {
@@ -312,7 +312,7 @@ export default props => {
       align: 'center',
       width: 100,
       render: (text, record) => {
-        if (record.tax_price) {
+        if (record.tax_price >= 0) {
           let tax_p = parseFloat(record.tax_price * record.count).toFixed(2)
           return <div>{tax_p}</div>
         }
