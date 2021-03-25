@@ -41,7 +41,7 @@ const HttpApi = {
         if (username && password) {
             condition_sql = `and username = '${username}' and password = '${password}'`
         }
-        let sql = `select users.* ,group_concat(u_m_j.mj_id) as major_id_all, group_concat(majors.name) as major_name_all,levels.name as level_name,group_concat(DISTINCT r_m_u.role_id) as role_all from users
+        let sql = `select users.* ,group_concat(DISTINCT u_m_j.mj_id) as major_id_all, group_concat(DISTINCT majors.name) as major_name_all,levels.name as level_name,group_concat(DISTINCT r_m_u.role_id) as role_all from users
         left join (select * from levels where effective = 1)levels on levels.id = users.level_id
         left join (select * from user_map_major where effective = 1) u_m_j on u_m_j.user_id = users.id
         left join (select * from majors  where effective = 1) majors on majors.id = u_m_j.mj_id
