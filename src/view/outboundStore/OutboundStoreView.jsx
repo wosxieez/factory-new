@@ -231,7 +231,11 @@ export default _ => {
             align: 'center',
             width: 100,
             render: (text) => {
-                return text || '-'
+                if (text) {
+                    return <Tooltip title={text} placement="topLeft">
+                        <div className='hideText lineClamp2'>{text}</div>
+                    </Tooltip>
+                } else { return '-' }
             }
         },
     ]

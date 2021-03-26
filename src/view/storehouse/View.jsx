@@ -333,7 +333,11 @@ export default props => {
       dataIndex: 'remark',
       align: 'center',
       render: (text) => {
-        return <div>{text || '-'}</div>
+        if (text) {
+          return <Tooltip title={text} placement="topLeft">
+            <div className='hideText lineClamp2'>{text}</div>
+          </Tooltip>
+        } else { return '-' }
       }
     },
     {

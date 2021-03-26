@@ -241,6 +241,13 @@ export default _ => {
             key: 'other.remark',
             align: 'center',
             width: 100,
+            render: (text) => {
+                if (text) {
+                    return <Tooltip title={text} placement="topLeft">
+                        <div className='hideText lineClamp2'>{text}</div>
+                    </Tooltip>
+                } else { return '-' }
+            }
         },
     ]
     return (<div style={styles.root}>
