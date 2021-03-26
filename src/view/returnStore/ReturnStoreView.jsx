@@ -66,6 +66,7 @@ export default _ => {
             }
             // setDataSource(storeData.map((item, index) => { item.key = index; return item }))
             let temp = storeData.map((item, index) => {
+                item.origin_index = item.key
                 item.key = index;
                 return item
             })
@@ -126,7 +127,7 @@ export default _ => {
             title: '退料时间',
             dataIndex: 'other.date',
             key: 'other.date',
-            width: 180,
+            width: 120,
             render: (text) => {
                 return moment(text).format('YYYY-MM-DD HH:mm:ss')
             }
@@ -149,7 +150,7 @@ export default _ => {
             key: 'store_name',
             render: (text, record) => {
                 return <Tooltip placement='left' title={record.num ? '编号' + record.num : '无编号'}>
-                    <Tag color='cyan' style={{ marginRight: 0 }}>{text}</Tag>
+                    <Tag color='cyan' style={{ marginRight: 0 }}>{(record.origin_index + 1 + ' ')}{text}</Tag>
                 </Tooltip>
             }
         },

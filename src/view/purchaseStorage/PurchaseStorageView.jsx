@@ -130,7 +130,7 @@ export default Form.create({ name: 'form' })(props => {
         },
         {
             title: <div>{starIcon}含税单价[元]</div>, dataIndex: 'price', width: 80, align: 'center', render: (text, record) => {
-                return <InputNumber placeholder='输入价格' value={text} min={0.01} disabled={!record.store_id} onChange={(v) => {
+                return <InputNumber placeholder='输入价格' value={text} min={0} disabled={!record.store_id} onChange={(v) => {
                     let param = { 'key': record.key, 'price': v }
                     changeTableListHandler(param)
                 }}></InputNumber>
@@ -139,7 +139,7 @@ export default Form.create({ name: 'form' })(props => {
         {
             title: <div>{starIcon}含税总价[元]</div>, dataIndex: 'sum_price', width: 80, align: 'center', render: (_, record) => {
                 let sum_price = parseFloat((record.count * record.price || 0).toFixed(2))
-                return <InputNumber disabled value={sum_price ? sum_price : ''}></InputNumber>
+                return <InputNumber min={0} disabled value={sum_price >= 0 ? sum_price : ''}></InputNumber>
             }
         },
         {
@@ -310,7 +310,7 @@ export default Form.create({ name: 'form' })(props => {
                 }
                 let dontHavePrice = false
                 afterFilter.forEach((item) => {
-                    if (!item.price) {
+                    if (!(item.price >= 0)) {
                         dontHavePrice = true;
                     }
                 })

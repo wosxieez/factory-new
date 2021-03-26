@@ -1,8 +1,8 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import api from '../../http';
-import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip, Icon } from 'antd';
+import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip, Icon, TreeSelect } from 'antd';
 import moment from 'moment';
-import { getTaxPrice, translatePurchaseRecordList } from '../../util/Tool';
+import { getJson2Tree, getTaxPrice, translatePurchaseRecordList } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 import ExportJsonExcel from 'js-export-excel'
 
@@ -48,7 +48,11 @@ export default _ => {
         if (conditionObj.abstract_remark) {
             sql_abstract_remark = ` and abstract_remark like '%${conditionObj.abstract_remark}%'`
         }
-        let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_bug_user_id + sql_record_user_id + sql_abstract_remark
+        let sql_store_supplier_id = ''
+        if (conditionObj.store_supplier_id) {
+            sql_store_supplier_id = ` and store_supplier_id in (${conditionObj.store_supplier_id.join(',')})`
+        }
+        let sql_condition = sql_date + sql_store_id + sql_code + sql_code_num + sql_bug_user_id + sql_record_user_id + sql_abstract_remark + sql_store_supplier_id
         // console.log('sql_condition:', sql_condition)
         let sql = `select pr.*,store_suppliers.name as store_supplier_name,users2.name as record_user_name from purchase_record as pr
         left join (select * from store_suppliers where isdelete = 0) store_suppliers on store_suppliers.id = pr.store_supplier_id
@@ -65,6 +69,7 @@ export default _ => {
                 })
             }
             let temp = storeData.map((item, index) => {
+                item.origin_index = item.key
                 item.key = index;
                 // item.tax_price = getTaxPrice(item.price, item.tax);
                 return item
@@ -125,7 +130,7 @@ export default _ => {
             title: '采购时间',
             dataIndex: 'other.date',
             key: 'other.date',
-            width: 180,
+            width: 120,
             render: (text) => {
                 return moment(text).format('YYYY-MM-DD HH:mm:ss')
             }
@@ -149,7 +154,7 @@ export default _ => {
             render: (text, record) => {
                 return <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <Tooltip placement='left' title={record.num ? '编号' + record.num : '无编号'}>
-                        <Tag color='cyan' style={{ marginRight: 0 }}>{text}</Tag>
+                        <Tag color='cyan' style={{ marginRight: 0 }}>{(record.origin_index + 1 + ' ')}{text}</Tag>
                     </Tooltip>
                     {record.temp_remark ? <Tooltip placement='top' title={record.temp_remark}>
                         <Icon style={{ marginLeft: 10 }} type="exclamation-circle" theme="twoTone" />
@@ -216,6 +221,12 @@ export default _ => {
             dataIndex: 'other.store_supplier_name',
             key: 'other.store_supplier_name',
             align: 'center',
+            width: 120,
+            render: (text, record) => {
+                return <Tooltip title={record.other.store_supplier_id + ' ' + text} placement="topLeft">
+                    <div className='hideText lineClamp2'>{text}</div>
+                </Tooltip>
+            }
         },
         {
             title: '记录人员',
@@ -280,6 +291,7 @@ export default _ => {
     )
 }
 const Searchfrom = Form.create({ name: 'form' })(props => {
+    const [supplierTreeData, setSupplierTreeData] = useState([])
     const [storeOptionList, setStoreOptionList] = useState([])
     // const [userOptionList, setUserOptionList] = useState([])
     const [userOptionList2, setUserOptionList2] = useState([])
@@ -291,6 +303,13 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
         let result_user2 = await HttpApi.getUserListForPurchase(2)
         setUserOptionList2(result_user2)
         // if (result_user.code === 0) { setUserOptionList(result_user.data) }
+
+        let res1 = await HttpApi.getStoreAttributeList({ table_index: 3 })
+        if (res1.code === 0) {
+            let temp_tree = getJson2Tree(res1.data, null);
+            temp_tree = temp_tree.map((item) => { item.title = item.num + '-' + item.title; return item })
+            setSupplierTreeData(temp_tree)
+        }
     }, [])
     useEffect(() => {
         listAllOptions()
@@ -378,13 +397,31 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
         </Row>
         <Row>
             <Col span={6}>
+                <Form.Item label='供应商'  {...itemProps}>
+                    {props.form.getFieldDecorator('store_supplier_id', {
+                        rules: [{ required: false }]
+                    })(<TreeSelect
+                        multiple
+                        allowClear
+                        showSearch
+                        filterOption='children'
+                        treeNodeFilterProp="title"
+                        treeData={supplierTreeData}
+                        style={{ width: '100%' }}
+                        dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                        placeholder="请选择供应商"
+                        showCheckedStrategy={TreeSelect.SHOW_PARENT}
+                    />)}
+                </Form.Item>
+            </Col>
+            <Col span={6}>
                 <Form.Item label='摘要'  {...itemProps}>
                     {props.form.getFieldDecorator('abstract_remark', {
                         rules: [{ required: false }]
                     })(<Input allowClear placeholder="请输入摘要" />)}
                 </Form.Item>
             </Col>
-            <Col span={18}>
+            <Col span={12}>
                 <div style={{ textAlign: 'right', paddingTop: 3 }}>
                     <Button type="primary" htmlType="submit">查看</Button>
                     <Button style={{ marginLeft: 8 }} onClick={() => { props.form.resetFields() }}>清除</Button>

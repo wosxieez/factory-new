@@ -105,7 +105,7 @@ export default _ => {
             title: '出库时间',
             dataIndex: 'order.in_out_time',
             key: 'in_out_time',
-            width: 180,
+            width: 120,
             render: (text) => {
                 return text ? moment(text).format('YYYY-MM-DD HH:mm:ss') : '-'
             }

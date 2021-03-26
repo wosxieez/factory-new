@@ -1,6 +1,22 @@
-.row{
-    background-color: #e6f7ff
-  }
-.lastrow{
-    background-color: #fafafa
-  }
+.row {
+  background-color: #e6f7ff
+}
+
+.lastrow {
+  background-color: #fafafa
+}
+
+.lineClamp2 {
+  -webkit-line-clamp: 2;
+  /* 限制在一个块元素显示的文本的行数 */
+}
+
+.hideText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  /* 垂直排列 */
+  word-break: break-all;
+  /* 内容自动换行 */
+}

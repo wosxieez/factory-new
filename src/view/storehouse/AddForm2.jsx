@@ -52,7 +52,6 @@ const AddForm2 = Form.create({ name: 'form' })((props) => {
           <Col span={12}>
             <Form.Item label="编号">
               {props.form.getFieldDecorator('num', {
-                initialValue: props.data ? props.data.num : null,
                 rules: [{ required: true, message: '请输入编号' }]
               })(<InputNumber style={{ width: '100%' }} placeholder='请输入编号'></InputNumber>)}
             </Form.Item>
@@ -60,6 +59,7 @@ const AddForm2 = Form.create({ name: 'form' })((props) => {
           <Col span={12}>
             <Form.Item label='税率[%]' >
               {props.form.getFieldDecorator('tax', {
+                initialValue: 13,
                 rules: [{ required: true, message: '请输入税率' }]
               })(<InputNumber placeholder='请输入税率' min={0} style={{ width: '100%' }} />)}
             </Form.Item>

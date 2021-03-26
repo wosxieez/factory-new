@@ -14,7 +14,7 @@ export default function StoreChangeRecordView() {
     const [defaultTime] = useState([moment().add(-1, 'month').startOf('day'), moment().endOf('day')])
     const [currentPage, setCurrentPage] = useState(1)
     const columns = [{
-        title: '时间', dataIndex: 'time', width: 120, align: 'center'
+        title: '时间', dataIndex: 'time', width: 120
     },
     { title: '操作人', dataIndex: 'user_name', width: 80, },
     {
