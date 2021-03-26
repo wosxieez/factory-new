@@ -4,7 +4,7 @@ import moment from 'moment';
 import api from '../../http';
 // import AddForm from '../storehouse/AddFrom';
 import HttpApi from '../../http/HttpApi';
-import { autoGetOrderNum, checkStoreClassChange, getJson2Tree, undefined2null, userinfo, getTaxByOpriceAndTaxPrice, getTaxPrice } from '../../util/Tool';
+import { autoGetOrderNum, checkStoreClassChange, getJson2Tree, undefined2null, userinfo, getTaxPrice } from '../../util/Tool';
 import AddForm2 from '../storehouse/AddForm2';
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 const { Option } = Select;
@@ -219,7 +219,8 @@ export default Form.create({ name: 'form' })(props => {
             'rfid_list': [],
             'num': selectObj.num,
             'tax_price': selectObj.tax_price,
-            'temp_tax': getTaxByOpriceAndTaxPrice(selectObj.oprice, selectObj.tax_price)
+            'temp_tax': 13
+            // 'temp_tax': getTaxByOpriceAndTaxPrice(selectObj.oprice, selectObj.tax_price)
         }
         changeTableListHandler(param)
     }, [changeTableListHandler])
@@ -365,7 +366,8 @@ export default Form.create({ name: 'form' })(props => {
         <div style={styles.body}>
             <h3>采购入库单</h3>
             <Alert type='warning' showIcon
-                message={'注意！当同一种物品单价发生浮动时可以修改单价，平台会结合原有数据计算出该物品每件的平均单价。若要区分请点击【+普通物品】新建一个普通物品。若要添加标签物品请点击【+标签物品】（请保证有空余物品标签可供选择）'} />
+                ///若要添加标签物品请点击【+标签物品】（请保证有空余物品标签可供选择）
+                message={'注意！当同一种物品单价发生浮动时可以修改单价，平台会结合原有数据计算出该物品每件的平均单价。若要区分请点击【+普通物品】新建一个普通物品。'} />
             <Form  {...itemProps} style={{ marginTop: 16 }} onSubmit={handleSubmit}>
                 <Row>
                     <Col span={6}>
