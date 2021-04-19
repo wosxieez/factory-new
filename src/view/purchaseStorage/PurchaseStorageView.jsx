@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Alert, Row, Col, Divider, Tooltip, Icon, TreeSelect } from 'antd';
+import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Alert, Row, Col, Tooltip, TreeSelect } from 'antd';
 import moment from 'moment';
 import api from '../../http';
 // import AddForm from '../storehouse/AddFrom';
 import HttpApi from '../../http/HttpApi';
 import { autoGetOrderNum, checkStoreClassChange, getJson2Tree, undefined2null, userinfo, getTaxPrice } from '../../util/Tool';
 import AddForm2 from '../storehouse/AddForm2';
+import SearchInput2 from './SearchInput2';
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 const { Option } = Select;
 var storeList = [{ key: 0 }, { key: 1 }, { key: 2 }, { key: 3 }, { key: 4 }, { key: 5 }, { key: 6 }, { key: 7 }, { key: 8 }, { key: 9 }]
@@ -15,7 +16,7 @@ const starIcon = <span style={{ color: 'red' }}>* </span>
  */
 export default Form.create({ name: 'form' })(props => {
     const [tempCodeNum, setTempCodeNum] = useState('')
-    const [storeOptionList, setStoreOptionList] = useState([])
+    // const [storeOptionList, setStoreOptionList] = useState([])
     const [supplierTreeData, setSupplierTreeData] = useState([])
     const [sumCount, setSumCount] = useState(0)
     const [sumPrice, setSumPrice] = useState(0)
@@ -24,8 +25,8 @@ export default Form.create({ name: 'form' })(props => {
     const [isRFIDStore, setIsRFIDStore] = useState(false)
     const addForm2 = useRef()
     const listAllStore = useCallback(async () => {
-        let result = await api.listAllStore()
-        if (result.code === 0) { setStoreOptionList(result.data) }
+        // let result = await api.listAllStore()
+        // if (result.code === 0) { setStoreOptionList(result.data) }
         let res1 = await HttpApi.getStoreAttributeList({ table_index: 3 })
         if (res1.code === 0) {
             let temp_tree = getJson2Tree(res1.data, null);
@@ -73,32 +74,45 @@ export default Form.create({ name: 'form' })(props => {
         { title: '编号', dataIndex: 'key', width: 50, align: 'center', render: (text) => <div>{text + 1}</div> },
         {
             title: <div>{starIcon}物品</div>, dataIndex: 'store_id', width: 400, align: 'center', render: (text, record) => {
-                return <Select placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children" value={text} onChange={(_, option) => { handleSelectChange(option, record.key) }}
-                    dropdownRender={menu => (
-                        <div>
-                            {menu}
-                            <Divider style={{ margin: '4px 0' }} />
-                            <div
-                                style={{ padding: '4px 8px', cursor: 'pointer' }}
-                                onMouseDown={e => e.preventDefault()}
-                            // onClick={() => { setIsAdding(true) }}
-                            >
-                                <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-                                    <Button onClick={() => { setIsRFIDStore(false); setIsAdding(true) }} disabled={!isStorehouseManager} size='small' type='primary' style={{ width: '48%' }} icon='plus'>普通物品</Button>
-                                    {/* <Button onClick={() => { setIsRFIDStore(true); setIsAdding(true) }} disabled={!isStorehouseManager} size='small' type='danger' style={{ width: '48%' }} icon='plus'>标签物品</Button> */}
-                                </div>
-                            </div>
-                        </div >
-                    )}>
-                    {
-                        storeOptionList.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item} disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}>
-                                {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null}
-                                {item.num + '-' + item.name + '-' + item.model + '--库存' + item.count}
-                            </Select.Option>
-                        })
-                    }
-                </Select >
+                // return <Select
+                //     placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children"
+                //     value={text}
+                //     onChange={(_, option) => { handleSelectChange(option, record.key) }}
+                //     dropdownRender={menu => (
+                //         <div>
+                //             {menu}
+                //             <Divider style={{ margin: '4px 0' }} />
+                //             <div
+                //                 style={{ padding: '4px 8px', cursor: 'pointer' }}
+                //                 onMouseDown={e => e.preventDefault()}
+                //             // onClick={() => { setIsAdding(true) }}
+                //             >
+                //                 <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+                //                     <Button onClick={() => { setIsRFIDStore(false); setIsAdding(true) }} disabled={!isStorehouseManager} size='small' type='primary' style={{ width: '48%' }} icon='plus'>普通物品</Button>
+                //                     {/* <Button onClick={() => { setIsRFIDStore(true); setIsAdding(true) }} disabled={!isStorehouseManager} size='small' type='danger' style={{ width: '48%' }} icon='plus'>标签物品</Button> */}
+                //                 </div>
+                //             </div>
+                //         </div >
+                //     )}>
+                //     {
+                //         storeOptionList.map((item, index) => {
+                //             return <Select.Option value={item.id} key={index} all={item} disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}>
+                //                 {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null}
+                //                 {item.num + '-' + item.name + '-' + item.model + '--库存' + item.count}
+                //             </Select.Option>
+                //         })
+                //     }
+                // </Select >
+                return <SearchInput2
+                    isStorehouseManager={isStorehouseManager}
+                    setIsAdding={setIsAdding}
+                    setIsRFIDStore={setIsRFIDStore}
+                    storeList={storeList}
+                    value={text}
+                    onChange={(option) => {
+                        handleSelectChange(option, record.key)
+                    }}
+                />
             }
         },
         {
@@ -242,7 +256,7 @@ export default Form.create({ name: 'form' })(props => {
     }, [changeTableListHandler])
     const resetHandler = useCallback(() => {
         props.form.resetFields();
-        storeList = [{ key: 0 }]
+        storeList = [{ key: 0 }, { key: 1 }, { key: 2 }, { key: 3 }, { key: 4 }, { key: 5 }, { key: 6 }, { key: 7 }, { key: 8 }, { key: 9 }]
         props.form.setFieldsValue({ storeList })
         listAllStore()
     }, [props.form, listAllStore])
@@ -361,6 +375,13 @@ export default Form.create({ name: 'form' })(props => {
         listAllStore()
         calculSumCountAndPrice()
     }, [listAllStore, calculSumCountAndPrice])
+    useEffect(() => {
+        return () => {
+            console.log('销毁 采购入库单')
+            resetHandler()
+        }
+        // eslint-disable-next-line
+    }, [])
     const itemProps = { labelCol: { span: 6 }, wrapperCol: { span: 18 } }
     return <div style={styles.root}>
         <div style={styles.body}>

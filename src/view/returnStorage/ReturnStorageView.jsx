@@ -4,6 +4,7 @@ import moment from 'moment';
 import api from '../../http';
 import HttpApi from '../../http/HttpApi';
 import { autoGetOrderNum, getTaxByOpriceAndTaxPrice, userinfo } from '../../util/Tool';
+import SearchInput3 from './SearchInput3';
 var storeList = [{ key: 0 }, { key: 1 }, { key: 2 }, { key: 3 }, { key: 4 }, { key: 5 }, { key: 6 }, { key: 7 }, { key: 8 }, { key: 9 }]
 const starIcon = <span style={{ color: 'red' }}>* </span>
 /**
@@ -11,17 +12,17 @@ const starIcon = <span style={{ color: 'red' }}>* </span>
  */
 export default Form.create({ name: 'form' })(props => {
     const [tempCodeNum, setTempCodeNum] = useState('')
-    const [storeOptionList, setStoreOptionList] = useState([])
+    // const [storeOptionList, setStoreOptionList] = useState([])
     const [userOptionList, setUserOptionList] = useState([])
     const [sumCount, setSumCount] = useState(0)
     const [sumPrice, setSumPrice] = useState(0)
     const listAllStore = useCallback(async () => {
-        let result = await api.listAllStore()
-        if (result.code === 0) {
-            ///暂时过滤掉【标签物品】
-            let list = result.data.filter((item) => item['has_rfid'] !== 1)
-            setStoreOptionList(list)
-        }
+        // let result = await api.listAllStore()
+        // if (result.code === 0) {
+        //     ///暂时过滤掉【标签物品】
+        //     let list = result.data.filter((item) => item['has_rfid'] !== 1)
+        //     setStoreOptionList(list)
+        // }
         let result_user = await HttpApi.getUserList()
         result_user = result_user.filter((item) => {
             return item.role_all && (item.role_all.indexOf('1') !== -1 || item.role_all.indexOf('4') !== -1)  ///专工权限_id 1 维修权限_id 4 过滤
@@ -34,13 +35,22 @@ export default Form.create({ name: 'form' })(props => {
         { title: '编号', dataIndex: 'key', width: 50, align: 'center', render: (text) => <div>{text + 1}</div> },
         {
             title: <div>{starIcon}物品</div>, dataIndex: 'store_id', width: 400, align: 'center', render: (text, record) => {
-                return <Select placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children" value={text} onChange={(_, option) => { handleSelectChange(option, record.key) }}>
-                    {
-                        storeOptionList.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item} disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}>{item.num + '-' + item.name + '-' + item.model}</Select.Option>
-                        })
-                    }
-                </Select >
+                // return <Select
+                //     placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children" value={text}
+                //     onChange={(_, option) => { handleSelectChange(option, record.key) }}>
+                //     {
+                //         storeOptionList.map((item, index) => {
+                //             return <Select.Option value={item.id} key={index} all={item} disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}>{item.num + '-' + item.name + '-' + item.model}</Select.Option>
+                //         })
+                //     }
+                // </Select >
+                return <SearchInput3
+                    storeList={storeList}
+                    value={text}
+                    onChange={(option) => {
+                        handleSelectChange(option, record.key)
+                    }}
+                />
             }
         },
         {
@@ -130,7 +140,7 @@ export default Form.create({ name: 'form' })(props => {
 
     const resetHandler = useCallback(() => {
         props.form.resetFields();
-        storeList = [{ key: 0 }]
+        storeList = [{ key: 0 }, { key: 1 }, { key: 2 }, { key: 3 }, { key: 4 }, { key: 5 }, { key: 6 }, { key: 7 }, { key: 8 }, { key: 9 }]
         props.form.setFieldsValue({ storeList })
         listAllStore()
     }, [props.form, listAllStore])
@@ -206,6 +216,13 @@ export default Form.create({ name: 'form' })(props => {
         listAllStore()
         calculSumCountAndPrice()
     }, [listAllStore, calculSumCountAndPrice])
+    useEffect(() => {
+        return () => {
+            console.log('销毁 退料入库单')
+            resetHandler()
+        }
+        // eslint-disable-next-line
+    }, [])
     const itemProps = { labelCol: { span: 6 }, wrapperCol: { span: 18 } }
     return <div style={styles.root}>
         <div style={styles.body}>

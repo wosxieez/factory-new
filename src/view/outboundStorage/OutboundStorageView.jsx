@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Row, Col, Tooltip, Alert, Icon } from 'antd';
+import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Row, Col, Tooltip, Alert } from 'antd';
 import moment from 'moment';
 import api from '../../http';
 import { autoGetOrderNum, getTaxByOpriceAndTaxPrice, userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
+import SearchInput1 from './SearchInput1';
 var storeList = [{ key: 0 }, { key: 1 }, { key: 2 }, { key: 3 }, { key: 4 }, { key: 5 }, { key: 6 }, { key: 7 }, { key: 8 }, { key: 9 }]
 const starIcon = <span style={{ color: 'red' }}>* </span>
 /**
@@ -12,12 +13,13 @@ const starIcon = <span style={{ color: 'red' }}>* </span>
 export default Form.create({ name: 'form' })(props => {
     const [tempCodeNum, setTempCodeNum] = useState('')
     // console.log('AppData.userinfo:', userinfo())
-    const [storeOptionList, setStoreOptionList] = useState([])
+    // const [storeOptionList, setStoreOptionList] = useState([])
     const [userOptionList, setUserOptionList] = useState([])
     const [sumCount, setSumCount] = useState(0)
     const [sumPrice, setSumPrice] = useState(0)
+    const [orderList, setOrderList] = useState([])
     const listAllStore = useCallback(async () => {
-        let response_store = await api.listAllStore()
+        // let response_store = await api.listAllStore()
         ///查询现有的 那些处于待审核 和 审核中的 申请。得到对应的物品的id 和 count -- 对现有的store 数据进行相减
         const response_order = await api.query(
             `select * from orders where isdelete = 0 and status in (0,1) and type_id = 1 and is_special != 2` ///考虑到 那些还没有出库的特殊领料申请
@@ -25,24 +27,14 @@ export default Form.create({ name: 'form' })(props => {
         if (response_order.code === 0 && response_order.data[0].length > 0) {
             let orderList = response_order.data[0]
             // console.log('申请列表数据:', orderList)
-            orderList.forEach(order => {
-                let contentList = JSON.parse(order.content)
-                // console.log('contentList:', contentList)
-                contentList.forEach(item => {
-                    response_store.data.forEach(store => {
-                        if (item.store_id === store.id) {
-                            store.count = store.count - item.count
-                        }
-                    })
-                })
-            })
+            setOrderList(orderList)
         }
         let result_user = await HttpApi.getUserList()
         result_user = result_user.filter((item) => {
             return item.role_all && (item.role_all.split(',').indexOf('1') !== -1 || item.role_all.split(',').indexOf('4') !== -1)  ///专工权限_id 1 维修权限_id 4 过滤
         })
         setUserOptionList(result_user)
-        setStoreOptionList(response_store.data)
+        // setStoreOptionList(response_store.data)
         let temp_code_num = await autoGetOrderNum({ type: 1 })///临时单号；实际单号要在插入数据库钱的一刻进行刷新
         setTempCodeNum(temp_code_num)
     }, [])
@@ -50,15 +42,33 @@ export default Form.create({ name: 'form' })(props => {
         { title: '编号', dataIndex: 'key', width: 50, align: 'center', render: (text) => <div>{text + 1}</div> },
         {
             title: <div>{starIcon}物品</div>, dataIndex: 'store_id', width: 400, align: 'center', render: (text, record) => {
-                return <Select placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children" value={text} onChange={(_, option) => { handleSelectChange(option, record.key) }}>
-                    {
-                        storeOptionList.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item} disabled={(storeList.map((item) => item.store_id).indexOf(item.id) !== -1) || (item.count === 0)}>
-                                {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null} {item.num + '-' + item.name + '-' + item.model + '--剩余' + item.count}
-                            </Select.Option>
-                        })
-                    }
-                </Select >
+                // return <Select placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children" value={text}
+                //     onChange={(_, option) => {
+                //         console.log('option:', option)
+                //         console.log('record.key:', record.key)
+                //         handleSelectChange(option, record.key)
+                //     }}>
+                //     {
+                //         storeOptionList.map((item, index) => {
+                //             return <Select.Option
+                //                 value={item.id}
+                //                 key={index}
+                //                 all={item}
+                //                 disabled={(storeList.map((item) => item.store_id).indexOf(item.id) !== -1) || (item.count === 0)}
+                //             >
+                //                 {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null} {item.num + '-' + item.name + '-' + item.model + '--剩余' + item.count}
+                //             </Select.Option>
+                //         })
+                //     }
+                // </Select >
+                return <SearchInput1
+                    orderList={orderList}
+                    storeList={storeList}
+                    value={text}
+                    onChange={(option) => {
+                        handleSelectChange(option, record.key)
+                    }}
+                />
             }
         },
         {
@@ -147,7 +157,7 @@ export default Form.create({ name: 'form' })(props => {
 
     const resetHandler = useCallback(() => {
         props.form.resetFields()
-        storeList = [{ key: 0 }]
+        storeList = [{ key: 0 }, { key: 1 }, { key: 2 }, { key: 3 }, { key: 4 }, { key: 5 }, { key: 6 }, { key: 7 }, { key: 8 }, { key: 9 }]
         props.form.setFieldsValue({ storeList })
         listAllStore()
     }, [props.form, listAllStore])
@@ -229,11 +239,17 @@ export default Form.create({ name: 'form' })(props => {
     }, [props.form, updateStoreAndrecordHandler])
 
 
-
     useEffect(() => {
         listAllStore()
         calculSumCountAndPrice()
     }, [listAllStore, calculSumCountAndPrice])
+    useEffect(() => {
+        return () => {
+            console.log('销毁 自行出库单')
+            resetHandler()
+        }
+        // eslint-disable-next-line
+    }, [])
     const itemProps = { labelCol: { span: 6 }, wrapperCol: { span: 18 } }
     return <div style={styles.root}>
         <div style={styles.body}>

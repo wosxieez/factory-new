@@ -4,8 +4,8 @@
   "version": "0.0.1",
   "private": true,
   "homepage": ".",
-  "author": "合肥小木软件有限公司",
-  "description": "小美收银管理平台",
+  "author": "仓库管理",
+  "description": "仓库管理",
   "main": "src/index.js",
   "build": {
     "appId": "com.xiaomu.xiaomei",

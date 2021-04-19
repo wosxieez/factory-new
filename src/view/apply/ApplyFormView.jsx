@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Row, Col, Tooltip, Alert, Icon } from 'antd';
+import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Row, Col, Tooltip, Alert } from 'antd';
 import moment from 'moment';
 import api from '../../http';
 import { userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 import { checkCurrentTimeIsSpecial } from '../../util/Tool';
+import SearchInput1 from '../outboundStorage/SearchInput1';
 
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 var storeList = [{ key: 0 }]
@@ -14,17 +15,18 @@ const starIcon = <span style={{ color: 'red' }}>* </span>
  */
 export default Form.create({ name: 'form' })(props => {
     // console.log('AppData.userinfo:', userinfo())
-    const [storeOptionList, setStoreOptionList] = useState([])
+    // const [storeOptionList, setStoreOptionList] = useState([])
     const [orderTypeList, setOrderTypeList] = useState([])
     const [marjorList, setMajorList] = useState([])
     const [selectOrderType, setSelectOrderType] = useState(1)
     const [sumCount, setSumCount] = useState(0)
     const [sumPrice, setSumPrice] = useState(0)
+    const [orderList, setOrderList] = useState([])
     const listAllStore = useCallback(async () => {
         let major_list = await HttpApi.getCurrentUserMajor()
         // console.log('major_list:', major_list)
         setMajorList(major_list)
-        let response_store = await api.listAllStore()
+        // let response_store = await api.listAllStore()
         ///查询现有的 那些处于待审核 和 审核中的 申请。得到对应的物品的id 和 count -- 对现有的store 数据进行相减
         const response_order = await api.query(
             `select * from orders where isdelete = 0 and status in (0,1) and type_id = 1 and is_special != 2` ///考虑到 那些还没有出库的特殊领料申请
@@ -32,21 +34,10 @@ export default Form.create({ name: 'form' })(props => {
         if (response_order.code === 0 && response_order.data[0].length > 0) {
             let orderList = response_order.data[0]
             // console.log('申请列表数据:', orderList)
-            orderList.forEach(order => {
-                let contentList = JSON.parse(order.content)
-                // console.log('contentList:', contentList)
-                contentList.forEach(item => {
-                    response_store.data.forEach(store => {
-                        if (item.store_id === store.id) {
-                            store.count = store.count - item.count
-                        }
-                    })
-                })
-            })
+            setOrderList(orderList)
         }
         // console.log('response_store:', response_store.data)
-        setStoreOptionList(response_store.data)
-
+        // setStoreOptionList(response_store.data)
         let sql = `select * from order_type where isdelete = 0`
         let result2 = await api.query(sql)
         if (result2.code === 0) {
@@ -57,15 +48,24 @@ export default Form.create({ name: 'form' })(props => {
         { title: '编号', dataIndex: 'key', width: 50, align: 'center', render: (text) => <div>{text + 1}</div> },
         {
             title: <div>{starIcon}物品</div>, dataIndex: 'store_id', width: 400, align: 'center', render: (text, record) => {
-                return <Select placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children" value={text} onChange={(_, option) => { handleSelectChange(option, record.key) }}>
-                    {
-                        storeOptionList.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item} disabled={(storeList.map((item) => item.store_id).indexOf(item.id) !== -1) || (selectOrderType === 1 && item.count === 0)}>
-                                {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null} {selectOrderType === 1 ? item.num + '-' + item.name + '-' + item.model + '--剩余' + item.count : item.num + '-' + item.name + '-' + item.model}
-                            </Select.Option>
-                        })
-                    }
-                </Select >
+                // return <Select placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children" value={text} 
+                // onChange={(_, option) => { handleSelectChange(option, record.key) }}>
+                //     {
+                //         storeOptionList.map((item, index) => {
+                //             return <Select.Option value={item.id} key={index} all={item} disabled={(storeList.map((item) => item.store_id).indexOf(item.id) !== -1) || (selectOrderType === 1 && item.count === 0)}>
+                //                 {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null} {selectOrderType === 1 ? item.num + '-' + item.name + '-' + item.model + '--剩余' + item.count : item.num + '-' + item.name + '-' + item.model}
+                //             </Select.Option>
+                //         })
+                //     }
+                // </Select >
+                return <SearchInput1
+                    orderList={orderList}
+                    storeList={storeList}
+                    value={text}
+                    onChange={(option) => {
+                        handleSelectChange(option, record.key)
+                    }}
+                />
             }
         },
         {
