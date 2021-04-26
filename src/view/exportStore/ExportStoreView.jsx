@@ -5,6 +5,7 @@ import moment from 'moment';
 import { calculOrderListStoreTaxAllPrice, getTaxByOpriceAndTaxPrice, getTaxPrice, translateOrderList } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 import ExportJsonExcel from 'js-export-excel'
+import SearchInput5 from '../outboundStore/SearchInput5';
 var date_range;
 export default _ => {
     const [isLoading, setIsLoading] = useState(false)
@@ -240,11 +241,8 @@ export default _ => {
     )
 }
 const Searchfrom = Form.create({ name: 'form' })(props => {
-    const [storeOptionList, setStoreOptionList] = useState([])
     const [userOptionList, setUserOptionList] = useState([])
     const listAllOptions = useCallback(async () => {
-        let result = await api.listAllStore()
-        if (result.code === 0) { setStoreOptionList(result.data) }
         let result_user = await HttpApi.getUserListForOutIn(1)
         setUserOptionList(result_user)
         if (result_user.code === 0) { setUserOptionList(result_user.data) }
@@ -307,18 +305,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
                 <Form.Item label='物品' {...itemProps}>
                     {props.form.getFieldDecorator('store_id_list', {
                         rules: [{ required: false }]
-                    })(<Select mode='multiple' allowClear placeholder='选择物品-支持名称搜索' showSearch optionFilterProp="children"
-                        filterOption={(input, option) => {
-                            return option.props.children.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }}>
-                        {storeOptionList.map((item, index) => {
-                            return <Select.Option value={item.id} key={index} all={item}>
-                                <Tooltip placement="left" key={index} title={item.num + '-' + item.name}>
-                                    {item.num + '-' + item.name}
-                                </Tooltip>
-                            </Select.Option>
-                        })}
-                    </Select>)}
+                    })(<SearchInput5 />)}
                 </Form.Item>
             </Col>
             <Col span={6}>

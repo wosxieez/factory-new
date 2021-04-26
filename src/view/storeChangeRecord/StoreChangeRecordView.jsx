@@ -83,14 +83,13 @@ export default function StoreChangeRecordView() {
                         </Panel>
                     </Collapse>
                 } else if (record['type'] === 1) {
-                    return <Badge color='#faad14' text='数量变动' style={styles.badgestyle} />
+                    return <Badge color='#faad14' text='数量变动' />
                 }
-                // return <Badge color='#faad14' text='数量变动' />
             } else if (record['change_type'] === 1) {
                 if (record['add_content'] && !record['remove_content']) {
-                    return <Badge color='#52c41a' text='创建物品' style={styles.badgestyle} />
+                    return <Badge color='#52c41a' text='创建物品' />
                 } else if (!record['add_content'] && record['remove_content']) {
-                    return <Badge color='red' text='删除物品' style={styles.badgestyle} />
+                    return <Badge color='red' text='删除物品' />
                 }
             }
         }
@@ -302,9 +301,6 @@ const styles = {
         borderRadius: 4,
         border: 0,
         overflow: 'hidden',
-    },
-    badgestyle: {
-        marginLeft: 10
     },
     alertText: {
         color: '#fa541c'
