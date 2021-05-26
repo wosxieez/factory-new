@@ -172,7 +172,7 @@ export function translatePurchaseRecordList(purchaseRecordList) {
       // allStoreList.push(store)
       let new_obj = { ...store }
       new_obj.other = itemCopy
-      new_obj.outbound_record_content = storesList
+      new_obj.record_content = storesList
       allStoreList.push(new_obj)
     })
   })

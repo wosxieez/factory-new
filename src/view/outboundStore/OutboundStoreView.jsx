@@ -302,7 +302,7 @@ export default _ => {
                     <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
                 </div>
             </div>
-            <Alert showIcon type='warning' message='总数量、总含税价格、总价格的统计不包含撤销单中包含的物品' />
+            <Alert showIcon type='info' message='总数量、总含税价格、总价格的统计不包含撤销单中的物品' />
             <Table
                 loading={isLoading}
                 style={styles.marginTop}
@@ -326,7 +326,7 @@ export default _ => {
                 if (!refRemark.current.state.value) { message.error('备注不可为空'); return }
                 if (!refPassword.current.state.value) { message.error('密码不可为空'); return }
                 if (refPassword.current.state.value !== userinfo().password) { message.error('密码不正确'); return }
-                const storeList = operationRecord.outbound_record_content
+                const storeList = operationRecord.record_content
                 const id = operationRecord.other.id
                 const des = refRemark.current.state.value
                 const username = userinfo().name
@@ -348,9 +348,9 @@ export default _ => {
                 listData({})
             }}>
                 <div>
-                    <Alert showIcon type='warning' message='点击确定后；出库单中所有物品都将恢复(增加)对应数量' />
-                    <Descriptions style={styles.marginTop} bordered title="物料列表" size={'small'}>
-                        {operationRecord.outbound_record_content ? operationRecord.outbound_record_content.map((item, index) => {
+                    <Alert showIcon type='warning' message='点击确定后；出库单中所有物品都将恢复(+增加)对应数量' />
+                    <Descriptions style={styles.marginTop} bordered title="此单物料列表" size={'small'}>
+                        {operationRecord.record_content ? operationRecord.record_content.map((item, index) => {
                             return [
                                 <Descriptions.Item label="编号">{item.num}</Descriptions.Item>,
                                 <Descriptions.Item label="名称">{item.store_name}</Descriptions.Item>,

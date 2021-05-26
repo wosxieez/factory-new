@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react'
 import api from '../../http'
-import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Radio, Modal, message, Tooltip } from 'antd'
+import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Radio, Modal, message, Tooltip, Icon, Alert } from 'antd'
 import moment from 'moment'
 import HttpApi from '../../http/HttpApi';
 import { getListAllTaxPrice, userinfo } from '../../util/Tool';
@@ -80,15 +80,17 @@ export default props => {
             let tempSumprice = 0;
             // console.log('result.data[0]:', result.data[0])
             setDataSource(result.data[0].map((item, index) => {
-                tempSumcount += parseInt(item.sum_count);
-                tempSumprice += parseFloat(item.sum_price);
+                tempSumcount += !item.is_rollback ? parseInt(item.sum_count) : 0;
+                tempSumprice += !item.is_rollback ? parseFloat(item.sum_price) : 0;
                 item.key = index;
                 return item
             }))
             let tempSumTaxPrice = 0
             result.data[0].forEach((item) => {
-                const content = JSON.parse(item.content)
-                tempSumTaxPrice = tempSumTaxPrice + getListAllTaxPrice(content)
+                if (!item.is_rollback) { ///计算总含税价格 不包含撤销的记录
+                    const content = JSON.parse(item.content)
+                    tempSumTaxPrice = tempSumTaxPrice + getListAllTaxPrice(content)
+                }
             })
             setSumTaxPrice(tempSumTaxPrice.toFixed(2))
             // console.log('tempSumcount:', tempSumcount.toFixed(0))
@@ -111,11 +113,29 @@ export default props => {
             align: 'center',
             width: 100,
             render: (text, record) => {
-                let tempCpt = record.abstract_remark ? <Tag color='blue' style={{ marginRight: 0 }}>{record.abstract_remark}</Tag> : null
-                return <div>
-                    <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
-                    {tempCpt}
-                </div>
+                let tempCpt = record.abstract_remark ? <Tag color={record.is_rollback === 1 ? '#bfbfbf' : 'blue'} style={{ marginRight: 0 }}>{record.abstract_remark}</Tag> : null
+                // return <div>
+                //     <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                //     {tempCpt}
+                // </div>
+                if (record.is_rollback === 1) {
+                    return <div>
+                        <Tag color='#bfbfbf' style={{ marginRight: 0 }}>{text}</Tag>
+                        {tempCpt}
+                        <Tooltip placement='left' title={<div>
+                            <p>{record.rollback_time}</p>
+                            <p>撤销人: {record.rollback_username}</p>
+                            <p>备注: {record.rollback_des}</p>
+                        </div>}>
+                            <Tag color='#fa541c'>已撤销 <Icon type="question-circle" /></Tag>
+                        </Tooltip>
+                    </div >
+                } else {
+                    return <div>
+                        <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                        {tempCpt}
+                    </div>
+                }
             }
         },
         {
@@ -304,7 +324,9 @@ export default props => {
                     // console.log('result:', result)
                     setIsUpdating(false)
                 }} />
+                <Alert showIcon type='info' message='总数量、总含税价格、总价格的统计不包含撤销单中的物品' />
                 <Table
+                    style={styles.marginTop}
                     loading={isLoading}
                     bordered
                     size='small'

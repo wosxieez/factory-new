@@ -317,7 +317,7 @@ export default props => {
                         <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
                     </div>
                 </div>
-                <Alert showIcon type='warning' message='总数量、总含税价格、总价格的统计不包含撤销单中包含的物品' />
+                <Alert showIcon type='info' message='总数量、总含税价格、总价格的统计不包含撤销单中的物品' />
                 <HandlerPanel visible={isUpdating} onCancel={() => { setIsUpdating(false) }} onOk={async (data) => {
                     // console.log('data:', data)
                     let sql = `update outbound_record set 

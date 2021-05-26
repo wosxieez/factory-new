@@ -1,8 +1,8 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import api from '../../http';
-import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip, Icon, TreeSelect } from 'antd';
+import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip, Icon, TreeSelect, Dropdown, Menu, Alert, Descriptions } from 'antd';
 import moment from 'moment';
-import { getJson2Tree, getTaxPrice, translatePurchaseRecordList } from '../../util/Tool';
+import { getJson2Tree, getTaxPrice, translatePurchaseRecordList, userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 import ExportJsonExcel from 'js-export-excel'
 import SearchInput5 from '../outboundStore/SearchInput5';
@@ -12,11 +12,15 @@ var date_range;
  * 采购物品记录
  */
 export default _ => {
+    const refRemark = useRef(null)
+    const refPassword = useRef(null)
     const [isLoading, setIsLoading] = useState(false)
     const [dataSource, setDataSource] = useState([])
     const [sum_price, setSumPrice] = useState(0)
     const [sum_count, setSumCount] = useState(0)
     const [sum_tax_price, setSumTaxPrice] = useState(0)
+    const [modalPanelVisible, setModalPanelVisible] = useState(false)
+    const [operationRecord, setOperationRecord] = useState({})
 
     const listData = useCallback(async (conditionObj) => {
         setIsLoading(true)
@@ -75,14 +79,17 @@ export default _ => {
                 // item.tax_price = getTaxPrice(item.price, item.tax);
                 return item
             })
+            // console.log('temp:', temp)
             setDataSource(temp)
             let records_sum_price = 0
             let records_sum_count = 0
             let records_sum_tax_price = 0
             storeData.forEach((item) => {
-                records_sum_price += parseFloat(item.count * item.price)
-                records_sum_count += parseFloat(item.count)
-                records_sum_tax_price += parseFloat(item.count * getTaxPrice(item.price, item.temp_tax))
+                if (!item.other.is_rollback) { ///不统计撤销的出库单
+                    records_sum_price += parseFloat(item.count * item.price)
+                    records_sum_count += parseFloat(item.count)
+                    records_sum_tax_price += parseFloat(item.count * getTaxPrice(item.price, item.temp_tax))
+                }
             })
             setSumPrice(parseFloat(records_sum_price).toFixed(2))
             setSumCount(records_sum_count)
@@ -91,7 +98,7 @@ export default _ => {
         setIsLoading(false)
     }, [])
     const exportHandler = useCallback(() => {
-        let new_list = dataSource.map((item) => {
+        let new_list = dataSource.filter((item) => { return !item.other.is_rollback }).map((item) => {
             let data = {};
             data.tax_price = String(item.temp_tax_price || '-')
             data.tax = String(item.temp_tax || '-')
@@ -141,11 +148,71 @@ export default _ => {
             dataIndex: 'other.code_num',
             key: 'other.code_num',
             render: (text, record) => {
-                let tempCpt = record.other.abstract_remark ? <Tag color='blue' style={{ marginRight: 0 }}>{record.other.abstract_remark}</Tag> : null
-                return <div>
-                    <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
-                    {tempCpt}
-                </div>
+                // let tempCpt = record.other.abstract_remark ? <Tag color='blue' style={{ marginRight: 0 }}>{record.other.abstract_remark}</Tag> : null
+                // return <div>
+                //     <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                //     {tempCpt}
+                // </div>
+                let tempCpt = record.other.abstract_remark ? <Tag color={record.other.is_rollback === 1 ? '#bfbfbf' : 'blue'} style={{ marginRight: 0 }}>{record.other.abstract_remark}</Tag> : null
+                if (record.other.is_rollback === 1) {
+                    return <div>
+                        <Tag color='#bfbfbf' style={{ marginRight: 0 }}>{text}</Tag>
+                        {tempCpt}
+                        <Tooltip placement='left' title={<div>
+                            <p>{record.other.rollback_time}</p>
+                            <p>撤销人: {record.other.rollback_username}</p>
+                            <p>备注: {record.other.rollback_des}</p>
+                        </div>}>
+                            <Tag color='#fa541c'>已撤销 <Icon type="question-circle" /></Tag>
+                        </Tooltip>
+                    </div >
+                } else if (record.other.is_rollback === 0 && userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1) {
+                    return <Dropdown overlay={<Menu onClick={async (e) => {
+                        if (e.key === '1') {
+                            let count_is_changed = false
+                            let store_is_removed = false
+                            const storeList = record.record_content
+                            let store_id_list = storeList.map((item) => item.store_id)
+                            let sql = `select * from stores where id in (${store_id_list.join(',')}) and isdelete = 0`
+                            let result = await api.query(sql)
+                            if (result.code === 0) {
+                                let res_store_list = result.data[0]
+                                storeList.forEach((store) => {
+                                    res_store_list.forEach((db_store) => {
+                                        if (store.store_id === db_store.id) {
+                                            store.db_count = db_store.count
+                                            if (db_store.count < store.count) {///物品数量发生变动[数据库中物品比采购单中的数量少；说明有物品已经出库或编辑减去了]
+                                                count_is_changed = true
+                                            }
+                                        }
+                                    })
+                                })
+                                storeList.forEach((store) => {
+                                    if (!(store.db_count >= 0)) {
+                                        store.db_isremoved = true
+                                        store_is_removed = true
+                                    }
+                                })
+                            }
+                            let new_record = { ...record, record_content: storeList, count_is_changed, store_is_removed }
+                            // console.log('new_record:', new_record)
+                            setOperationRecord(new_record)
+                            setModalPanelVisible(true)
+                        }
+                    }}>
+                        <Menu.Item key="1" >撤销采购库单记录</Menu.Item>
+                    </Menu>} trigger={['contextMenu']}>
+                        <div>
+                            <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                            {tempCpt}
+                        </div>
+                    </Dropdown>
+                } else {
+                    return <div>
+                        <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                        {tempCpt}
+                    </div>
+                }
             }
         },
         {
@@ -277,6 +344,7 @@ export default _ => {
                     <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
                 </div>
             </div>
+            <Alert showIcon type='info' message='总数量、总含税价格、总价格的统计不包含撤销单中的物品' />
             <Table
                 loading={isLoading}
                 style={styles.marginTop}
@@ -294,6 +362,52 @@ export default _ => {
                     pageSizeOptions: ['10', '50', '100'],
                 }}
             />
+            <Modal width={700} title={operationRecord.other ? `确定要撤销单号【${operationRecord.other.code_num}】的采购单吗?` : ''} visible={modalPanelVisible} onCancel={() => { setModalPanelVisible(false) }} onOk={async () => {
+                if (operationRecord.count_is_changed || operationRecord.store_is_removed) { setModalPanelVisible(false); return }
+                // console.log(refRemark.current.state.value);
+                // console.log(refPassword.current.state.value);
+                if (!refRemark.current.state.value) { message.error('备注不可为空'); return }
+                if (!refPassword.current.state.value) { message.error('密码不可为空'); return }
+                // if (refPassword.current.state.value !== userinfo().password) { message.error('密码不正确'); return }
+                const storeList = operationRecord.record_content
+                const id = operationRecord.other.id
+                const des = refRemark.current.state.value
+                const username = userinfo().name
+                const time = moment().format('YYYY-MM-DD HH:mm:ss')
+                let sql = `update purchase_record set is_rollback = 1,rollback_des = '${des}',rollback_username = '${username}',rollback_time = '${time}' where id = ${id}`
+                let result = await api.query(sql)
+                if (result.code === 0) { ///记录入库成功-开始循环修改store表中物品的信息。条件:store_id---数据:avg_price all_count remark 等
+                    console.log('采购单修改成功')
+                    for (let index = 0; index < storeList.length; index++) {
+                        const storeObj = storeList[index]
+                        let result = await api.updateStoreCount({ id: storeObj.store_id, count: -storeObj.count })
+                        if (result.code === 0) {
+                            message.success('物品数量恢复成功', 3);
+                        }
+                    }
+                }
+                setModalPanelVisible(false)
+                listData({})
+            }}>
+                <div>
+                    <Alert showIcon type={operationRecord.count_is_changed || operationRecord.store_is_removed ? 'error' : 'warning'}
+                        message={operationRecord.count_is_changed || operationRecord.store_is_removed ? '当前数据库中物料数量已经发生变动[可能已出库]、或物品已被删除；此单不可再做撤销操作。' : '点击确定后；出库单中所有物品都将恢复(-减少)对应数量'} />
+                    <Descriptions style={styles.marginTop} bordered title="此单物料列表" size={'small'}>
+                        {operationRecord.record_content ? operationRecord.record_content.map((item, index) => {
+                            return [
+                                <Descriptions.Item label="编号">{item.db_isremoved ? <span><s style={{ color: 'red' }}>{item.num}</s> 已被删</span> : <span>{item.num}</span>}</Descriptions.Item>,
+                                <Descriptions.Item label="名称">{item.store_name}</Descriptions.Item>,
+                                <Descriptions.Item label="数量">{item.count > item.db_count ? <span><s style={{ color: 'red' }}>{item.count}</s> <span>当前为{item.db_count}</span></span> : <span>{item.count}</span>}</Descriptions.Item>,
+                            ]
+                        }) : ''}
+                    </Descriptions>
+                    {operationRecord.count_is_changed || operationRecord.store_is_removed ?
+                        null : <div>
+                            <Input style={styles.marginTop} ref={refRemark} maxLength={50} placeholder='备注撤销原因[必填]' allowClear />
+                            <Input style={styles.marginTop} ref={refPassword} maxLength={30} placeholder='库管人员密码[必填]' allowClear />
+                        </div>}
+                </div>
+            </Modal>
         </div>
     </div >
     )
