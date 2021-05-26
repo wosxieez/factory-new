@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { message } from 'antd'
-// const SERVER_URL = 'http://127.0.0.1:3210/'
-// const SERVER_URL = 'http://192.168.31.26:3210/'
+
 const SERVER_URL = 'http://ixiaomu.cn:3210/'
+// const SERVER_URL = 'http://60.174.196.158:3210/' ///60
 // const SERVER_URL = 'http://localhost:3210/' ///本地测试
 
 // 响应拦截器

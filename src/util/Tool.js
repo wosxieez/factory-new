@@ -168,8 +168,12 @@ export function translatePurchaseRecordList(purchaseRecordList) {
     delete itemCopy.content
     const storesList = JSON.parse(item.content)
     storesList.forEach((store) => {
-      store.other = itemCopy
-      allStoreList.push(store)
+      // store.other = itemCopy
+      // allStoreList.push(store)
+      let new_obj = { ...store }
+      new_obj.other = itemCopy
+      new_obj.outbound_record_content = storesList
+      allStoreList.push(new_obj)
     })
   })
   return allStoreList

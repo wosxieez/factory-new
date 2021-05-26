@@ -1,23 +1,27 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import api from '../../http';
-import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip } from 'antd';
+import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip, Menu, Dropdown, Icon, Alert, Descriptions } from 'antd';
 import moment from 'moment';
-import { translatePurchaseRecordList } from '../../util/Tool';
+import { translatePurchaseRecordList, userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 import ExportJsonExcel from 'js-export-excel'
 import SearchInput5 from './SearchInput5';
+
 
 var date_range;
 /***
  * 自行出库物品记录
  */
 export default _ => {
+    const refRemark = useRef(null)
+    const refPassword = useRef(null)
     const [isLoading, setIsLoading] = useState(false)
     const [dataSource, setDataSource] = useState([])
     const [sum_price, setSumPrice] = useState(0)
     const [sum_count, setSumCount] = useState(0)
     const [sum_tax_price, setSumTaxPrice] = useState(0)
-
+    const [modalPanelVisible, setModalPanelVisible] = useState(false)
+    const [operationRecord, setOperationRecord] = useState({})
     const listData = useCallback(async (conditionObj) => {
         setIsLoading(true)
         date_range = conditionObj.date_range || [moment().add(0, 'month').startOf('month').format('YYYY-MM-DD HH:mm:ss'), moment().endOf('day').format('YYYY-MM-DD HH:mm:ss')]
@@ -77,9 +81,11 @@ export default _ => {
             let records_sum_count = 0
             let records_sum_tax_price = 0
             storeData.forEach((item) => {
-                records_sum_price += parseFloat(item.count * item.price)
-                records_sum_count += parseFloat(item.count)
-                records_sum_tax_price += parseFloat(item.count * item.tax_price)
+                if (!item.other.is_rollback) { ///不统计撤销的出库单
+                    records_sum_price += parseFloat(item.count * item.price)
+                    records_sum_count += parseFloat(item.count)
+                    records_sum_tax_price += parseFloat(item.count * item.tax_price)
+                }
             })
             setSumPrice(parseFloat(records_sum_price).toFixed(2))
             setSumCount(records_sum_count)
@@ -89,7 +95,8 @@ export default _ => {
     }, [])
     const exportHandler = useCallback(() => {
         // console.log('dataSource:', dataSource)
-        let new_list = dataSource.map((item) => {
+        // return
+        let new_list = dataSource.filter((item) => { return !item.other.is_rollback }).map((item) => {
             let data = {};
             data.tax_price = String(item.tax_price || '-')
             data.tax = String(item.temp_tax || '-')
@@ -139,11 +146,39 @@ export default _ => {
             dataIndex: 'other.code_num',
             key: 'other.code_num',
             render: (text, record) => {
-                let tempCpt = record.other.abstract_remark ? <Tag color='blue' style={{ marginRight: 0 }}>{record.other.abstract_remark}</Tag> : null
-                return <div>
-                    <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
-                    {tempCpt}
-                </div>
+                let tempCpt = record.other.abstract_remark ? <Tag color={record.other.is_rollback === 1 ? '#bfbfbf' : 'blue'} style={{ marginRight: 0 }}>{record.other.abstract_remark}</Tag> : null
+                if (record.other.is_rollback === 1) {
+                    return <div>
+                        <Tag color='#bfbfbf' style={{ marginRight: 0 }}>{text}</Tag>
+                        {tempCpt}
+                        <Tooltip placement='left' title={<div>
+                            <p>{record.other.rollback_time}</p>
+                            <p>撤销人: {record.other.rollback_username}</p>
+                            <p>备注: {record.other.rollback_des}</p>
+                        </div>}>
+                            <Tag color='#fa541c'>已撤销 <Icon type="question-circle" /></Tag>
+                        </Tooltip>
+                    </div >
+                } else if (record.other.is_rollback === 0 && userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1) {
+                    return <Dropdown overlay={<Menu onClick={e => {
+                        if (e.key === '1') {
+                            setOperationRecord(record)
+                            setModalPanelVisible(true)
+                        }
+                    }}>
+                        <Menu.Item key="1" >撤销出库单记录</Menu.Item>
+                    </Menu>} trigger={['contextMenu']}>
+                        <div>
+                            <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                            {tempCpt}
+                        </div>
+                    </Dropdown>
+                } else {
+                    return <div>
+                        <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                        {tempCpt}
+                    </div>
+                }
             }
         },
         {
@@ -267,6 +302,7 @@ export default _ => {
                     <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
                 </div>
             </div>
+            <Alert showIcon type='warning' message='总数量、总含税价格、总价格的统计不包含撤销单中包含的物品' />
             <Table
                 loading={isLoading}
                 style={styles.marginTop}
@@ -284,6 +320,50 @@ export default _ => {
                     pageSizeOptions: ['10', '50', '100'],
                 }}
             />
+            <Modal width={700} title={operationRecord.other ? `确定要撤销单号【${operationRecord.other.code_num}】的出库单吗?` : ''} visible={modalPanelVisible} onCancel={() => { setModalPanelVisible(false) }} onOk={async () => {
+                // console.log(refRemark.current.state.value);
+                // console.log(refPassword.current.state.value);
+                if (!refRemark.current.state.value) { message.error('备注不可为空'); return }
+                if (!refPassword.current.state.value) { message.error('密码不可为空'); return }
+                if (refPassword.current.state.value !== userinfo().password) { message.error('密码不正确'); return }
+                const storeList = operationRecord.outbound_record_content
+                const id = operationRecord.other.id
+                const des = refRemark.current.state.value
+                const username = userinfo().name
+                const time = moment().format('YYYY-MM-DD HH:mm:ss')
+                let sql = `update outbound_record set is_rollback = 1,rollback_des = '${des}',rollback_username = '${username}',rollback_time = '${time}' where id = ${id}`
+                // console.log('storeList:', storeList)
+                let result = await api.query(sql)
+                if (result.code === 0) { ///记录入库成功-开始循环修改store表中物品的信息。条件:store_id---数据:avg_price all_count remark 等
+                    console.log('出库单修改成功')
+                    for (let index = 0; index < storeList.length; index++) {
+                        const storeObj = storeList[index]
+                        let result = await api.updateStoreCount({ id: storeObj.store_id, count: storeObj.count })
+                        if (result.code === 0) {
+                            message.success('物品数量恢复成功', 3);
+                        }
+                    }
+                }
+                setModalPanelVisible(false)
+                listData({})
+            }}>
+                <div>
+                    <Alert showIcon type='warning' message='点击确定后；出库单中所有物品都将恢复(增加)对应数量' />
+                    <Descriptions style={styles.marginTop} bordered title="物料列表" size={'small'}>
+                        {operationRecord.outbound_record_content ? operationRecord.outbound_record_content.map((item, index) => {
+                            return [
+                                <Descriptions.Item label="编号">{item.num}</Descriptions.Item>,
+                                <Descriptions.Item label="名称">{item.store_name}</Descriptions.Item>,
+                                <Descriptions.Item label="数量">{item.count}</Descriptions.Item>,
+                            ]
+                        }) : ''}
+                    </Descriptions>
+                    <div>
+                        <Input style={styles.marginTop} ref={refRemark} maxLength={50} placeholder='备注撤销原因[必填]' allowClear />
+                        <Input style={styles.marginTop} ref={refPassword} maxLength={30} placeholder='库管人员密码[必填]' allowClear />
+                    </div>
+                </div>
+            </Modal>
         </div>
     </div >
     )

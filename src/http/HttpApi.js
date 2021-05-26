@@ -4,6 +4,7 @@ import moment from 'moment'
 // import Qs from 'qs'
 const FORMAT = 'YYYY-MM-DD'
 export const Testuri = 'http://ixiaomu.cn:3010/'///小木服务器数据库 3008正式 3010测试
+// export const Testuri = 'http://60.174.196.158:3010/' ///60
 // export const Testuri = 'http://localhost:3010/'///本地测试
 export const permisstion = [{ name: '专工权限', value: 0 }, { name: '运行权限', value: 1 }, { name: '消费审批权限', value: 2 }, { name: '维修权限', value: 3 }]
 

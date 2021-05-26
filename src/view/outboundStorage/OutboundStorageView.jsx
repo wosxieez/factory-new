@@ -185,7 +185,7 @@ export default Form.create({ name: 'form' })(props => {
         const { date, storeList, remark, out_user_id, record_user_id, abstract_remark } = formData;
         const code = moment().toDate().getTime()
         const new_code_num = await autoGetOrderNum({ type: 1 })
-        let sql = `insert into outbound_record (date,code,code_num,content,out_user_id,record_user_id,remark,sum_count,sum_price,abstract_remark) values ('${date.format('YYYY-MM-DD HH:mm:ss')}','${code}',${new_code_num ? "'" + new_code_num + "'" : null},'${JSON.stringify(storeList)}',${out_user_id || null},${record_user_id},${remark ? "'" + remark + "'" : null},${sumCount},${sumPrice},${abstract_remark ? "'" + abstract_remark + "'" : null})`
+        let sql = `insert into outbound_record (date,code,code_num,content,out_user_id,record_user_id,remark,sum_count,sum_price,abstract_remark) values ('${date.format('YYYY-MM-DD HH:mm:ss')}','${code}',${new_code_num ? "'" + new_code_num + "'" : null},'${JSON.stringify(storeList)}',${out_user_id >= 0 ? out_user_id : null},${record_user_id},${remark ? "'" + remark + "'" : null},${sumCount},${sumPrice},${abstract_remark ? "'" + abstract_remark + "'" : null})`
         let result = await api.query(sql)
         if (result.code === 0) { ///记录入库成功-开始循环修改store表中物品的信息。条件:store_id---数据:avg_price all_count remark 等
             for (let index = 0; index < storeList.length; index++) {

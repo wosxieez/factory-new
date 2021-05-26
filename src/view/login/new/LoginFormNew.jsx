@@ -26,6 +26,7 @@ const LoginFormNew = Form.create({ name: 'form' })(props => {
                 let is_legal = checkPasswordChart(values.password)
                 if (!is_legal) { message.error('非法密码，请重新输入密码'); return }
                 ///新的根据工厂数据库中的用户数据表
+                // console.log('新的根据工厂数据库中的用户数据表')
                 let response = await HttpApi.getUserList(values.username, values.password);
                 if (response.length > 0) {
                     const user = response[0]
