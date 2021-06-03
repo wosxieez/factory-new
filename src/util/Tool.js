@@ -481,3 +481,56 @@ export async function autoGetOrderNum({ type = 0 }) {
     return result_res
   }
 }
+
+/**
+ * 判断出那些元素准备移除
+ * @param {*} param0 
+ */
+export function checkWhichItemReadyRemove({ targetList, conditionList, targetKey, conditionKey }) {
+  let result_list = targetList.map((targetItem) => {
+    let new_obj = { ...targetItem }
+    conditionList.forEach((condtionItem) => {
+      if (targetItem[targetKey] === condtionItem[conditionKey]) {
+        new_obj.removed = true
+      }
+    })
+    return new_obj
+  })
+  return result_list
+}
+/**
+ * 计算移除后的订单总数量和总价
+ * @param {*} list 
+ * @returns 
+ */
+export function checkSumCountAndSumPrice(list) {
+  let sumCount = 0
+  let sumPrice = 0
+  list.forEach((item) => {
+    if (!item.removed) {
+      sumCount = sumCount + item.count
+      sumPrice = sumPrice + (item.count * item.price)
+    }
+  })
+  return { newSumCount: sumCount, newSumPrice: sumPrice }
+}
+
+export function addRemoveRemarkForStoreItem({ targetList, removedRemark, removedTime, removedUsername }) {
+  return targetList.map((item) => {
+    if (item.removed && !item['removedRemark'] && !item['removedTime'] && !item['removedUsername']) {
+      item['removedRemark'] = removedRemark
+      item['removedTime'] = removedTime
+      item['removedUsername'] = removedUsername
+    }
+    return item
+  })
+}
+
+export function allStoreItemIsRemoved(list) {
+  if (!list || list.length === 0) { return true }
+  let is_all_removed = true
+  list.forEach((item) => {
+    if (!item.removed) { is_all_removed = false }
+  })
+  return is_all_removed
+}

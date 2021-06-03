@@ -86,17 +86,15 @@ export default props => {
             // console.log('result.data[0]:', result.data[0])
             setDataSource(result.data[0].map((item, index) => {
                 ///计算总价格、总数量 撤销的记录数量都是0
-                tempSumcount += !item.is_rollback ? parseInt(item.sum_count) : 0;
-                tempSumprice += !item.is_rollback ? parseFloat(item.sum_price) : 0;
+                tempSumcount += parseInt(item.sum_count)
+                tempSumprice += parseFloat(item.sum_price)
                 item.key = index;
                 return item
             }))
             let tempSumTaxPrice = 0
             result.data[0].forEach((item) => {
-                if (!item.is_rollback) { ///计算总含税价格 不包含撤销的记录
-                    const content = JSON.parse(item.content)
-                    tempSumTaxPrice = tempSumTaxPrice + getListAllTaxPrice2(content)
-                }
+                const content = JSON.parse(item.content).filter((item) => !item.removed)
+                tempSumTaxPrice = tempSumTaxPrice + getListAllTaxPrice2(content)
             })
             setSumTaxPrice(tempSumTaxPrice.toFixed(2))
             // console.log('tempSumcount:', tempSumcount.toFixed(0))
@@ -120,28 +118,10 @@ export default props => {
             width: 100,
             render: (text, record) => {
                 let tempCpt = record.abstract_remark ? <Tag color={record.is_rollback === 1 ? '#bfbfbf' : 'blue'} style={{ marginRight: 0 }}>{record.abstract_remark}</Tag> : null
-                // return <div>
-                //     <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
-                //     {tempCpt}
-                // </div>
-                if (record.is_rollback === 1) {
-                    return <div>
-                        <Tag color='#bfbfbf' style={{ marginRight: 0 }}>{text}</Tag>
-                        {tempCpt}
-                        <Tooltip placement='left' title={<div>
-                            <p>{record.rollback_time}</p>
-                            <p>撤销人: {record.rollback_username}</p>
-                            <p>备注: {record.rollback_des}</p>
-                        </div>}>
-                            <Tag color='#fa541c'>已撤销 <Icon type="question-circle" /></Tag>
-                        </Tooltip>
-                    </div >
-                } else {
-                    return <div>
-                        <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
-                        {tempCpt}
-                    </div>
-                }
+                return <div>
+                    <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                    {tempCpt}
+                </div>
             }
         },
         {
@@ -158,11 +138,22 @@ export default props => {
                     if (item.temp_tax) {
                         tool_str = tool_str + ' 税率' + item.temp_tax + '%'
                     } else { tool_str = tool_str + ' 无税率' }
-                    return <Tooltip key={index} placement='left' title={tool_str} >
-                        <div key={index}>
-                            <Tag key={index} color={'cyan'} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>{item.store_name} 采购价{item.price}元*{item.count}</Tag><br />
-                        </div>
-                    </Tooltip>
+                    return <div key={index}>
+                        <Tooltip key={index + 'x'} placement='left' title={tool_str} >
+                            <div key={index}>
+                                <Tag key={index} color={item.removed ? '' : 'cyan'} style={{ marginRight: 0, marginBottom: 6 }}>{item.store_name} 采购价{item.price}元*{item.count}</Tag><br />
+                            </div>
+                        </Tooltip>
+                        {item.removed ? <Tooltip key={index + 'y'} placement='left' title={<div>
+                            <div>{item.removedTime}</div>
+                            <div>{item.removedUsername}</div>
+                            <div>备注: {item.removedRemark}</div>
+                        </div>} >
+                            <div key={index}>
+                                <Tag key={index} color={'#ff0000'} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}><Icon type="arrow-up" /> 已撤销</Tag><br />
+                            </div>
+                        </Tooltip> : null}
+                    </div>
                 })
             }
         },
@@ -194,7 +185,8 @@ export default props => {
             width: 80,
             render: (text) => {
                 try {
-                    const contextList = JSON.parse(text)
+                    const contextList = JSON.parse(text).filter((item) => !item.removed)
+                    // console.log('contextList:', contextList)
                     let sum_tax_price = parseFloat(getListAllTaxPrice2(contextList)).toFixed(2)
                     return <Tag color={'#722ed1'} style={{ marginRight: 0 }}>{sum_tax_price}</Tag>
                 } catch (error) {
