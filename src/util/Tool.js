@@ -535,7 +535,6 @@ export function allStoreItemIsRemoved(list) {
   if (!list || list.length === 0) { return true }
   let is_all_removed = true
   list.forEach((item) => {
-    console.log('item:', item)
     if (!item.removed) { is_all_removed = false }
   })
   return is_all_removed

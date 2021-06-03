@@ -99,7 +99,7 @@ export default _ => {
         setIsLoading(false)
     }, [])
     const exportHandler = useCallback(() => {
-        let new_list = dataSource.filter((item) => { return !item.other.is_rollback }).map((item) => {
+        let new_list = dataSource.filter((item) => { return !item.removed }).map((item) => {
             let data = {};
             data.tax_price = String(item.temp_tax_price || '-')
             data.tax = String(item.temp_tax || '-')
