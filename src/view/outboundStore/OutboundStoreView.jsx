@@ -324,7 +324,7 @@ export default _ => {
                 const remarkValue = refRemark.current.state.value
                 const passwrodValue = refPassword.current.state.value
                 const selectStoreListValue = refSubTable.current.props.rowSelection.selectedRows
-                console.log('selectStoreListValue:', selectStoreListValue)///选择撤销的物品列表 对应物品增加对应数量
+                // console.log('selectStoreListValue:', selectStoreListValue)///选择撤销的物品列表 对应物品增加对应数量
                 // console.log('operationRecord:', operationRecord)
                 if (selectStoreListValue.length === 0) { message.error('勾选的物品不可为空'); return }
                 if (!remarkValue) { message.error('备注不可为空'); return }
@@ -341,7 +341,7 @@ export default _ => {
                 // console.log('final_content_list:', final_content_list)///修改记录中的 content
                 // return;
                 let sql = `update outbound_record set content = '${JSON.stringify(final_content_list)}',sum_count= ${newSumCount},sum_price = ${newSumPrice} where id = ${id}`
-                console.log('sql:', sql)
+                // console.log('sql:', sql)
                 // let sql_old = `update outbound_record_copy set is_rollback = 1,rollback_des = '${des}',rollback_username = '${username}',rollback_time = '${time}' where id = ${id}`
                 // // console.log('storeList:', storeList)
                 let result = await api.query(sql)
@@ -548,7 +548,6 @@ const StoreListSubTable = forwardRef((props, ref) => {
         getCheckboxProps: getCheckboxPropsHandler
     };
     return <Table style={styles.marginTop} ref={ref} rowSelection={rowSelection} dataSource={props.data} columns={columns_sub} size='small' bordered pagination={false} />
-
 })
 
 const styles = {

@@ -526,11 +526,26 @@ export function addRemoveRemarkForStoreItem({ targetList, removedRemark, removed
   })
 }
 
+/**
+ * content中 物品的removed 字段代表 是否做过撤销操作
+ * @param {*} list 
+ * @returns 
+ */
 export function allStoreItemIsRemoved(list) {
   if (!list || list.length === 0) { return true }
   let is_all_removed = true
   list.forEach((item) => {
+    console.log('item:', item)
     if (!item.removed) { is_all_removed = false }
   })
   return is_all_removed
+}
+
+export function deleteListSomeKeys(list) {
+  return JSON.parse(JSON.stringify(list)).map((item) => {
+    delete item.db_count
+    delete item.db_is_reduced
+    delete item.db_is_removed
+    return item
+  })
 }

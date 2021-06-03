@@ -88,7 +88,7 @@ export default props => {
             let tempSumTaxPrice = 0
             result.data[0].forEach((item) => {
                 if (!item.is_rollback) { ///计算总含税价格 不包含撤销的记录
-                    const content = JSON.parse(item.content)
+                    const content = JSON.parse(item.content).filter((item) => !item.removed)
                     tempSumTaxPrice = tempSumTaxPrice + getListAllTaxPrice(content)
                 }
             })
@@ -143,17 +143,43 @@ export default props => {
             dataIndex: 'content',
             // align: 'center',
             render: (text, record) => {
+                // let contentList = JSON.parse(text)
+                // return contentList.map((item, index) => {
+                //     let tool_str = '编号' + item.num
+                //     if (item.temp_tax) {
+                //         tool_str = tool_str + ' 税率' + item.temp_tax + '%'
+                //     } else { tool_str = tool_str + ' 无税率' }
+                //     return <Tooltip key={index} placement='left' title={tool_str} >
+                //         <div key={index}>
+                //             <Tag key={index} color={'cyan'} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>{item.store_name} 采购价{item.price}元*{item.count}</Tag><br />
+                //         </div>
+                //     </Tooltip>
+                // })
                 let contentList = JSON.parse(text)
                 return contentList.map((item, index) => {
-                    let tool_str = '编号' + item.num
+                    let tool_str = '编号'
+                    if (item.num) {
+                        tool_str = tool_str + item.num
+                    } else { tool_str = '无编号' }
                     if (item.temp_tax) {
                         tool_str = tool_str + ' 税率' + item.temp_tax + '%'
                     } else { tool_str = tool_str + ' 无税率' }
-                    return <Tooltip key={index} placement='left' title={tool_str} >
-                        <div key={index}>
-                            <Tag key={index} color={'cyan'} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>{item.store_name} 采购价{item.price}元*{item.count}</Tag><br />
-                        </div>
-                    </Tooltip>
+                    return <div key={index}>
+                        <Tooltip key={index + 'x'} placement='left' title={tool_str} >
+                            <div key={index}>
+                                <Tag key={index} color={item.removed ? '' : 'cyan'} style={{ marginRight: 0, marginBottom: 6 }}>{item.store_name} 采购价{item.price}元*{item.count}</Tag><br />
+                            </div>
+                        </Tooltip>
+                        {item.removed ? <Tooltip key={index + 'y'} placement='left' title={<div>
+                            <div>{item.removedTime}</div>
+                            <div>{item.removedUsername}</div>
+                            <div>备注: {item.removedRemark}</div>
+                        </div>} >
+                            <div key={index}>
+                                <Tag key={index} color={'#ff0000'} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}><Icon type="arrow-up" /> 已撤销</Tag><br />
+                            </div>
+                        </Tooltip> : null}
+                    </div>
                 })
             }
         },
@@ -185,7 +211,8 @@ export default props => {
             width: 80,
             render: (text) => {
                 try {
-                    const contextList = JSON.parse(text)
+                    // const contextList = JSON.parse(text)
+                    const contextList = JSON.parse(text).filter((item) => !item.removed)
                     let sum_tax_price = parseFloat(getListAllTaxPrice(contextList)).toFixed(2)
                     return <Tag color={'#722ed1'} style={{ marginRight: 0 }}>{sum_tax_price}</Tag>
                 } catch (error) {

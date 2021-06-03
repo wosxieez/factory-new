@@ -1,8 +1,8 @@
-import React, { useEffect, useCallback, useState, useRef } from 'react';
+import React, { useEffect, useCallback, useState, useRef, forwardRef } from 'react';
 import api from '../../http';
-import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip, Icon, TreeSelect, Dropdown, Menu, Alert, Descriptions } from 'antd';
+import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip, Icon, TreeSelect, Dropdown, Menu, Alert } from 'antd';
 import moment from 'moment';
-import { getJson2Tree, getTaxPrice, translatePurchaseRecordList, userinfo } from '../../util/Tool';
+import { addRemoveRemarkForStoreItem, allStoreItemIsRemoved, checkSumCountAndSumPrice, checkWhichItemReadyRemove, deleteListSomeKeys, getJson2Tree, getTaxPrice, translatePurchaseRecordList, userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 import ExportJsonExcel from 'js-export-excel'
 import SearchInput5 from '../outboundStore/SearchInput5';
@@ -14,6 +14,7 @@ var date_range;
 export default _ => {
     const refRemark = useRef(null)
     const refPassword = useRef(null)
+    const refSubTable = useRef(null)
     const [isLoading, setIsLoading] = useState(false)
     const [dataSource, setDataSource] = useState([])
     const [sum_price, setSumPrice] = useState(0)
@@ -85,7 +86,7 @@ export default _ => {
             let records_sum_count = 0
             let records_sum_tax_price = 0
             storeData.forEach((item) => {
-                if (!item.other.is_rollback) { ///不统计撤销的出库单
+                if (!item.removed) { ///不统计撤销的采购单
                     records_sum_price += parseFloat(item.count * item.price)
                     records_sum_count += parseFloat(item.count)
                     records_sum_tax_price += parseFloat(item.count * getTaxPrice(item.price, item.temp_tax))
@@ -154,47 +155,42 @@ export default _ => {
                 //     {tempCpt}
                 // </div>
                 let tempCpt = record.other.abstract_remark ? <Tag color={record.other.is_rollback === 1 ? '#bfbfbf' : 'blue'} style={{ marginRight: 0 }}>{record.other.abstract_remark}</Tag> : null
-                if (record.other.is_rollback === 1) {
-                    return <div>
-                        <Tag color='#bfbfbf' style={{ marginRight: 0 }}>{text}</Tag>
-                        {tempCpt}
-                        <Tooltip placement='left' title={<div>
-                            <p>{record.other.rollback_time}</p>
-                            <p>撤销人: {record.other.rollback_username}</p>
-                            <p>备注: {record.other.rollback_des}</p>
-                        </div>}>
-                            <Tag color='#fa541c'>已撤销 <Icon type="question-circle" /></Tag>
-                        </Tooltip>
-                    </div >
-                } else if (record.other.is_rollback === 0 && userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1) {
+                if (userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1) {
                     return <Dropdown overlay={<Menu onClick={async (e) => {
                         if (e.key === '1') {
-                            let count_is_changed = false
-                            let store_is_removed = false
+                            let all_store_count_is_reduced = true ///所有物品都发生的减少
+                            let all_store_is_removed = false///数据库中对应的物品都删除了
                             const storeList = record.record_content
                             let store_id_list = storeList.map((item) => item.store_id)
                             let sql = `select * from stores where id in (${store_id_list.join(',')}) and isdelete = 0`
                             let result = await api.query(sql)
                             if (result.code === 0) {
                                 let res_store_list = result.data[0]
+                                if (res_store_list.length === 0) { all_store_is_removed = true } ///数据库中没有采购单中的物品=>单中物品都删除成立
                                 storeList.forEach((store) => {
                                     res_store_list.forEach((db_store) => {
                                         if (store.store_id === db_store.id) {
-                                            store.db_count = db_store.count
+                                            store.db_count = db_store.count ///获取物品对应在数据库中的数量
                                             if (db_store.count < store.count) {///物品数量发生变动[数据库中物品比采购单中的数量少；说明有物品已经出库或编辑减去了]
-                                                count_is_changed = true
+                                                store.db_is_reduced = true ///某个物品数据库中的数量已经发生了减少
+                                            } else {
+                                                store.db_is_reduced = false ///该物品数据库中的存量足够减去采购单中的数量
+                                                all_store_count_is_reduced = false///所有物品都不够减flag不成立
                                             }
                                         }
                                     })
                                 })
                                 storeList.forEach((store) => {
-                                    if (!(store.db_count >= 0)) {
-                                        store.db_isremoved = true
-                                        store_is_removed = true
+                                    if (!(store.db_count >= 0)) { ///上一步 db_count 没有被赋值 为undefined 说明 该物品已经移除
+                                        store.db_is_removed = true ///该物品已经移除
+                                    } else { ///否则 该物品存在
+                                        store.db_is_removed = false ///该物品没有被移除
                                     }
                                 })
                             }
-                            let new_record = { ...record, record_content: storeList, count_is_changed, store_is_removed }
+
+                            let all_store_is_rollbacked = allStoreItemIsRemoved(storeList) ///所有物品都已经做过撤销操作了 物品的removed属性为true
+                            let new_record = { ...record, record_content: storeList, all_store_count_is_reduced, all_store_is_removed, all_store_is_rollbacked }
                             // console.log('new_record:', new_record)
                             setOperationRecord(new_record)
                             setModalPanelVisible(true)
@@ -220,13 +216,19 @@ export default _ => {
             dataIndex: 'store_name',
             key: 'store_name',
             render: (text, record) => {
-                return <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                return <div>
                     <Tooltip placement='left' title={record.num ? '编号' + record.num : '无编号'}>
-                        <Tag color='cyan' style={{ marginRight: 0 }}>{(record.origin_index + 1 + ' ')}{text}</Tag>
-                    </Tooltip>
-                    {record.temp_remark ? <Tooltip placement='top' title={record.temp_remark}>
-                        <Icon style={{ marginLeft: 10 }} type="exclamation-circle" theme="twoTone" />
-                    </Tooltip> : null}
+                        <Tag color={record.removed ? '' : 'cyan'} style={{ marginRight: 0 }}>{(record.origin_index + 1 + ' ')}{text}</Tag>
+                    </Tooltip><p />
+                    {record.removed ?
+                        <Tooltip placement='left' title={<div>
+                            <div>{record.removedTime}</div>
+                            <div>{record.removedUsername}</div>
+                            <div>备注: {record.removedRemark}</div>
+                        </div>}>
+                            <Tag color='#ff0000' style={{ marginRight: 0 }}><Icon type="arrow-up" /> 已撤销</Tag>
+                        </Tooltip>
+                        : null}
                 </div>
             }
         },
@@ -362,24 +364,36 @@ export default _ => {
                     pageSizeOptions: ['10', '50', '100'],
                 }}
             />
-            <Modal width={700} title={operationRecord.other ? `确定要撤销单号【${operationRecord.other.code_num}】的采购单吗?` : ''} visible={modalPanelVisible} onCancel={() => { setModalPanelVisible(false) }} onOk={async () => {
-                if (operationRecord.count_is_changed || operationRecord.store_is_removed) { setModalPanelVisible(false); return }
+            <Modal destroyOnClose width={800} title={operationRecord.other ? `确定要撤销单号【${operationRecord.other.code_num}】的采购单吗?` : ''} visible={modalPanelVisible} onCancel={() => { setModalPanelVisible(false) }} onOk={async () => {
+                if (operationRecord.all_store_is_rollbacked || operationRecord.all_store_count_is_reduced || operationRecord.all_store_is_removed) { setModalPanelVisible(false); return }
                 // console.log(refRemark.current.state.value);
                 // console.log(refPassword.current.state.value);
-                if (!refRemark.current.state.value) { message.error('备注不可为空'); return }
-                if (!refPassword.current.state.value) { message.error('密码不可为空'); return }
-                // if (refPassword.current.state.value !== userinfo().password) { message.error('密码不正确'); return }
-                const storeList = operationRecord.record_content
-                const id = operationRecord.other.id
-                const des = refRemark.current.state.value
-                const username = userinfo().name
-                const time = moment().format('YYYY-MM-DD HH:mm:ss')
-                let sql = `update purchase_record set is_rollback = 1,rollback_des = '${des}',rollback_username = '${username}',rollback_time = '${time}' where id = ${id}`
+                const remarkValue = refRemark.current.state.value
+                const passwrodValue = refPassword.current.state.value
+                const selectStoreListValue = refSubTable.current.props.rowSelection.selectedRows
+                // console.log('selectStoreListValue:', selectStoreListValue)///选择撤销的物品列表 对应物品增加对应数量
+                if (selectStoreListValue.length === 0) { message.error('勾选的物品不可为空'); return }
+                if (!remarkValue) { message.error('备注不可为空'); return }
+                if (!passwrodValue) { message.error('密码不可为空'); return }
+                if (passwrodValue !== userinfo().password) { message.error('密码不正确'); return }
+                let new_content_list = checkWhichItemReadyRemove({ targetList: operationRecord.record_content, conditionList: selectStoreListValue, targetKey: 'store_id', conditionKey: 'store_id' })
+                let { newSumCount, newSumPrice } = checkSumCountAndSumPrice(new_content_list)///修改记录中的 sum_count sum_price
+                // console.log('new_content_list:', new_content_list)
+                // console.log('newSumCount, newSumPrice:', newSumCount, newSumPrice)
+                const id = operationRecord.other.id ///记录id
+                const username = userinfo().name///撤销人id
+                const time = moment().format('YYYY-MM-DD HH:mm:ss')///撤销时间
+                let final_content_list = addRemoveRemarkForStoreItem({ targetList: new_content_list, removedRemark: remarkValue, removedTime: time, removedUsername: username })
+                // console.log('final_content_list:', final_content_list)
+                let after_delete_some_key = deleteListSomeKeys(final_content_list) ///删除不需要的属性
+                // console.log('after_delete_some_key:', after_delete_some_key) ///删除不需要的属性
+                let sql = `update purchase_record set content = '${JSON.stringify(after_delete_some_key)}',sum_count= ${newSumCount},sum_price = ${newSumPrice} where id = ${id}`
+                // console.log('sql:', sql)
                 let result = await api.query(sql)
                 if (result.code === 0) { ///记录入库成功-开始循环修改store表中物品的信息。条件:store_id---数据:avg_price all_count remark 等
                     console.log('采购单修改成功')
-                    for (let index = 0; index < storeList.length; index++) {
-                        const storeObj = storeList[index]
+                    for (let index = 0; index < selectStoreListValue.length; index++) {
+                        const storeObj = selectStoreListValue[index]
                         let result = await api.updateStoreCount({ id: storeObj.store_id, count: -storeObj.count })
                         if (result.code === 0) {
                             message.success('物品数量恢复成功', 3);
@@ -390,18 +404,10 @@ export default _ => {
                 listData({})
             }}>
                 <div>
-                    <Alert showIcon type={operationRecord.count_is_changed || operationRecord.store_is_removed ? 'error' : 'warning'}
-                        message={operationRecord.count_is_changed || operationRecord.store_is_removed ? '当前数据库中物料数量已经发生变动[可能已出库]、或物品已被删除；此单不可再做撤销操作。' : '点击确定后；出库单中所有物品都将恢复(-减少)对应数量'} />
-                    <Descriptions style={styles.marginTop} bordered title="此单物料列表" size={'small'}>
-                        {operationRecord.record_content ? operationRecord.record_content.map((item, index) => {
-                            return [
-                                <Descriptions.Item label="编号">{item.db_isremoved ? <span><s style={{ color: 'red' }}>{item.num}</s> 已被删</span> : <span>{item.num}</span>}</Descriptions.Item>,
-                                <Descriptions.Item label="名称">{item.store_name}</Descriptions.Item>,
-                                <Descriptions.Item label="数量">{item.count > item.db_count ? <span><s style={{ color: 'red' }}>{item.count}</s> <span>当前为{item.db_count}</span></span> : <span>{item.count}</span>}</Descriptions.Item>,
-                            ]
-                        }) : ''}
-                    </Descriptions>
-                    {operationRecord.count_is_changed || operationRecord.store_is_removed ?
+                    <Alert showIcon type={operationRecord.all_store_count_is_reduced || operationRecord.all_store_is_rollbacked || operationRecord.all_store_is_removed ? 'error' : 'warning'}
+                        message={operationRecord.all_store_count_is_reduced || operationRecord.all_store_is_removed ? '当前数据库中物料数量已经发生变动[可能已出库]、或物品已被删除；此单不可再做撤销操作。' : (operationRecord.all_store_is_rollbacked ? '所有物品都已做过撤销操作' : '点击确定后；出库单中所有物品都将恢复(-减少)对应数量')} />
+                    {operationRecord.record_content ? <StoreListSubTable ref={refSubTable} data={operationRecord.record_content} /> : null}
+                    {operationRecord.all_store_count_is_reduced || operationRecord.all_store_is_rollbacked || operationRecord.all_store_is_removed ?
                         null : <div>
                             <Input style={styles.marginTop} ref={refRemark} maxLength={50} placeholder='备注撤销原因[必填]' allowClear />
                             <Input style={styles.marginTop} ref={refPassword} maxLength={30} placeholder='库管人员密码[必填]' allowClear />
@@ -532,6 +538,67 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
             </Col>
         </Row>
     </Form>
+})
+const StoreListSubTable = forwardRef((props, ref) => {
+    const [selectedRowKeys, setSelectedRowKeys] = useState([])
+    const [selectedRows, setselectedRows] = useState([])
+    const columns_sub = [
+        {
+            title: '编号',
+            dataIndex: 'num',
+            key: 'num',
+            render: (text, record) => {
+                if (record.removed) { return <s style={{ color: 'red' }}>{text}</s> }
+                if (record.db_is_removed) { return <span><s style={{ color: 'red' }}>{text}</s> <span>已被删</span></span> }
+                return text
+            }
+        },
+        {
+            title: '名称',
+            dataIndex: 'store_name',
+            key: 'store_name',
+            render: (text, record) => {
+                if (record.removed) { return <s style={{ color: 'red' }}>{text}</s> }
+                return text
+            }
+        },
+        {
+            title: '数量',
+            dataIndex: 'count',
+            key: 'count',
+            render: (text, record) => {
+                if (record.removed) { return <s style={{ color: 'red' }}>{text}</s> }
+                if (record.db_count < record.count) { return <span><s style={{ color: 'red' }}>{text}</s> <span>{record.db_count}</span></span> }
+                return text
+            }
+        },
+        {
+            title: '撤销备注',
+            dataIndex: 'removedRemark',
+            key: 'removedRemark',
+            render: (text) => {
+                return text
+            }
+        },
+    ]
+    const onSelectChange = useCallback((sRowKeys, sRows) => {
+        setSelectedRowKeys(sRowKeys)
+        setselectedRows(sRows)
+    }, [])
+    const getCheckboxPropsHandler = useCallback((record) => {
+        // console.log('record.db_count:', record.db_count, 'record.count:', record.count)
+        // console.log('getCheckboxPropsHandler record:', record)
+        return ({
+            disabled: record.removed || record.db_is_reduced || record.db_is_removed
+        })
+    }, [])
+    const rowSelection = {
+        selectedRowKeys,
+        selectedRows,
+        onChange: onSelectChange,
+        getCheckboxProps: getCheckboxPropsHandler
+    };
+    return <Table style={styles.marginTop} ref={ref} rowSelection={rowSelection} dataSource={props.data} columns={columns_sub} size='small' bordered pagination={false} />
 })
 const styles = {
     root: {
