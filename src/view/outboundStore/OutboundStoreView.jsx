@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useState, useRef, forwardRef } from 'react';
 import api from '../../http';
-import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip, Menu, Dropdown, Icon, Alert } from 'antd';
+import { Badge, Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip, Menu, Dropdown, Icon, Alert } from 'antd';
 import moment from 'moment';
 import { addRemoveRemarkForStoreItem, allStoreItemIsRemoved, checkSumCountAndSumPrice, checkWhichItemReadyRemove, translatePurchaseRecordList, userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
@@ -11,7 +11,7 @@ var date_range;
 /***
  * 自行出库物品记录
  */
-export default _ => {
+export default props => {
     const refRemark = useRef(null)
     const refPassword = useRef(null)
     const refSubTable = useRef(null)
@@ -152,9 +152,13 @@ export default _ => {
                         if (e.key === '1') {
                             setOperationRecord(record)
                             setModalPanelVisible(true)
+                        } else if (e.key === '2') {
+                            // console.log('record:', record)
+                            props.history.push({ pathname: '/main/outboundstorageview', state: { is_insert: true, target_table_data: { ...record.other, content: record.record_content } } })
                         }
                     }}>
-                        <Menu.Item key="1" >撤销出库单记录</Menu.Item>
+                        <Menu.Item key="1" ><Icon type="rollback" /><span>撤销出库单记录</span></Menu.Item>
+                        <Menu.Item key="2" ><Icon type="plus" /><span>补录出库单</span></Menu.Item>
                     </Menu>} trigger={['contextMenu']}>
                         <div>
                             <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
@@ -174,9 +178,20 @@ export default _ => {
             dataIndex: 'store_name',
             key: 'store_name',
             render: (text, record) => {
+                // console.log('record:', record)
                 return <div>
-                    <Tooltip placement='left' title={record.num ? '编号' + record.num : '无编号'}>
-                        <Tag color={record.removed ? '' : 'cyan'} style={{ marginRight: 0 }}>{(record.origin_index + 1 + ' ')}{text}</Tag>
+                    <Tooltip placement='left' title={<div>
+                        {record.is_insert ? (record.insert_remark ? <div>
+                            <div>{record.num ? '编号:' + record.num : '无编号'}</div>
+                            <div>{'备注:' + record.insert_remark}</div>
+                            <div>{'时间:' + record.insert_time}</div>
+                        </div> : <div>
+                            <div>{record.num ? '编号:' + record.num : '无编号'}</div>
+                            <div>{'时间:' + record.insert_time}</div>
+                        </div>) : record.num ? '编号:' + record.num : '无编号'}
+                    </div>}>
+                        <Tag color={record.removed ? '' : 'cyan'} style={{ marginRight: 0 }}>{(record.origin_index + 1 + ' ')}{text}{record.is_insert ? <Badge style={{ paddingLeft: 8 }} count={<span style={{ color: '#f5222d', fontSize: 8, }}>+</span>} />
+                            : null}</Tag>
                     </Tooltip><p />
                     {record.removed ?
                         <Tooltip placement='left' title={<div>

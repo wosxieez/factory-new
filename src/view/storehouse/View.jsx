@@ -400,7 +400,7 @@ export default props => {
                   }}
                 >
                   普通物品
-              </Button>
+                </Button>
                 {/* <Button
                   style={styles.button}
                   type='danger'
@@ -425,7 +425,7 @@ export default props => {
               <span style={styles.alertMessage}>
                 <span>
                   已选择 <span style={{ color: '#1890ff', fontWeight: 800 }}>{selectedRowKeys.length}</span> 项
-              </span>
+                </span>
                 <Button
                   type='link'
                   size='small'
@@ -434,7 +434,7 @@ export default props => {
                     setSelectedRows([])
                   }}>
                   清空
-              </Button>
+                </Button>
               </span>
             }
             type='info'

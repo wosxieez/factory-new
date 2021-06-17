@@ -11,6 +11,7 @@ const starIcon = <span style={{ color: 'red' }}>* </span>
  * 申请单界面
  */
 export default Form.create({ name: 'form' })(props => {
+    // console.log('props:', props.location.state)
     const [tempCodeNum, setTempCodeNum] = useState('')
     // console.log('AppData.userinfo:', userinfo())
     // const [storeOptionList, setStoreOptionList] = useState([])
@@ -18,6 +19,7 @@ export default Form.create({ name: 'form' })(props => {
     const [sumCount, setSumCount] = useState(0)
     const [sumPrice, setSumPrice] = useState(0)
     const [orderList, setOrderList] = useState([])
+    const [isInsert] = useState(props.location.state && props.location.state.is_insert)
     const listAllStore = useCallback(async () => {
         // let response_store = await api.listAllStore()
         ///查询现有的 那些处于待审核 和 审核中的 申请。得到对应的物品的id 和 count -- 对现有的store 数据进行相减
@@ -163,6 +165,41 @@ export default Form.create({ name: 'form' })(props => {
     }, [props.form, listAllStore])
 
     /**
+     * 补充录入
+     */
+    const insertTargetTableHandler = useCallback(async (formData) => {
+        const targetTable = props.location.state.target_table_data
+        let { storeList, remark } = formData
+        let { id, content, sum_count, sum_price } = targetTable
+        // console.log('remark:', remark)
+        // console.log('storeList:', storeList)
+        // console.log('id:', id)
+        const time = moment().format('YYYY-MM-DD HH:mm:ss')
+        // console.log('content:', content)
+        storeList = storeList.map((item, index) => { item.key = content.length + index; item.is_insert = 1; item.insert_remark = remark || ''; item.insert_time = time; return item })
+        const new_sum_count = parseInt(sum_count) + sumCount
+        const new_sum_price = parseInt(sum_price) + sumPrice
+        const new_content = content.concat(storeList)
+        // console.log('new_content:', new_content)
+        // console.log('new_sum_count:', new_sum_count)
+        // console.log('new_sum_price:', new_sum_price)
+        let sql = `update outbound_record set content = '${JSON.stringify(new_content)}',sum_count = ${new_sum_count},sum_price = ${new_sum_price} where id = ${id}`
+        let result = await api.query(sql)
+        if (result.code === 0) {
+            // message.success('补录出库成功', 3);
+            for (let index = 0; index < storeList.length; index++) {
+                const storeObj = storeList[index]
+                let result = await api.updateStoreCount({ id: storeObj.store_id, count: -storeObj.count })
+                if (result.code === 0) {
+                    message.success('补录出库成功', 3);
+                }
+                ///新增
+            }
+        } else { message.error('补录出库失败', 3); }
+        resetHandler()
+    }, [props.location.state, sumCount, sumPrice, resetHandler])
+
+    /**
      * 更新物品库存信息。同时要给记录表插入一条记录
      */
     const updateStoreAndrecordHandler = useCallback(async (formData) => {
@@ -181,7 +218,10 @@ export default Form.create({ name: 'form' })(props => {
             }
         }
         // console.log('formData:', formData)
-        // return
+        if (isInsert) {
+            insertTargetTableHandler(formData)
+            return
+        }
         const { date, storeList, remark, out_user_id, record_user_id, abstract_remark } = formData;
         const code = moment().toDate().getTime()
         const new_code_num = await autoGetOrderNum({ type: 1 })
@@ -199,7 +239,7 @@ export default Form.create({ name: 'form' })(props => {
             }
         }
         resetHandler()
-    }, [sumCount, sumPrice, resetHandler])
+    }, [sumCount, sumPrice, resetHandler, isInsert, insertTargetTableHandler])
 
     const handleSubmit = useCallback((e) => {
         props.form.setFieldsValue({ storeList })
@@ -261,23 +301,23 @@ export default Form.create({ name: 'form' })(props => {
                         <Form.Item label='日期' >
                             {props.form.getFieldDecorator('date', {
                                 initialValue: moment(),
-                                rules: [{ required: true, message: '请选择日期' }]
-                            })(<DatePicker style={{ width: '100%' }} allowClear={false} disabledDate={(current) => current > moment().endOf('day')} />)}
+                                rules: [{ required: !isInsert, message: '请选择日期' }]
+                            })(<DatePicker disabled={isInsert} style={{ width: '100%' }} allowClear={false} disabledDate={(current) => current > moment().endOf('day')} />)}
                         </Form.Item>
                     </Col>
                     <Col span={6}>
                         <Form.Item label='单号' >
                             {props.form.getFieldDecorator('code_num', {
                                 initialValue: tempCodeNum,
-                                rules: [{ required: true }]
+                                rules: [{ required: !isInsert }]
                             })(<Input disabled />)}
                         </Form.Item>
                     </Col>
                     <Col span={6}>
                         <Form.Item label='领料人' >
                             {props.form.getFieldDecorator('out_user_id', {
-                                rules: [{ required: true, message: '请选择领料人' }]
-                            })(<Select allowClear placeholder='请选择领料人' showSearch optionFilterProp="children">
+                                rules: [{ required: !isInsert, message: '请选择领料人' }]
+                            })(<Select disabled={isInsert} allowClear placeholder='请选择领料人' showSearch optionFilterProp="children">
                                 {userOptionList.map((item, index) => {
                                     return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
                                 })}
@@ -288,8 +328,8 @@ export default Form.create({ name: 'form' })(props => {
                         <Form.Item label='记录人' >
                             {props.form.getFieldDecorator('record_user_id', {
                                 initialValue: userinfo().id,
-                                rules: [{ required: true, message: '请选择记录人' }]
-                            })(<Select placeholder='请选择记录人' showSearch optionFilterProp="children">
+                                rules: [{ required: !isInsert, message: '请选择记录人' }]
+                            })(<Select disabled={isInsert} placeholder='请选择记录人' showSearch optionFilterProp="children">
                                 {[userinfo()].map((item, index) => {
                                     return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
                                 })}
@@ -302,9 +342,15 @@ export default Form.create({ name: 'form' })(props => {
                         <Form.Item label='摘要' >
                             {props.form.getFieldDecorator('abstract_remark', {
                                 rules: [{ required: false, message: '请输入摘要' }]
-                            })(<Input placeholder='请输入摘要' />)}
+                            })(<Input disabled={isInsert} placeholder='请输入摘要' />)}
                         </Form.Item>
                     </Col>
+                    {isInsert ?
+                        <Col span={18}>
+                            <Alert style={{ marginLeft: 20 }} message={<div>当前正在为<Tooltip placement="rightTop" title={<RecordSimpleInfoBar data={props.location.state} />}>
+                                <Button size='small' style={{ paddingLeft: 0, paddingRight: 0 }} type='link'>【{props.location.state.target_table_data.code_num}】</Button>
+                            </Tooltip>进行补录；上方配置信息无需填写，刷新该页面恢复原始功能</div>} type='warning' showIcon />
+                        </Col> : null}
                 </Row>
                 <Row>
                     <Form.Item label='物品明细' labelCol={{ span: 24 }} wrapperCol={{ span: 24 }}>
@@ -367,6 +413,16 @@ export default Form.create({ name: 'form' })(props => {
         </div>
     </div >
 })
+
+function RecordSimpleInfoBar(props) {
+    if (props.data && props.data.target_table_data.content) {
+        const list = props.data.target_table_data.content
+        return list.filter((item) => !item.removed).map((storeItem, index) => {
+            return <div key={index}>{storeItem.num} {storeItem.store_name} {storeItem.count} {storeItem.unit}</div>
+        })
+    }
+    return ''
+}
 
 const styles = {
     root: {

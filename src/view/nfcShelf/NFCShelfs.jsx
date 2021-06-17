@@ -72,7 +72,15 @@ export default () => {
                     dataSource={nfclist}
                     size='small'
                     bordered
-                    pagination={false}
+                    pagination={{
+                        total: nfclist.length,
+                        showTotal: () => {
+                            return <div>共{nfclist.length}条记录</div>
+                        },
+                        showSizeChanger: true,
+                        showQuickJumper: true,
+                        pageSizeOptions: ['10', '50', '100'],
+                    }}
                 />
             </div>
         </div>
