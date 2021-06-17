@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useState, useRef, forwardRef } from 'react';
 import api from '../../http';
-import { Badge, Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip, Menu, Dropdown, Icon, Alert } from 'antd';
+import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip, Menu, Dropdown, Icon, Alert } from 'antd';
 import moment from 'moment';
 import { addRemoveRemarkForStoreItem, allStoreItemIsRemoved, checkSumCountAndSumPrice, checkWhichItemReadyRemove, translatePurchaseRecordList, userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
