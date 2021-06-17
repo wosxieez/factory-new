@@ -190,8 +190,8 @@ export default props => {
                             <div>{'时间:' + record.insert_time}</div>
                         </div>) : record.num ? '编号:' + record.num : '无编号'}
                     </div>}>
-                        <Tag color={record.removed ? '' : 'cyan'} style={{ marginRight: 0 }}>{(record.origin_index + 1 + ' ')}{text}{record.is_insert ? <Badge style={{ paddingLeft: 8 }} count={<span style={{ color: '#f5222d', fontSize: 8, }}>+</span>} />
-                            : null}</Tag>
+                        <Tag color={record.removed ? '' : 'cyan'} style={{ marginRight: 0 }}>{(record.origin_index + 1 + ' ')}{text}</Tag>
+                        {record.is_insert ? <Tag>补录</Tag> : null}
                     </Tooltip><p />
                     {record.removed ?
                         <Tooltip placement='left' title={<div>
