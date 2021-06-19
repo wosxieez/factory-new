@@ -483,14 +483,14 @@ export async function autoGetOrderNum({ type = 0 }) {
 }
 
 /**
- * 判断出那些元素准备移除
+ * 判断出那些元素准备移除 【只支持两个原始条件匹配】
  * @param {*} param0 
  */
 export function checkWhichItemReadyRemove({ targetList, conditionList, targetKey, conditionKey }) {
   let result_list = targetList.map((targetItem) => {
     let new_obj = { ...targetItem }
     conditionList.forEach((condtionItem) => {
-      if (targetItem[targetKey] === condtionItem[conditionKey]) {
+      if (targetItem[targetKey[0]] === condtionItem[conditionKey[0]] && targetItem[targetKey[1]] === condtionItem[conditionKey[1]]) {
         new_obj.removed = true
       }
     })

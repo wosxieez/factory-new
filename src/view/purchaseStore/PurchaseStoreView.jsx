@@ -390,7 +390,7 @@ export default props => {
                 if (!remarkValue) { message.error('备注不可为空'); return }
                 if (!passwrodValue) { message.error('密码不可为空'); return }
                 if (passwrodValue !== userinfo().password) { message.error('密码不正确'); return }
-                let new_content_list = checkWhichItemReadyRemove({ targetList: operationRecord.record_content, conditionList: selectStoreListValue, targetKey: 'store_id', conditionKey: 'store_id' })
+                let new_content_list = checkWhichItemReadyRemove({ targetList: operationRecord.record_content, conditionList: selectStoreListValue, targetKey: ['store_id', 'key'], conditionKey: ['store_id', 'key'] })
                 let { newSumCount, newSumPrice } = checkSumCountAndSumPrice(new_content_list)///修改记录中的 sum_count sum_price
                 // console.log('new_content_list:', new_content_list)
                 // console.log('newSumCount, newSumPrice:', newSumCount, newSumPrice)
