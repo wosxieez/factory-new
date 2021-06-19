@@ -200,7 +200,7 @@ export default props => {
                         }
                     }}>
                         <Menu.Item key="1"><Icon type="rollback" /><span>撤销采购库单记录</span></Menu.Item>
-                        <Menu.Item key="2"><Icon type="plus" /><span>补录购库单</span></Menu.Item>
+                        <Menu.Item key="2"><Icon type="plus" /><span>补录采购单</span></Menu.Item>
                     </Menu>} trigger={['contextMenu']}>
                         <div>
                             <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
