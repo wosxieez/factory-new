@@ -11,7 +11,7 @@ var date_range;
 /***
  * 采购物品记录
  */
-export default _ => {
+export default props => {
     const refRemark = useRef(null)
     const refPassword = useRef(null)
     const refSubTable = useRef(null)
@@ -194,9 +194,13 @@ export default _ => {
                             // console.log('new_record:', new_record)
                             setOperationRecord(new_record)
                             setModalPanelVisible(true)
+                        } else if (e.key === '2') {
+                            // console.log('record:', record)
+                            props.history.push({ pathname: '/main/purchasestorageview', state: { is_insert: true, target_table_data: { ...record.other, content: record.record_content } } })
                         }
                     }}>
-                        <Menu.Item key="1" >撤销采购库单记录</Menu.Item>
+                        <Menu.Item key="1"><Icon type="rollback" /><span>撤销采购库单记录</span></Menu.Item>
+                        <Menu.Item key="2"><Icon type="plus" /><span>补录购库单</span></Menu.Item>
                     </Menu>} trigger={['contextMenu']}>
                         <div>
                             <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
@@ -217,8 +221,18 @@ export default _ => {
             key: 'store_name',
             render: (text, record) => {
                 return <div>
-                    <Tooltip placement='left' title={record.num ? '编号' + record.num : '无编号'}>
+                    <Tooltip placement='left' title={<div>
+                        {record.is_insert ? (record.insert_remark ? <div>
+                            <div>{record.num ? '编号:' + record.num : '无编号'}</div>
+                            <div>{'备注:' + record.insert_remark}</div>
+                            <div>{'时间:' + record.insert_time}</div>
+                        </div> : <div>
+                            <div>{record.num ? '编号:' + record.num : '无编号'}</div>
+                            <div>{'时间:' + record.insert_time}</div>
+                        </div>) : record.num ? '编号:' + record.num : '无编号'}
+                    </div>}>
                         <Tag color={record.removed ? '' : 'cyan'} style={{ marginRight: 0 }}>{(record.origin_index + 1 + ' ')}{text}</Tag>
+                        {record.is_insert ? <Tag>补录</Tag> : null}
                     </Tooltip><p />
                     {record.removed ?
                         <Tooltip placement='left' title={<div>

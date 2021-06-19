@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Row, Col, Tooltip, Alert } from 'antd';
+import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Row, Col, Tooltip, Alert, Popover } from 'antd';
 import moment from 'moment';
 import api from '../../http';
 import { autoGetOrderNum, getTaxByOpriceAndTaxPrice, userinfo } from '../../util/Tool';
@@ -176,10 +176,10 @@ export default Form.create({ name: 'form' })(props => {
         // console.log('id:', id)
         const time = moment().format('YYYY-MM-DD HH:mm:ss')
         // console.log('content:', content)
-        storeList = storeList.map((item, index) => { item.key = content.length + index; item.is_insert = 1; item.insert_remark = remark || ''; item.insert_time = time; return item })
+        let new_storeList = JSON.parse(JSON.stringify(storeList)).map((item, index) => { item.key = content.length + index; item.is_insert = 1; item.insert_remark = remark || ''; item.insert_time = time; return item })
         const new_sum_count = parseInt(sum_count) + sumCount
         const new_sum_price = parseInt(sum_price) + sumPrice
-        const new_content = content.concat(storeList)
+        const new_content = content.concat(new_storeList)
         // console.log('new_content:', new_content)
         // console.log('new_sum_count:', new_sum_count)
         // console.log('new_sum_price:', new_sum_price)
@@ -347,9 +347,11 @@ export default Form.create({ name: 'form' })(props => {
                     </Col>
                     {isInsert ?
                         <Col span={18}>
-                            <Alert style={{ marginLeft: 20 }} message={<div>当前正在为<Tooltip placement="rightTop" title={<RecordSimpleInfoBar data={props.location.state} />}>
-                                <Button size='small' style={{ paddingLeft: 0, paddingRight: 0 }} type='link'>【{props.location.state.target_table_data.code_num}】</Button>
-                            </Tooltip>进行补录；上方配置信息无需填写，刷新该页面恢复原始功能</div>} type='warning' showIcon />
+                            <Alert style={{ marginLeft: 20 }} message={<div>当前正在为
+                                <Popover placement="rightTop" content={<RecordSimpleInfoBar data={props.location.state} />} title="原始单数据" trigger="hover">
+                                    <Button size='small' style={{ paddingLeft: 0, paddingRight: 0 }} type='link'>【{props.location.state.target_table_data.code_num}】</Button>
+                                </Popover>
+                                进行补录；上方配置信息无需填写，刷新该页面恢复原始功能</div>} type='warning' showIcon />
                         </Col> : null}
                 </Row>
                 <Row>
@@ -414,12 +416,15 @@ export default Form.create({ name: 'form' })(props => {
     </div >
 })
 
-function RecordSimpleInfoBar(props) {
+export function RecordSimpleInfoBar(props) {
     if (props.data && props.data.target_table_data.content) {
+        const { sum_count, sum_price } = props.data.target_table_data
         const list = props.data.target_table_data.content
-        return list.filter((item) => !item.removed).map((storeItem, index) => {
-            return <div key={index}>{storeItem.num} {storeItem.store_name} {storeItem.count} {storeItem.unit}</div>
+        let result = list.filter((item) => !item.removed).map((storeItem, index) => {
+            return <div key={index}>{storeItem.num} {storeItem.store_name} {storeItem.count} {storeItem.unit} 单价 {storeItem.price}</div>
         })
+        let finally_result = result.concat([<div key='x'>合计: {sum_count} 总价: {sum_price}</div>])
+        return finally_result
     }
     return ''
 }

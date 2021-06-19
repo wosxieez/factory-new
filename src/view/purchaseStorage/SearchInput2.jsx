@@ -8,7 +8,7 @@ let timeout;
  * @param {*} param0 
  * @returns 
  */
-export default function SearchInput2({ storeList, value, onChange, setIsRFIDStore, setIsAdding, isStorehouseManager }) {
+export default function SearchInput2({ isInsert, storeList, value, onChange, setIsRFIDStore, setIsAdding, isStorehouseManager }) {
     const [storeOptionList, setStoreOptionList] = useState([])
     const handleSearch = useCallback((value) => {
         if (timeout) {
@@ -56,20 +56,18 @@ export default function SearchInput2({ storeList, value, onChange, setIsRFIDStor
             onSearch={handleSearch}
             onChange={handleChange}
             notFoundContent={null}
-            dropdownRender={menu => (
-                <div>
+            dropdownRender={menu => {
+                return <div>
                     {menu}
-                    <Divider style={{ margin: '4px 0' }} />
-                    <div
-                        style={{ padding: '4px 8px', cursor: 'pointer' }}
-                        onMouseDown={e => e.preventDefault()}
-                    >
-                        <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-                            <Button onClick={() => { setIsRFIDStore(false); setIsAdding(true) }} disabled={!isStorehouseManager} size='small' type='primary' style={{ width: '48%' }} icon='plus'>普通物品</Button>
-                        </div>
-                    </div>
+                    {isInsert ? null : <>
+                        <Divider style={{ margin: '4px 0' }} />
+                        <div style={{ padding: '4px 8px', cursor: 'pointer' }} onMouseDown={e => e.preventDefault()}>
+                            <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+                                <Button onClick={() => { setIsRFIDStore(false); setIsAdding(true) }} disabled={!isStorehouseManager} size='small' type='primary' style={{ width: '48%' }} icon='plus'>普通物品</Button>
+                            </div>
+                        </div></>}
                 </div >
-            )}>
+            }}>
             {options}
         </Select>
     );

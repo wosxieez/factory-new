@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Alert, Row, Col, Tooltip, TreeSelect } from 'antd';
+import { DatePicker, Table, Button, Form, Input, Select, InputNumber, message, Tag, Modal, Alert, Row, Col, Tooltip, TreeSelect, Popover } from 'antd';
 import moment from 'moment';
 import api from '../../http';
 // import AddForm from '../storehouse/AddFrom';
@@ -7,6 +7,7 @@ import HttpApi from '../../http/HttpApi';
 import { autoGetOrderNum, checkStoreClassChange, getJson2Tree, undefined2null, userinfo, getTaxPrice } from '../../util/Tool';
 import AddForm2 from '../storehouse/AddForm2';
 import SearchInput2 from './SearchInput2';
+import { RecordSimpleInfoBar } from '../outboundStorage/OutboundStorageView'
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 const { Option } = Select;
 var storeList = [{ key: 0 }, { key: 1 }, { key: 2 }, { key: 3 }, { key: 4 }, { key: 5 }, { key: 6 }, { key: 7 }, { key: 8 }, { key: 9 }]
@@ -15,6 +16,7 @@ const starIcon = <span style={{ color: 'red' }}>* </span>
  * 采购入库单界面
  */
 export default Form.create({ name: 'form' })(props => {
+    // console.log('props:', props.location.state)
     const [tempCodeNum, setTempCodeNum] = useState('')
     // const [storeOptionList, setStoreOptionList] = useState([])
     const [supplierTreeData, setSupplierTreeData] = useState([])
@@ -23,6 +25,7 @@ export default Form.create({ name: 'form' })(props => {
     const [isAdding, setIsAdding] = useState(false)
     const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1)
     const [isRFIDStore, setIsRFIDStore] = useState(false)
+    const [isInsert] = useState(props.location.state && props.location.state.is_insert)
     const addForm2 = useRef()
     const listAllStore = useCallback(async () => {
         // let result = await api.listAllStore()
@@ -104,6 +107,7 @@ export default Form.create({ name: 'form' })(props => {
                 //     }
                 // </Select >
                 return <SearchInput2
+                    isInsert={isInsert}
                     isStorehouseManager={isStorehouseManager}
                     setIsAdding={setIsAdding}
                     setIsRFIDStore={setIsRFIDStore}
@@ -262,6 +266,41 @@ export default Form.create({ name: 'form' })(props => {
     }, [props.form, listAllStore])
 
     /**
+    * 补充录入
+    */
+    const insertTargetTableHandler = useCallback(async (formData) => {
+        const targetTable = props.location.state.target_table_data
+        let { storeList, remark } = formData
+        let { id, content, sum_count, sum_price } = targetTable
+        // console.log('remark:', remark)
+        // console.log('storeList:', storeList)
+        // console.log('id:', id)
+        const time = moment().format('YYYY-MM-DD HH:mm:ss')
+        // console.log('content:', content)
+        let new_storeList = JSON.parse(JSON.stringify(storeList)).map((item, index) => { item.key = content.length + index; item.is_insert = 1; item.insert_remark = remark || ''; item.insert_time = time; return item })
+        const new_sum_count = parseInt(sum_count) + sumCount
+        const new_sum_price = parseInt(sum_price) + sumPrice
+        const new_content = content.concat(new_storeList)
+        // console.log('new_content:', new_content)
+        // console.log('new_sum_count:', new_sum_count)
+        // console.log('new_sum_price:', new_sum_price)
+        let sql = `update purchase_record set content = '${JSON.stringify(new_content)}',sum_count = ${new_sum_count},sum_price = ${new_sum_price} where id = ${id}`
+        let result = await api.query(sql)
+        if (result.code === 0) {
+            // message.success('补录出库成功', 3);
+            for (let index = 0; index < storeList.length; index++) {
+                const storeObj = storeList[index]
+                let result = await api.updateStoreCount({ id: storeObj.store_id, count: storeObj.count })
+                if (result.code === 0) {
+                    message.success('补录采购成功', 3);
+                }
+                ///新增
+            }
+        } else { message.error('补录采购失败', 3); }
+        resetHandler()
+    }, [props.location.state, sumCount, sumPrice, resetHandler])
+
+    /**
      * 更新物品库存信息。同时要给记录表插入一条记录
      */
     const updateStoreAndrecordHandler = useCallback(async (formData) => {
@@ -281,6 +320,10 @@ export default Form.create({ name: 'form' })(props => {
         }
         // console.log('formData:', formData)
         // return
+        if (isInsert) {
+            insertTargetTableHandler(formData)
+            return
+        }
         const { date, storeList, remark, buy_user_id, record_user_id, store_supplier_id, abstract_remark } = formData;
         const code = moment().toDate().getTime()
         const new_code_num = await autoGetOrderNum({ type: 0 })
@@ -309,7 +352,7 @@ export default Form.create({ name: 'form' })(props => {
         }
 
 
-    }, [sumCount, sumPrice, resetHandler])
+    }, [sumCount, sumPrice, isInsert, resetHandler, insertTargetTableHandler])
 
     const handleSubmit = useCallback((e) => {
         props.form.setFieldsValue({ storeList })
@@ -395,23 +438,24 @@ export default Form.create({ name: 'form' })(props => {
                         <Form.Item label='日期' >
                             {props.form.getFieldDecorator('date', {
                                 initialValue: moment(),
-                                rules: [{ required: true, message: '请选择采购日期' }]
-                            })(<DatePicker style={{ width: '100%' }} allowClear={false} disabledDate={(current) => current > moment().endOf('day')} />)}
+                                rules: [{ required: !isInsert, message: '请选择采购日期' }]
+                            })(<DatePicker disabled={isInsert} style={{ width: '100%' }} allowClear={false} disabledDate={(current) => current > moment().endOf('day')} />)}
                         </Form.Item>
                     </Col>
                     <Col span={6}>
                         <Form.Item label='单号' >
                             {props.form.getFieldDecorator('code_num', {
                                 initialValue: tempCodeNum,
-                                rules: [{ required: true }]
+                                rules: [{ required: !isInsert }]
                             })(<Input disabled />)}
                         </Form.Item>
                     </Col>
                     <Col span={6}>
                         <Form.Item label='供应商' >
                             {props.form.getFieldDecorator('store_supplier_id', {
-                                rules: [{ required: true, message: '请选择供应商' }]
+                                rules: [{ required: !isInsert, message: '请选择供应商' }]
                             })(<TreeSelect
+                                disabled={isInsert}
                                 allowClear
                                 showSearch
                                 filterOption='children'
@@ -428,8 +472,8 @@ export default Form.create({ name: 'form' })(props => {
                         <Form.Item label='记录人' >
                             {props.form.getFieldDecorator('record_user_id', {
                                 initialValue: userinfo().id,
-                                rules: [{ required: true, message: '请选择记录人' }]
-                            })(<Select placeholder='请选择记录人' showSearch optionFilterProp="children">
+                                rules: [{ required: !isInsert, message: '请选择记录人' }]
+                            })(<Select disabled={isInsert} placeholder='请选择记录人' showSearch optionFilterProp="children">
                                 {[userinfo()].map((item, index) => {
                                     return <Select.Option value={item.id} key={index} all={item}>{item.name}</Select.Option>
                                 })}
@@ -442,9 +486,17 @@ export default Form.create({ name: 'form' })(props => {
                         <Form.Item label='摘要' >
                             {props.form.getFieldDecorator('abstract_remark', {
                                 rules: [{ required: false, message: '请输入摘要' }]
-                            })(<Input placeholder='请输入摘要' />)}
+                            })(<Input disabled={isInsert} placeholder='请输入摘要' />)}
                         </Form.Item>
                     </Col>
+                    {isInsert ?
+                        <Col span={18}>
+                            <Alert style={{ marginLeft: 20 }} message={<div>当前正在为
+                                <Popover placement="rightTop" content={<RecordSimpleInfoBar data={props.location.state} />} title="原始单数据" trigger="hover">
+                                    <Button size='small' style={{ paddingLeft: 0, paddingRight: 0 }} type='link'>【{props.location.state.target_table_data.code_num}】</Button>
+                                </Popover>
+                                进行补录；上方配置信息无需填写，刷新该页面恢复原始功能</div>} type='warning' showIcon />
+                        </Col> : null}
                 </Row>
                 <Row>
                     <Form.Item label='单据明细' labelCol={{ span: 24 }} wrapperCol={{ span: 24 }}>

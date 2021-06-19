@@ -47,7 +47,7 @@ export default _ => {
             <Descriptions title="流程信息" bordered size='small' column={1}>
                 {flok.map((item, index) => {
                     return <Descriptions.Item key={index + 1} label={item.order_name + '流程'}>
-                        <Tag color={'blue'}>提交申请</Tag><span style={{ color: '#1890ff' }}>-></span>
+                        <Tag color={'blue'}>提交申请</Tag><span style={{ color: '#1890ff' }}>{'->'}</span>
                         {item.step_list.split(',').join(' -> ').split(' ').map((ele, index2) => {
                             if (ele === '->') {
                                 return <span style={{ color: '#1890ff' }} key={index2}>{ele}</span>
