@@ -16,7 +16,7 @@ const starIcon = <span style={{ color: 'red' }}>* </span>
  * 采购入库单界面
  */
 export default Form.create({ name: 'form' })(props => {
-    // console.log('props:', props.location.state)
+    console.log('props:', props.location.state)
     const [tempCodeNum, setTempCodeNum] = useState('')
     // const [storeOptionList, setStoreOptionList] = useState([])
     const [supplierTreeData, setSupplierTreeData] = useState([])
@@ -272,6 +272,7 @@ export default Form.create({ name: 'form' })(props => {
         const targetTable = props.location.state.target_table_data
         let { storeList, remark } = formData
         let { id, content, sum_count, sum_price } = targetTable
+        console.log('targetTable:', targetTable)
         // console.log('remark:', remark)
         // console.log('storeList:', storeList)
         // console.log('id:', id)
@@ -279,7 +280,7 @@ export default Form.create({ name: 'form' })(props => {
         // console.log('content:', content)
         let new_storeList = JSON.parse(JSON.stringify(storeList)).map((item, index) => { item.key = content.length + index; item.is_insert = 1; item.insert_remark = remark || ''; item.insert_time = time; return item })
         const new_sum_count = parseInt(sum_count) + sumCount
-        const new_sum_price = parseInt(sum_price) + sumPrice
+        const new_sum_price = parseFloat((parseFloat(sum_price) + sumPrice).toFixed(2))
         const new_content = content.concat(new_storeList)
         // console.log('new_content:', new_content)
         // console.log('new_sum_count:', new_sum_count)
