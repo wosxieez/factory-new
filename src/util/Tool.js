@@ -548,3 +548,59 @@ export function deleteListSomeKeys(list) {
     return item
   })
 }
+
+/**
+ * 将入库单中统一编号的物品进行融合
+ */
+export function unionSameStore(storeList) {
+  let has_repeated = false
+  let result_list = []
+  let copy_store_list = JSON.parse(JSON.stringify(storeList))
+  // console.log('copy_store_list:', copy_store_list)
+  let after_group_list_obj = {}
+  copy_store_list.forEach((store) => {
+    if (after_group_list_obj[String(store.num)]) {
+      after_group_list_obj[String(store.num)].push(store)
+    } else {
+      after_group_list_obj[String(store.num)] = [store]
+    }
+  })
+  // console.log('after_group_list_obj:', after_group_list_obj)
+  for (const key in after_group_list_obj) {
+    const element = after_group_list_obj[key]; ///重复的store,等待整合
+    if (element && element.length > 1) {
+      has_repeated = true
+      // console.log('element:', element)
+      let first_store_copy = JSON.parse(JSON.stringify(element[0]))///复制第一个
+      let o_count = first_store_copy.o_count;///数据库中原始的count
+      let o_price = first_store_copy.o_price;///数据库中原始的price 
+      let o_tax_price = first_store_copy.tax_price;///数据库中原始的tax_price ///税后单价
+      let all_tax_price = o_tax_price * o_count///原始总物品的总税价 all_tax_price
+      let all_price = o_price * o_count
+      let all_count = o_count
+      element.forEach((store) => {
+        all_tax_price = all_tax_price + store.all_tax_price
+        all_price = all_price + store.price * store.count
+        all_count = all_count + store.count
+      })
+      let avg_price = parseFloat((all_price / all_count).toFixed(2))
+      let avg_tax_price = parseFloat((all_tax_price / all_count).toFixed(2))
+      let new_obj = {
+        store_id: first_store_copy.store_id,
+        num: first_store_copy.num,
+        store_name: first_store_copy.store_name,
+        all_count,
+        avg_price,
+        avg_tax_price
+      }
+      // console.log('new_obj:', new_obj)
+      result_list.push(new_obj)
+    } else if (element && element.length === 1) {
+      const obj = after_group_list_obj[key][0]; ///重复的store,等待整合
+      result_list.push(obj)
+    }
+  }
+  let result = { result_list, has_repeated };
+  // console.log('result:', result)
+  return result
+}

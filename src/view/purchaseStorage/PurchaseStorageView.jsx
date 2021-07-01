@@ -4,7 +4,7 @@ import moment from 'moment';
 import api from '../../http';
 // import AddForm from '../storehouse/AddFrom';
 import HttpApi from '../../http/HttpApi';
-import { autoGetOrderNum, checkStoreClassChange, getJson2Tree, undefined2null, userinfo, getTaxPrice } from '../../util/Tool';
+import { autoGetOrderNum, checkStoreClassChange, getJson2Tree, undefined2null, userinfo, getTaxPrice, unionSameStore } from '../../util/Tool';
 import AddForm2 from '../storehouse/AddForm2';
 import SearchInput2 from './SearchInput2';
 import { RecordSimpleInfoBar } from '../outboundStorage/OutboundStorageView'
@@ -320,6 +320,7 @@ export default Form.create({ name: 'form' })(props => {
             }
         }
         // console.log('formData:', formData)
+        let after_union_result = unionSameStore(formData.storeList)
         // return
         if (isInsert) {
             insertTargetTableHandler(formData)
@@ -331,8 +332,10 @@ export default Form.create({ name: 'form' })(props => {
         let sql = `insert into purchase_record (date,code,code_num,content,buy_user_id,record_user_id,remark,sum_count,sum_price,store_supplier_id,abstract_remark) values ('${date.format('YYYY-MM-DD HH:mm:ss')}','${code}','${new_code_num}','${JSON.stringify(storeList)}',${buy_user_id || null},${record_user_id},${remark ? "'" + remark + "'" : null},${sumCount},${sumPrice},${store_supplier_id},${abstract_remark ? "'" + abstract_remark + "'" : null})`
         let result = await api.query(sql)
         if (result.code === 0) { ///记录入库成功-开始循环修改store表中物品的信息。条件:store_id---数据:avg_price all_count remark 等
-            for (let index = 0; index < storeList.length; index++) {
-                const storeObj = storeList[index]
+            ///如果有重复，就用处理过的数据作为storelist
+            let operation_list = after_union_result.has_repeated ? after_union_result.result_list : storeList
+            for (let index = 0; index < operation_list.length; index++) {
+                const storeObj = operation_list[index]
                 let params = { 'oprice': storeObj.avg_price, 'tax_price': storeObj.avg_tax_price, 'count': storeObj.all_count }
                 ///这里-用的是循环调用单次修改接口一次修改一个物品，所以会出现多次返回修改结果；后期接口需要升级。支持批量修改
                 let result = await api.updateStore({ id: storeObj.store_id, ...params })

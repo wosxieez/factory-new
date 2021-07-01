@@ -38,7 +38,7 @@ export default function SearchInput2({ isInsert, storeList, value, onChange, set
         return <Option value={item.id}
             key={index}
             all={item}
-            disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}
+        // disabled={storeList.map((item) => item.store_id).indexOf(item.id) !== -1}
         >
             {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null}
             {item.num + '-' + item.name + '-' + item.model + '--库存' + item.count}
