@@ -229,7 +229,10 @@ export default props => {
                         </div> : <div>
                             <div>{record.num ? '编号:' + record.num : '无编号'}</div>
                             <div>{'时间:' + record.insert_time}</div>
-                        </div>) : record.num ? '编号:' + record.num : '无编号'}
+                        </div>) : <div>
+                            <div>{record.num ? '编号:' + record.num : '无编号'}</div>
+                            {record.remark ? <div>{'备注:' + record.remark}</div> : null}
+                        </div>}
                     </div>}>
                         <Tag color={record.removed ? '' : 'cyan'} style={{ marginRight: 0 }}>{(record.origin_index + 1 + ' ')}{text}</Tag>
                         {record.is_insert ? <Tag>补录</Tag> : null}
