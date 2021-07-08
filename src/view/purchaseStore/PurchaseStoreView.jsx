@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useState, useRef, forwardRef } from 'rea
 import api from '../../http';
 import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip, Icon, TreeSelect, Dropdown, Menu, Alert } from 'antd';
 import moment from 'moment';
-import { addRemoveRemarkForStoreItem, allStoreItemIsRemoved, checkSumCountAndSumPrice, checkWhichItemReadyRemove, deleteListSomeKeys, getJson2Tree, getTaxPrice, translatePurchaseRecordList, userinfo } from '../../util/Tool';
+import { addRemoveRemarkForStoreItem, allStoreItemIsRemoved, calculPriceAndTaxPriceAndCount, checkSumCountAndSumPrice, checkWhichItemReadyRemove, deleteListSomeKeys, getJson2Tree, getTaxPrice, translatePurchaseRecordList, userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 import ExportJsonExcel from 'js-export-excel'
 import SearchInput5 from '../outboundStore/SearchInput5';
@@ -388,15 +388,15 @@ export default props => {
                 const remarkValue = refRemark.current.state.value
                 const passwrodValue = refPassword.current.state.value
                 const selectStoreListValue = refSubTable.current.props.rowSelection.selectedRows
-                // console.log('selectStoreListValue:', selectStoreListValue)///选择撤销的物品列表 对应物品增加对应数量
+                console.log('选择撤销的物品列表:', selectStoreListValue)///选择撤销的物品列表 对应物品减少对应数量
                 if (selectStoreListValue.length === 0) { message.error('勾选的物品不可为空'); return }
                 if (!remarkValue) { message.error('备注不可为空'); return }
                 if (!passwrodValue) { message.error('密码不可为空'); return }
                 if (passwrodValue !== userinfo().password) { message.error('密码不正确'); return }
                 let new_content_list = checkWhichItemReadyRemove({ targetList: operationRecord.record_content, conditionList: selectStoreListValue, targetKey: ['store_id', 'key'], conditionKey: ['store_id', 'key'] })
                 let { newSumCount, newSumPrice } = checkSumCountAndSumPrice(new_content_list)///修改记录中的 sum_count sum_price
-                // console.log('new_content_list:', new_content_list)
-                // console.log('newSumCount, newSumPrice:', newSumCount, newSumPrice)
+                console.log('new_content_list:', new_content_list)
+                console.log('newSumCount, newSumPrice:', newSumCount, newSumPrice)
                 const id = operationRecord.other.id ///记录id
                 const username = userinfo().name///撤销人id
                 const time = moment().format('YYYY-MM-DD HH:mm:ss')///撤销时间
@@ -404,16 +404,47 @@ export default props => {
                 // console.log('final_content_list:', final_content_list)
                 let after_delete_some_key = deleteListSomeKeys(final_content_list) ///删除不需要的属性
                 // console.log('after_delete_some_key:', after_delete_some_key) ///删除不需要的属性
+                // selectStoreListValue.forEach((store_data) => {
+                //     let result = calculPriceAndTaxPriceAndCount(store_data)
+                //     console.log('result:', result);
+                // })
+                ///////////////////////////
+                ///selectStoreListValue 选择的物品列表，循环查询库存单价去税加的数据。
+                // for (let index = 0; index < selectStoreListValue.length; index++) {
+                //     const oneStore = selectStoreListValue[index]
+                //     const store_id = oneStore.store_id;
+                //     console.log("store_id:", store_id);
+                //     let res = await HttpApi.getStoreListById({ id: store_id })
+                //     if (res.code === 0 && res.data.length > 0) {
+                //         const db_store = res.data[0]
+                //         let calcul_res = calculPriceAndTaxPriceAndCount(db_store, oneStore)
+                //         console.log('calcul_res:', calcul_res)
+                //         // let update_res = await api.updateStore({ id: oneStore.id, ...calcul_res })
+                //         // if (update_res.code === 0) {
+                //         //     message.success('物品数量恢复成功', 3);
+                //         // }
+                //     }
+                // }
+                //////////////////////////
+                // return;
                 let sql = `update purchase_record set content = '${JSON.stringify(after_delete_some_key)}',sum_count= ${newSumCount},sum_price = ${newSumPrice} where id = ${id}`
                 // console.log('sql:', sql)
                 let result = await api.query(sql)
                 if (result.code === 0) { ///记录入库成功-开始循环修改store表中物品的信息。条件:store_id---数据:avg_price all_count remark 等
                     console.log('采购单修改成功')
                     for (let index = 0; index < selectStoreListValue.length; index++) {
-                        const storeObj = selectStoreListValue[index]
-                        let result = await api.updateStoreCount({ id: storeObj.store_id, count: -storeObj.count })
-                        if (result.code === 0) {
-                            message.success('物品数量恢复成功', 3);
+                        const oneStore = selectStoreListValue[index]
+                        const store_id = oneStore.store_id;
+                        let res = await HttpApi.getStoreListById({ id: store_id })
+                        if (res.code === 0 && res.data.length > 0) {
+                            const db_store = res.data[0]
+                            let calcul_res = calculPriceAndTaxPriceAndCount(db_store, oneStore)
+                            console.log('calcul_res:', calcul_res)
+                            let update_res = await api.updateStore({ id: store_id, ...calcul_res })
+                            if (update_res.code === 0) {
+                                console.log('撤销成功！物品数量恢复成功')
+                                message.success('物品数量恢复成功', 3);
+                            }
                         }
                     }
                 }
@@ -557,6 +588,7 @@ const Searchfrom = Form.create({ name: 'form' })(props => {
     </Form>
 })
 const StoreListSubTable = forwardRef((props, ref) => {
+    console.log('props.data:', props.data);
     const [selectedRowKeys, setSelectedRowKeys] = useState([])
     const [selectedRows, setselectedRows] = useState([])
     const columns_sub = [
@@ -575,7 +607,16 @@ const StoreListSubTable = forwardRef((props, ref) => {
             dataIndex: 'store_name',
             key: 'store_name',
             render: (text, record) => {
-                if (record.removed) { return <s style={{ color: 'red' }}>{text}</s> }
+                let key_num = record.key + 1
+                if (record.removed) { return <s style={{ color: 'red' }}>{key_num} {text}</s> }
+                return key_num + ' ' + text
+            }
+        },
+        {
+            title: '含税单价',
+            dataIndex: 'price',
+            key: 'price',
+            render: (text, record) => {
                 return text
             }
         },

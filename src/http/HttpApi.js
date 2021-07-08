@@ -489,6 +489,18 @@ const HttpApi = {
         return await HttpApi.obs({ sql })
     },
 
+    /**
+     * 获取所有store 关联上 store_areas,store_majors,store_types
+     */
+    getStoreListById: async ({ id }) => {
+        let sql_store_id = !id ? `` : ` and id = ${id}`
+        let conditon_sql = sql_store_id
+        let sql = `select stores.* from stores
+        where stores.isdelete = 0 ${conditon_sql} order by stores.num
+        `
+        return await HttpApi.obs({ sql })
+    },
+
     // updateAllstoreModelNumStoreAreaId: async ({ nfc_shelf_id, model, num, store_area_id }) => {
     //     let sql = `update stores set model = '${model}',num='${num}',store_area_id=${store_area_id} where nfc_shelf_id=${nfc_shelf_id}`
     //     return await HttpApi.obs({ sql })

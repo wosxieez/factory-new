@@ -604,3 +604,26 @@ export function unionSameStore(storeList) {
   // console.log('result:', result)
   return result
 }
+
+/**
+ * 撤销入库的物品时，计算数据库中物品的单价和税价
+ * @param {*} select_store 
+ * @returns 
+ */
+export function calculPriceAndTaxPriceAndCount(db_store, select_store) {
+  let db_price = db_store.oprice; ///数据库中的含税单价 
+  let db_tax_price = db_store.tax_price; ///数据库中的去税单价
+  let db_count = db_store.count;///db_count 数据中物品的总数量
+  let temp_price = select_store.price;///当前准备撤销的物品的含税单价 
+  let temp_tax_price = select_store.temp_tax_price;///temp_tax_price 当前准备撤销的物品的去税单价
+  let temp_count = select_store.count;///当前准备撤销的物品的数量
+  let oprice = parseFloat((((db_price * db_count) - (temp_price * temp_count)) / (db_count - temp_count)).toFixed(2))
+  let tax_price = parseFloat((((db_tax_price * db_count) - (temp_tax_price * temp_count)) / (db_count - temp_count)).toFixed(2))
+  let result = { oprice: oprice || 0, tax_price: tax_price || 0, count: db_count - temp_count };///计算的结果
+  /////////////////////////////
+  let sss1 = `(${db_price}*${db_count} - ${temp_price}*${temp_count}) / (${db_count}-${temp_count})=${oprice}`
+  let sss2 = `(${db_tax_price}*${db_count} - ${temp_tax_price}*${temp_count}) / (${db_count}-${temp_count})=${tax_price}`
+  console.log('含税sss1:', sss1)
+  console.log('去税sss2:', sss2)
+  return result
+}
