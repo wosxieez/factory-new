@@ -528,7 +528,16 @@ const StoreListSubTable = forwardRef((props, ref) => {
             dataIndex: 'store_name',
             key: 'store_name',
             render: (text, record) => {
-                if (record.removed) { return <s style={{ color: 'red' }}>{text}</s> }
+                let key_num = record.key + 1
+                if (record.removed) { return <s style={{ color: 'red' }}>{key_num} {text}</s> }
+                return key_num + ' ' + text
+            }
+        },
+        {
+            title: '单价[含税]',
+            dataIndex: 'price',
+            key: 'price',
+            render: (text, record) => {
                 return text
             }
         },
