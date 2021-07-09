@@ -712,6 +712,6 @@ export function changeDataStructure({ res_in_list, res_out_list, res_change_list
   // console.log('in_list_store:', in_list_store);
   // console.log('out_list_store:', out_list_store);
   let all_list_temp = change_list_store.concat(in_list_store).concat(out_list_store)
-  let res_list = all_list_temp.sort(function (a, b) { return moment(a.time).toDate().getTime() - moment(b.time).toDate().getTime() });
+  let res_list = all_list_temp.sort(function (a, b) { return moment(b.time).toDate().getTime() - moment(a.time).toDate().getTime() });
   return res_list
 }
