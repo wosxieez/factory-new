@@ -154,7 +154,7 @@ export default props => {
                 //     <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
                 //     {tempCpt}
                 // </div>
-                let tempCpt = record.other.abstract_remark ? <sapn> / {record.other.abstract_remark}</sapn> : null
+                let tempCpt = record.other.abstract_remark ? <span> / {record.other.abstract_remark}</span> : null
                 if (userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1) {
                     return <Dropdown overlay={<Menu onClick={async (e) => {
                         if (e.key === '1') {

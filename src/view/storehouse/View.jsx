@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import api from '../../http'
-import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Form, Icon, Tooltip } from 'antd'
+import { Table, Modal, Button, Input, message, Row, Col, Alert, DatePicker, Tag, TreeSelect, Form, Icon, Tooltip, Drawer } from 'antd'
 import moment from 'moment'
 import { checkStoreCountChange, checkStoreClassChange, getTaxPrice, getListAllTaxPrice2, getListAllPriceAndCount, undefined2null, getJson2Tree, getTaxByOpriceAndTaxPrice } from '../../util/Tool'
 import { userinfo } from '../../util/Tool';
@@ -9,6 +9,7 @@ import HttpApi from '../../http/HttpApi'
 // import UpdateFormRFID from './UpdateFormRFID'
 import AddForm2 from './AddForm2'
 import UpdateForm2 from './UpdateForm2'
+import StoreHistoryView from './StoreHistoryView'
 const FORMAT = 'YYYY-MM-DD HH:mm:ss';
 var originStoreList
 var rfidList = [];
@@ -38,7 +39,7 @@ export default props => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [selectedRows, setSelectedRows] = useState([])
   const [isStorehouseManager] = useState(userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1)
-
+  const [drawerVisible, setDrawerVisible] = useState(false)
   const calculSumCountAndPrice = useCallback((store_list) => {
     let temp_store_list = store_list.map((item) => { item.price = item.oprice; return item });
     let all_tax_price = getListAllTaxPrice2(temp_store_list)
@@ -84,6 +85,8 @@ export default props => {
       if (response.code === 0) {
         message.success('物品添加成功')
         listAllStore()
+        const store_id = response.data.id
+        data['id'] = store_id
         checkStoreClassChange({ is_add: 1, content: [data] })
       } else { message.error('物品添加失败') }
       // if (response.code === 0) {
@@ -359,6 +362,16 @@ export default props => {
               }}>
               编辑
             </Button>
+            <Button
+              type='link'
+              size='small'
+              icon='file'
+              onClick={() => {
+                setCurrentItem(record)
+                setDrawerVisible(true)
+              }}>
+              记录
+            </Button>
           </div>
         )
       }
@@ -513,6 +526,16 @@ export default props => {
             })
           }}
         />
+        <Drawer
+          title="物品历史记录"
+          width={720}
+          onClose={() => { setDrawerVisible(false) }}
+          visible={drawerVisible}
+          destroyOnClose={true}
+          placement={'left'}
+        >
+          <StoreHistoryView id={currentItem.id} />
+        </Drawer>
         {/* <AddFromRFID
           ref={addFormRFID}
           title='新增标签物品'

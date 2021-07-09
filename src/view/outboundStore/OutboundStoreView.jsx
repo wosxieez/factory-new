@@ -146,7 +146,7 @@ export default props => {
             dataIndex: 'other.code_num',
             key: 'other.code_num',
             render: (text, record) => {
-                let tempCpt = record.other.abstract_remark ? <sapn style={{ marginRight: 0 }}> / {record.other.abstract_remark}</sapn> : null
+                let tempCpt = record.other.abstract_remark ? <span style={{ marginRight: 0 }}> / {record.other.abstract_remark}</span> : null
                 if (userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1) {
                     return <Dropdown overlay={<Menu onClick={e => {
                         if (e.key === '1') {
@@ -161,7 +161,7 @@ export default props => {
                         <Menu.Item key="2" ><Icon type="plus" /><span>补录出库单</span></Menu.Item>
                     </Menu>} trigger={['contextMenu']}>
                         <div>
-                            <sapn style={{ marginRight: 0 }}>{text}</sapn>
+                            <span style={{ marginRight: 0 }}>{text}</span>
                             {tempCpt}
                         </div>
                     </Dropdown>
@@ -238,7 +238,7 @@ export default props => {
             dataIndex: 'sum_price',
             key: 'sum_price',
             render: (_, record) => {
-                return <sapn>{parseFloat((record.count * record.price || 0).toFixed(2))}</sapn>
+                return <span>{parseFloat((record.count * record.price || 0).toFixed(2))}</span>
             }
         },
         {
@@ -248,7 +248,7 @@ export default props => {
             render: (_, record) => {
                 const price = record.tax_price
                 const count = record.count
-                return <sapn>{parseFloat(price * count).toFixed(2)}</sapn>
+                return <span>{parseFloat(price * count).toFixed(2)}</span>
             }
         },
         {

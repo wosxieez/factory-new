@@ -49,15 +49,6 @@ export default Form.create({ name: 'form' })(props => {
                 data['id'] = store_id
                 checkStoreClassChange({ is_add: 1, content: [data] })
             } else { message.error('物品添加失败') }
-            // const response = await api.addStore(data)
-            // if (response.code === 0) {
-            //     setIsAdding(false)
-            //     message.success('创建物品成功')
-            //     listAllStore();
-            //     const store_id = response.data.id
-            //     data['id'] = store_id
-            //     checkStoreClassChange({ is_add: 1, content: [data] })
-            // }
         }, [listAllStore])
     const addShelfAndStoreHandler = useCallback(async (data_shelf, data_store) => {
 

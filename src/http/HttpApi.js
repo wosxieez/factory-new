@@ -526,6 +526,19 @@ const HttpApi = {
     checkStoreNumhasExisted: async ({ num }) => {
         let sql = `select id from stores where num = ${num} and isdelete = 0`
         return await HttpApi.obs({ sql })
+    },
+
+    getStoreInHistoryRecord: async ({ id }) => {
+        let sql = `select * from purchase_record where locate('"store_id":${id},',content)`
+        return await HttpApi.obs({ sql })
+    },
+    getStoreOutHistoryRecord: async ({ id }) => {
+        let sql = `select * from outbound_record where locate('"store_id":${id},',content)`
+        return await HttpApi.obs({ sql })
+    },
+    getStoreChangeHistoryRecord: async ({ id }) => {
+        let sql = `select * from store_change_records where locate('"id":${id},',origin_content) or locate('"id":${id},',change_content) or locate('"id":${id},',add_content) or locate('"id":${id},',remove_content)`
+        return await HttpApi.obs({ sql })
     }
 }
 export default HttpApi

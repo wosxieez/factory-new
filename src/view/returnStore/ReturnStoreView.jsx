@@ -188,7 +188,7 @@ export default _ => {
             dataIndex: 'sum_price',
             key: 'sum_price',
             render: (_, record) => {
-                return <sapn >{parseFloat((record.count * record.price || 0).toFixed(2))}</sapn>
+                return <span >{parseFloat((record.count * record.price || 0).toFixed(2))}</span>
             }
         },
         {
@@ -199,7 +199,7 @@ export default _ => {
                 const price = record.price
                 const tax = record.tax
                 const count = record.count
-                return <sapn >{parseFloat(getTaxPrice(price, tax) * count).toFixed(2)}</sapn>
+                return <span >{parseFloat(getTaxPrice(price, tax) * count).toFixed(2)}</span>
             }
         },
         {

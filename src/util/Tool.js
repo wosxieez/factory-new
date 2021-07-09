@@ -627,3 +627,91 @@ export function calculPriceAndTaxPriceAndCount(db_store, select_store) {
   console.log('去税sss2:', sss2)
   return result
 }
+
+/**
+ * 获取某个物品的入库历史记录
+ * @param {*} param0 
+ */
+export async function getStoreInHistoryRecord({ id }) {
+  let res = await HttpApi.getStoreInHistoryRecord({ id })
+  if (res.code === 0) {
+    return res.data
+  }
+  return []
+}
+
+/**
+ * 获取某个物品的出库历史记录
+ * @param {*} param0 
+ */
+export async function getStoreOutHistoryRecord({ id }) {
+  let res = await HttpApi.getStoreOutHistoryRecord({ id })
+  if (res.code === 0) {
+    return res.data
+  }
+  return []
+}
+
+/**
+ * 获取某个物品的编辑历史记录
+ * @param {*} param0 
+ */
+export async function getStoreChangeHistoryRecord({ id }) {
+  let res = await HttpApi.getStoreChangeHistoryRecord({ id })
+  if (res.code === 0) {
+    return res.data
+  }
+  return []
+}
+
+export function changeDataStructure({ res_in_list, res_out_list, res_change_list, id }) {
+  res_in_list = res_in_list.map((item) => { item.time = item.date; item.type_remark = '采购入库'; item.content_list = JSON.parse(item.content).filter((store_item) => { return store_item.store_id === id }); return item })
+  res_out_list = res_out_list.map((item) => { item.time = item.date; item.type_remark = '自行出库'; item.content_list = JSON.parse(item.content).filter((store_item) => { return store_item.store_id === id }); return item })
+  res_change_list = res_change_list.map((item) => {
+    item.add_content_data = []
+    item.remove_content_data = null
+    item.origin_content_data = null
+    item.change_content_data = null
+    if (item.add_content) { item.temp_data = JSON.parse(item.add_content).filter((store_item) => { return store_item.id === id })[0]; item.temp_data.time = item.time; item.temp_data.type_remark = '创建物品' }
+    if (item.remove_content) { item.temp_data = JSON.parse(item.remove_content).filter((store_item) => { return store_item.id === id })[0]; item.temp_data.time = item.time; item.temp_data.type_remark = '删除物品' }
+    // if (item.origin_content) { item.origin_content_data = JSON.parse(item.origin_content)[0] }
+    if (item.change_content) {
+      let temp_change_content = JSON.parse(item.change_content).filter((store_item) => { return store_item.id === id })[0];
+      let old_count = JSON.parse(item.origin_content).filter((store_item) => { return store_item.id === id })[0].count
+      temp_change_content['old_count'] = old_count
+      temp_change_content['type_remark'] = '修改物品数量'
+      temp_change_content['time'] = item.time;
+      item.temp_data = temp_change_content
+    }
+    return item
+  })
+  let in_list_store = []
+  res_in_list.forEach((oneRecord) => {
+    let { time, code_num, content_list, type_remark } = oneRecord
+    content_list.forEach((oneStore) => {
+      const { count, store_id, store_name } = oneStore;
+      in_list_store.push({ id: store_id, name: store_name, time, count, code_num, type_remark })
+    })
+  })
+  let out_list_store = []
+  res_out_list.forEach((oneRecord) => {
+    let { time, code_num, content_list, type_remark } = oneRecord
+    content_list.forEach((oneStore) => {
+      const { count, store_id, store_name } = oneStore;
+      out_list_store.push({ id: store_id, name: store_name, time, count, code_num, type_remark })
+    })
+  })
+
+  // console.log('res_in_list:', res_in_list);
+  // console.log('res_out_list:', res_out_list);
+  // console.log('res_change_list:', res_change_list);
+  let change_list_store = res_change_list.map((item) => {
+    return item.temp_data
+  })
+  // console.log('change_list_store:', change_list_store)
+  // console.log('in_list_store:', in_list_store);
+  // console.log('out_list_store:', out_list_store);
+  let all_list_temp = change_list_store.concat(in_list_store).concat(out_list_store)
+  let res_list = all_list_temp.sort(function (a, b) { return moment(a.time).toDate().getTime() - moment(b.time).toDate().getTime() });
+  return res_list
+}
