@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react'
 import api from '../../http'
-import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Radio, Modal, message, Tooltip, Icon, Alert } from 'antd'
+import { Table, Button, Input, Row, Col, DatePicker, Tag, Form, Select, Radio, Modal, message, Tooltip, Alert } from 'antd'
 import moment from 'moment'
 import HttpApi from '../../http/HttpApi';
 import { getListAllTaxPrice2, userinfo } from '../../util/Tool';
@@ -115,11 +115,11 @@ export default props => {
             dataIndex: 'code_num',
             key: 'code_num',
             align: 'center',
-            width: 100,
+            width: 200,
             render: (text, record) => {
-                let tempCpt = record.abstract_remark ? <Tag color={record.is_rollback === 1 ? '#bfbfbf' : 'blue'} style={{ marginRight: 0 }}>{record.abstract_remark}</Tag> : null
+                let tempCpt = record.abstract_remark ? <span> / {record.abstract_remark}</span> : null
                 return <div>
-                    <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                    {text}
                     {tempCpt}
                 </div>
             }
@@ -140,18 +140,14 @@ export default props => {
                     } else { tool_str = tool_str + ' 无税率' }
                     return <div key={index}>
                         <Tooltip key={index + 'x'} placement='left' title={tool_str} >
-                            <div key={index}>
-                                <Tag key={index} color={item.removed ? '' : 'cyan'} style={{ marginRight: 0, marginBottom: 6 }}>{item.store_name} 采购价{item.price}元*{item.count}</Tag><br />
-                            </div>
+                            <span key={index} color={item.removed ? '' : 'cyan'} style={{ marginRight: 0, marginBottom: 6 }}>{item.store_name} 采购价{item.price}元*{item.count}</span>
                         </Tooltip>
                         {item.removed ? <Tooltip key={index + 'y'} placement='left' title={<div>
                             <div>{item.removedTime}</div>
                             <div>{item.removedUsername}</div>
                             <div>备注: {item.removedRemark}</div>
                         </div>} >
-                            <div key={index}>
-                                <Tag key={index} color={'#ff0000'} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}><Icon type="arrow-up" /> 已撤销</Tag><br />
-                            </div>
+                            <span key={index} style={{ color: '#ff0000' }}>/已撤销</span>
                         </Tooltip> : null}
                     </div>
                 })
@@ -163,9 +159,6 @@ export default props => {
             key: 'sum_count',
             align: 'center',
             width: 100,
-            render: (text) => {
-                return <Tag color={'#faad14'} style={{ marginRight: 0 }}>{text}</Tag>
-            }
         },
         {
             title: '总含税价',
@@ -173,9 +166,6 @@ export default props => {
             key: 'sum_price',
             align: 'center',
             width: 80,
-            render: (text) => {
-                return <Tag color={'#fa541c'} style={{ marginRight: 0 }}>{text}</Tag>
-            }
         },
         {
             title: '总价',
@@ -188,7 +178,7 @@ export default props => {
                     const contextList = JSON.parse(text).filter((item) => !item.removed)
                     // console.log('contextList:', contextList)
                     let sum_tax_price = parseFloat(getListAllTaxPrice2(contextList)).toFixed(2)
-                    return <Tag color={'#722ed1'} style={{ marginRight: 0 }}>{sum_tax_price}</Tag>
+                    return sum_tax_price
                 } catch (error) {
                     return '-'
                 }
@@ -304,9 +294,9 @@ export default props => {
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <h3>自行出库单记录</h3>
                     <div>
-                        <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
-                        <Tag color={'#fa541c'}>总含税价格¥: {sum_price}</Tag>
-                        <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
+                        <Tag color={'#1890ff'}>总数量#: {sum_count}</Tag>
+                        <Tag color={'#1890ff'}>总含税价格¥: {sum_price}</Tag>
+                        <Tag color={'#1890ff'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
                     </div>
                 </div>
                 <Alert showIcon type='info' message='总数量、总含税价格、总价格的统计不包含撤销单中的物品' />

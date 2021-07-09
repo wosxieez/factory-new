@@ -129,7 +129,7 @@ const AddForm2 = Form.create({ name: 'form' })((props) => {
               </Form.Item> :
               <Form.Item label='数量' >
                 {props.form.getFieldDecorator('count', {
-                  initialValue: props.initData && props.initData.count === 0 ? 0 : 1,
+                  initialValue: props.initData && props.initData.count === 0 ? 0 : 0,
                   rules: [{ required: true, message: '请输入数量' }]
                 })(<InputNumber placeholder='请输入数量' min={0} style={{ width: '100%' }} />)}
               </Form.Item>}

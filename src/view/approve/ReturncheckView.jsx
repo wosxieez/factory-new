@@ -109,11 +109,11 @@ export default props => {
             dataIndex: 'code_num',
             key: 'code_num',
             align: 'center',
-            width: 100,
+            width: 200,
             render: (text, record) => {
-                let tempCpt = record.abstract_remark ? <Tag color='blue' style={{ marginRight: 0 }}>{record.abstract_remark}</Tag> : null
+                let tempCpt = record.abstract_remark ? <span> / {record.abstract_remark}</span> : null
                 return <div>
-                    <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                    {text}
                     {tempCpt}
                 </div>
             }
@@ -131,7 +131,7 @@ export default props => {
                     } else { tool_str = tool_str + ' 无税率' }
                     return <Tooltip key={index} placement='left' title={tool_str} >
                         <div key={index}>
-                            <Tag key={index} color={'cyan'} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>{item.store_name} 采购价{item.price}元*{item.count}</Tag><br />
+                            <span key={index}>{item.store_name} 采购价{item.price}元*{item.count}</span><br />
                         </div>
                     </Tooltip>
                 })
@@ -143,9 +143,6 @@ export default props => {
             key: 'sum_count',
             align: 'center',
             width: 100,
-            render: (text) => {
-                return <Tag color={'#faad14'} style={{ marginRight: 0 }}>{text}</Tag>
-            }
         },
         {
             title: '总含税价',
@@ -153,9 +150,6 @@ export default props => {
             key: 'sum_price',
             align: 'center',
             width: 80,
-            render: (text) => {
-                return <Tag color={'#fa541c'} style={{ marginRight: 0 }}>{text}</Tag>
-            }
         },
         {
             title: '总价',
@@ -167,7 +161,7 @@ export default props => {
                 try {
                     const contextList = JSON.parse(text)
                     let sum_tax_price = parseFloat(getListAllTaxPrice2(contextList)).toFixed(2)
-                    return <Tag color={'#722ed1'} style={{ marginRight: 0 }}>{sum_tax_price}</Tag>
+                    return sum_tax_price
                 } catch (error) {
                     return '-'
                 }
@@ -283,9 +277,9 @@ export default props => {
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <h3>实际退料单记录</h3>
                     <div>
-                        <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
-                        <Tag color={'#fa541c'}>总含税价格¥: {sum_price}</Tag>
-                        <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
+                        <Tag color={'#1890ff'}>总数量#: {sum_count}</Tag>
+                        <Tag color={'#1890ff'}>总含税价格¥: {sum_price}</Tag>
+                        <Tag color={'#1890ff'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
                     </div>
                 </div>
                 <HandlerPanel visible={isUpdating} onCancel={() => { setIsUpdating(false) }} onOk={async (data) => {

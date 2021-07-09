@@ -441,9 +441,9 @@ export default props => {
             showIcon
           /> : null}
         <div style={{ ...styles.marginTop, textAlign: 'right' }}>
-          <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
-          <Tag color={'#fa541c'}>总含税价格¥: {sum_price}</Tag>
-          <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
+          <Tag color={'#1890ff'}>总数量#: {sum_count}</Tag>
+          <Tag color={'#1890ff'}>总含税价格¥: {sum_price}</Tag>
+          <Tag color={'#1890ff'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
         </div>
         <Table
           loading={isLoading}

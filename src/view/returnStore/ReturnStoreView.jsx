@@ -138,9 +138,9 @@ export default _ => {
             dataIndex: 'other.code_num',
             key: 'other.code_num',
             render: (text, record) => {
-                let tempCpt = record.other.abstract_remark ? <Tag color='blue' style={{ marginRight: 0 }}>{record.other.abstract_remark}</Tag> : null
+                let tempCpt = record.other.abstract_remark ? <span> / {record.other.abstract_remark}</span> : null
                 return <div>
-                    <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                    <span>{text}</span>
                     {tempCpt}
                 </div>
             }
@@ -151,7 +151,7 @@ export default _ => {
             key: 'store_name',
             render: (text, record) => {
                 return <Tooltip placement='left' title={record.num ? '编号' + record.num : '无编号'}>
-                    <Tag color='cyan' style={{ marginRight: 0 }}>{(record.origin_index + 1 + ' ')}{text}</Tag>
+                    <span>{(record.origin_index + 1 + ' ')}{text}</span>
                 </Tooltip>
             }
         },
@@ -161,7 +161,7 @@ export default _ => {
             key: 'price',
             render: (text, record) => {
                 return <Tooltip placement='left' title={record.temp_tax ? '税率' + record.temp_tax + '%' : '无税率'}>
-                    <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
+                    {text}
                 </Tooltip>
             }
         },
@@ -169,32 +169,26 @@ export default _ => {
             title: '单价[元]',
             dataIndex: 'tax_price',
             key: 'tax_price',
-            render: (text) => {
-                return <Tag color='#722ed1' style={{ marginRight: 0 }}>{text}</Tag>
-            }
+
         },
         {
             title: '退料数量',
             dataIndex: 'count',
             key: 'count',
-            render: (text) => {
-                return <Tag color='#faad14' style={{ marginRight: 0 }}>{text}</Tag>
-            }
+
         },
         {
             title: '单位',
             dataIndex: 'unit',
             key: 'unit',
-            render: (text) => {
-                return <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
-            }
+
         },
         {
             title: '含税总价[元]',
             dataIndex: 'sum_price',
             key: 'sum_price',
             render: (_, record) => {
-                return <Tag color='#fa541c' style={{ marginRight: 0 }}>{parseFloat((record.count * record.price || 0).toFixed(2))}</Tag>
+                return <sapn >{parseFloat((record.count * record.price || 0).toFixed(2))}</sapn>
             }
         },
         {
@@ -205,7 +199,7 @@ export default _ => {
                 const price = record.price
                 const tax = record.tax
                 const count = record.count
-                return <Tag color='#722ed1' style={{ marginRight: 0 }}>{parseFloat(getTaxPrice(price, tax) * count).toFixed(2)}</Tag>
+                return <sapn >{parseFloat(getTaxPrice(price, tax) * count).toFixed(2)}</sapn>
             }
         },
         {
@@ -258,9 +252,9 @@ export default _ => {
                     }} />
                 </div>
                 <div>
-                    <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
-                    <Tag color={'#fa541c'}>总含税价格¥: {sum_price}</Tag>
-                    <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
+                    <Tag color={'#1890ff'}>总数量#: {sum_count}</Tag>
+                    <Tag color={'#1890ff'}>总含税价格¥: {sum_price}</Tag>
+                    <Tag color={'#1890ff'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
                 </div>
             </div>
             <Table

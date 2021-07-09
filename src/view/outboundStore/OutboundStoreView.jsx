@@ -146,7 +146,7 @@ export default props => {
             dataIndex: 'other.code_num',
             key: 'other.code_num',
             render: (text, record) => {
-                let tempCpt = record.other.abstract_remark ? <Tag color={record.other.is_rollback === 1 ? '#bfbfbf' : 'blue'} style={{ marginRight: 0 }}>{record.other.abstract_remark}</Tag> : null
+                let tempCpt = record.other.abstract_remark ? <sapn style={{ marginRight: 0 }}> / {record.other.abstract_remark}</sapn> : null
                 if (userinfo().permission && userinfo().permission.split(',').indexOf('5') !== -1) {
                     return <Dropdown overlay={<Menu onClick={e => {
                         if (e.key === '1') {
@@ -161,13 +161,13 @@ export default props => {
                         <Menu.Item key="2" ><Icon type="plus" /><span>补录出库单</span></Menu.Item>
                     </Menu>} trigger={['contextMenu']}>
                         <div>
-                            <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                            <sapn style={{ marginRight: 0 }}>{text}</sapn>
                             {tempCpt}
                         </div>
                     </Dropdown>
                 } else {
                     return <div>
-                        <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
+                        <Tag style={{ marginRight: 0 }}>{text}</Tag>
                         {tempCpt}
                     </div>
                 }
@@ -193,16 +193,16 @@ export default props => {
                             {record.remark ? <div>{'备注:' + record.remark}</div> : null}
                         </div>}
                     </div>}>
-                        <Tag color={record.removed ? '' : 'cyan'} style={{ marginRight: 0 }}>{(record.origin_index + 1 + ' ')}{text}</Tag>
-                        {record.is_insert ? <Tag>补录</Tag> : null}
-                    </Tooltip><p />
+                        <span style={{ marginRight: 0 }}>{(record.origin_index + 1 + ' ')}{text}</span>
+                        {record.is_insert ? <span style={{ color: '#1890ff' }}>/补录</span> : null}
+                    </Tooltip>
                     {record.removed ?
                         <Tooltip placement='left' title={<div>
                             <div>{record.removedTime}</div>
                             <div>{record.removedUsername}</div>
                             <div>备注: {record.removedRemark}</div>
                         </div>}>
-                            <Tag color='#ff0000' style={{ marginRight: 0 }}><Icon type="arrow-up" /> 已撤销</Tag>
+                            <span style={{ color: '#f5222d' }}>/已撤销</span>
                         </Tooltip>
                         : null}
                 </div>
@@ -214,7 +214,7 @@ export default props => {
             key: 'price',
             render: (text, record) => {
                 return <Tooltip placement='left' title={record.temp_tax ? '税率' + record.temp_tax + '%' : '无税率'}>
-                    <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
+                    {text}
                 </Tooltip>
             }
         },
@@ -222,32 +222,23 @@ export default props => {
             title: '单价[元]',
             dataIndex: 'tax_price',
             key: 'tax_price',
-            render: (text) => {
-                return <Tag color='#722ed1' style={{ marginRight: 0 }}>{text}</Tag>
-            }
         },
         {
             title: '出库数量',
             dataIndex: 'count',
             key: 'count',
-            render: (text) => {
-                return <Tag color='#faad14' style={{ marginRight: 0 }}>{text}</Tag>
-            }
         },
         {
             title: '单位',
             dataIndex: 'unit',
             key: 'unit',
-            render: (text) => {
-                return <Tag color='orange' style={{ marginRight: 0 }}>{text}</Tag>
-            }
         },
         {
             title: '含税总价[元]',
             dataIndex: 'sum_price',
             key: 'sum_price',
             render: (_, record) => {
-                return <Tag color='#fa541c' style={{ marginRight: 0 }}>{parseFloat((record.count * record.price || 0).toFixed(2))}</Tag>
+                return <sapn>{parseFloat((record.count * record.price || 0).toFixed(2))}</sapn>
             }
         },
         {
@@ -257,7 +248,7 @@ export default props => {
             render: (_, record) => {
                 const price = record.tax_price
                 const count = record.count
-                return <Tag color='#722ed1' style={{ marginRight: 0 }}>{parseFloat(price * count).toFixed(2)}</Tag>
+                return <sapn>{parseFloat(price * count).toFixed(2)}</sapn>
             }
         },
         {
@@ -314,9 +305,9 @@ export default props => {
                     }} />
                 </div>
                 <div>
-                    <Tag color={'#faad14'}>总数量#: {sum_count}</Tag>
-                    <Tag color={'#fa541c'}>总含税价格¥: {sum_price}</Tag>
-                    <Tag color={'#722ed1'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
+                    <Tag color={'#1890ff'}>总数量#: {sum_count}</Tag>
+                    <Tag color={'#1890ff'}>总含税价格¥: {sum_price}</Tag>
+                    <Tag color={'#1890ff'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
                 </div>
             </div>
             <Alert showIcon type='info' message='总数量、总含税价格、总价格的统计不包含撤销单中的物品' />

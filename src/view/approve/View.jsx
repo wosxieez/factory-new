@@ -167,9 +167,7 @@ export default _ => {
             }
         },
         {
-            title: '流水', dataIndex: 'code', width: 120, align: 'center', render: (text) => {
-                return <Tag color='blue' style={{ marginRight: 0 }}>{text}</Tag>
-            }
+            title: '流水', dataIndex: 'code', width: 120, align: 'center'
         },
         {
             title: '类型',
@@ -212,9 +210,9 @@ export default _ => {
                 let result = JSON.parse(text).map((item, index) => {
                     return (
                         <Tooltip key={index} placement='left' title={'编号' + item.num}>
-                            <Tag color={'blue'} style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>
+                            <div style={{ marginRight: 0, marginBottom: index === JSON.parse(text).length - 1 ? 0 : 6 }}>
                                 {item['has_rfid'] ? <Icon type="barcode" style={{ marginRight: 5 }} /> : null}{item.store_name} 数量:{item.count}
-                            </Tag>
+                            </div>
                         </Tooltip>
                     )
                 })
