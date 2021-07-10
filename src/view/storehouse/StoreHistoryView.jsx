@@ -1,6 +1,6 @@
 import { Table } from 'antd';
 import React, { useEffect, useCallback, useState } from 'react'
-import { getStoreInHistoryRecord, getStoreOutHistoryRecord, getStoreChangeHistoryRecord, changeDataStructure } from '../../util/Tool';
+import { getStoreInHistoryRecord, getStoreOutHistoryRecord, getStoreChangeHistoryRecord, changeDataStructure, sortHandler } from '../../util/Tool';
 
 export default function StoreHistoryView({ id }) {
     const [list, setList] = useState([])
@@ -10,8 +10,9 @@ export default function StoreHistoryView({ id }) {
         let res_out_list = await getStoreOutHistoryRecord({ id })
         let res_change_list = await getStoreChangeHistoryRecord({ id })
         let data_list = changeDataStructure({ res_in_list, res_out_list, res_change_list, id })
-        console.log('data_list:', data_list);
-        setList(data_list.map((item, index) => { item.key = index; return item }))
+        let after_sort = sortHandler({ list: data_list, targetKey: 'time_stamp', desc: 1 })
+        console.log('after_sort:', after_sort);
+        setList(after_sort.map((item, index) => { item.key = index; return item }))
     }, [id])
     useEffect(() => {
         init()
@@ -43,6 +44,9 @@ export default function StoreHistoryView({ id }) {
                 }
                 return char_str + text
             }
+        },
+        {
+            title: '库存总数', dataIndex: 'sum_count', key: 'sum_count'
         },
     ]
     return (

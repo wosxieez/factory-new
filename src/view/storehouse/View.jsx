@@ -221,13 +221,15 @@ export default props => {
       title: '编号',///货架nfc编号
       dataIndex: 'num',
       key: 'num',
+      width: 120,
+      fixed: 'left',
       render: (text) => {
         if (text)
           return text || '-'
       }
     },
     {
-      title: '名称', dataIndex: 'name', width: 120, render: (text, record) => {
+      title: '名称', dataIndex: 'name', width: 200, fixed: 'left', render: (text, record) => {
         if (record['has_rfid']) return <div><Icon type="barcode" style={{ marginRight: 5 }} />{text}</div>
         return text
       }
@@ -236,12 +238,14 @@ export default props => {
       title: '型号',
       dataIndex: 'model',
       key: 'model',
+      width: 120, fixed: 'left',
       render: (text) => {
         return text || '-'
       }
     },
     {
       title: '属性',
+      width: 300,
       dataIndex: 'attribute',
       render: (text, record) => {
         let { store_area_name, store_type_name, store_major_name } = record
@@ -348,6 +352,7 @@ export default props => {
       dataIndex: 'action',
       width: 80,
       align: 'center',
+      fixed: 'right',
       render: (_, record) => {
         return (
           <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
@@ -459,6 +464,7 @@ export default props => {
           <Tag color={'#1890ff'} style={{ marginRight: 0 }}>总价格¥: {sum_tax_price}</Tag>
         </div>
         <Table
+          scroll={{ x: 1800 }}
           loading={isLoading}
           style={styles.marginTop}
           rowSelection={isStorehouseManager ? rowSelection : null}

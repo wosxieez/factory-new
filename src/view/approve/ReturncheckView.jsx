@@ -103,13 +103,14 @@ export default props => {
     }, [listData])
 
     const columns = [
-        { title: '退料时间', dataIndex: 'date', key: 'date', width: 120, align: 'center' },
+        { title: '退料时间', dataIndex: 'date', key: 'date', width: 120, align: 'center', fixed: 'left', },
         {
             title: '单号/摘要',
             dataIndex: 'code_num',
             key: 'code_num',
             align: 'center',
             width: 200,
+            fixed: 'left',
             render: (text, record) => {
                 let tempCpt = record.abstract_remark ? <span> / {record.abstract_remark}</span> : null
                 return <div>
@@ -121,7 +122,8 @@ export default props => {
         {
             title: '退料单',
             dataIndex: 'content',
-            // align: 'center',
+            width: 400,
+            fixed: 'left',
             render: (text, record) => {
                 let contentList = JSON.parse(text)
                 return contentList.map((item, index) => {
@@ -142,21 +144,21 @@ export default props => {
             dataIndex: 'sum_count',
             key: 'sum_count',
             align: 'center',
-            width: 100,
+            width: 80,
         },
         {
             title: '总含税价',
             dataIndex: 'sum_price',
             key: 'sum_price',
             align: 'center',
-            width: 80,
+            width: 100,
         },
         {
             title: '总价',
             dataIndex: 'content',
             key: 'content1',
             align: 'center',
-            width: 80,
+            width: 100,
             render: (text) => {
                 try {
                     const contextList = JSON.parse(text)
@@ -188,7 +190,6 @@ export default props => {
             title: '退料备注',
             dataIndex: 'remark',
             align: 'center',
-            width: 100,
             render: (text) => {
                 return <div>{text || '-'}</div>
             }
@@ -251,6 +252,7 @@ export default props => {
             dataIndex: 'action',
             width: 80,
             align: 'center',
+            fixed: 'right',
             render: (_, record) => {
                 return (
                     <Button
@@ -299,6 +301,7 @@ export default props => {
                     setIsUpdating(false)
                 }} />
                 <Table
+                    scroll={{ x: 1700 }}
                     loading={isLoading}
                     bordered
                     size='small'

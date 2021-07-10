@@ -665,10 +665,10 @@ export async function getStoreChangeHistoryRecord({ id }) {
 }
 
 export function changeDataStructure({ res_in_list, res_out_list, res_change_list, id }) {
-  res_in_list = res_in_list.map((item) => { item.time = item.date; item.type_remark = '采购入库'; item.content_list = JSON.parse(item.content).filter((store_item) => { return store_item.store_id === id }); return item })
-  res_out_list = res_out_list.map((item) => { item.time = item.date; item.type_remark = '自行出库'; item.content_list = JSON.parse(item.content).filter((store_item) => { return store_item.store_id === id }); return item })
+  res_in_list = res_in_list.map((item) => { item.time = item.date; item.type_no = 1; item.type_remark = '采购入库'; item.content_list = JSON.parse(item.content).filter((store_item) => { return store_item.store_id === id }); return item })
+  res_out_list = res_out_list.map((item) => { item.time = item.date; item.type_no = -1; item.type_remark = '自行出库'; item.content_list = JSON.parse(item.content).filter((store_item) => { return store_item.store_id === id }); return item })
   res_change_list = res_change_list.map((item) => {
-    item.add_content_data = []
+    item.add_content_data = null
     item.remove_content_data = null
     item.origin_content_data = null
     item.change_content_data = null
@@ -681,24 +681,25 @@ export function changeDataStructure({ res_in_list, res_out_list, res_change_list
       temp_change_content['old_count'] = old_count
       temp_change_content['type_remark'] = '修改物品数量'
       temp_change_content['time'] = item.time;
+      temp_change_content['type_no'] = 0
       item.temp_data = temp_change_content
     }
     return item
   })
   let in_list_store = []
   res_in_list.forEach((oneRecord) => {
-    let { time, code_num, content_list, type_remark } = oneRecord
+    let { time, code_num, content_list, type_remark, type_no } = oneRecord
     content_list.forEach((oneStore) => {
       const { count, store_id, store_name } = oneStore;
-      in_list_store.push({ id: store_id, name: store_name, time, count, code_num, type_remark })
+      in_list_store.push({ id: store_id, name: store_name, time, count, code_num, type_remark, type_no })
     })
   })
   let out_list_store = []
   res_out_list.forEach((oneRecord) => {
-    let { time, code_num, content_list, type_remark } = oneRecord
+    let { time, code_num, content_list, type_remark, type_no } = oneRecord
     content_list.forEach((oneStore) => {
       const { count, store_id, store_name } = oneStore;
-      out_list_store.push({ id: store_id, name: store_name, time, count, code_num, type_remark })
+      out_list_store.push({ id: store_id, name: store_name, time, count, code_num, type_remark, type_no })
     })
   })
 
@@ -711,7 +712,40 @@ export function changeDataStructure({ res_in_list, res_out_list, res_change_list
   // console.log('change_list_store:', change_list_store)
   // console.log('in_list_store:', in_list_store);
   // console.log('out_list_store:', out_list_store);
+  ///moment(b.targetKey).toDate().getTime()
   let all_list_temp = change_list_store.concat(in_list_store).concat(out_list_store)
-  let res_list = all_list_temp.sort(function (a, b) { return moment(b.time).toDate().getTime() - moment(a.time).toDate().getTime() });
-  return res_list
+  let result_list = sortHandler({ list: all_list_temp.map((item) => { item.time_stamp = moment(item.time).toDate().getTime(); return item }), targetKey: 'time_stamp' })
+  //////////// 计算总量
+  result_list.forEach((item, index) => {
+    if (index === 0) { item.sum_count = item.count }
+    else {
+      let pre_item = result_list[index - 1]
+      if (item.type_no === 0) { item.sum_count = item.count }
+      else if (item.type_no === 1) {
+        item.sum_count = pre_item.sum_count + item.count
+      } else {
+        item.sum_count = pre_item.sum_count - item.count
+      }
+    }
+  })
+  ////////////
+  return result_list
+}
+/**
+ * 排序 返回新数组
+ * list 数组
+ * targetKey 排序判断字段
+ * desc 是否倒序（0，1） default 0
+ * @param {*} param0 
+ */
+export function sortHandler({ list, targetKey, desc = 0 }) {
+  let copy_list = JSON.parse(JSON.stringify(list))
+  let result = copy_list.sort(function (a, b) {
+    if (desc) {
+      return b[targetKey] - a[targetKey]
+    } else {
+      return a[targetKey] - b[targetKey]
+    }
+  });
+  return result
 }
