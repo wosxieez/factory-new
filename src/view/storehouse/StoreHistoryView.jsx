@@ -38,15 +38,27 @@ export default function StoreHistoryView({ id }) {
                 if (record.type_remark === '自行出库') {
                     char_str = '-'
                 } else if (record.type_remark === '修改物品数量') {
-                    char_str = ''
-                    let old_str = record.old_count ? record.old_count + ' -> ' : ''
-                    return old_str + text
+                    let change_count = record.count - record.old_count
+                    if (change_count < 0) {
+                        char_str = '-'
+                    }
+                    let result2 = char_str + change_count
+                    let old_str = record.old_count >= 0 ? record.old_count + '->' : ''
+                    return result2 + "【" + old_str + text + "】"
+                }
+                if (record.removed) {
+                    return <s style={{ color: 'red' }}>{char_str + text} 已撤销</s>
                 }
                 return char_str + text
             }
         },
         {
-            title: '库存总数', dataIndex: 'sum_count', key: 'sum_count'
+            title: '库存总数', dataIndex: 'sum_count', key: 'sum_count', render: (text, record) => {
+                if (record.removed) {
+                    return <s style={{ color: 'red' }}>{text} 已撤销</s>
+                }
+                return text
+            }
         },
     ]
     return (

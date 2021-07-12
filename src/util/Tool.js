@@ -690,16 +690,16 @@ export function changeDataStructure({ res_in_list, res_out_list, res_change_list
   res_in_list.forEach((oneRecord) => {
     let { time, code_num, content_list, type_remark, type_no } = oneRecord
     content_list.forEach((oneStore) => {
-      const { count, store_id, store_name } = oneStore;
-      in_list_store.push({ id: store_id, name: store_name, time, count, code_num, type_remark, type_no })
+      const { count, store_id, store_name, removed } = oneStore;
+      in_list_store.push({ id: store_id, name: store_name, time, count, code_num, type_remark, type_no, removed })
     })
   })
   let out_list_store = []
   res_out_list.forEach((oneRecord) => {
     let { time, code_num, content_list, type_remark, type_no } = oneRecord
     content_list.forEach((oneStore) => {
-      const { count, store_id, store_name } = oneStore;
-      out_list_store.push({ id: store_id, name: store_name, time, count, code_num, type_remark, type_no })
+      const { count, store_id, store_name, removed } = oneStore;
+      out_list_store.push({ id: store_id, name: store_name, time, count, code_num, type_remark, type_no, removed })
     })
   })
 
