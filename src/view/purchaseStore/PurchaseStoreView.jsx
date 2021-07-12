@@ -1,11 +1,12 @@
 import React, { useEffect, useCallback, useState, useRef, forwardRef } from 'react';
 import api from '../../http';
-import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip, Icon, TreeSelect, Dropdown, Menu, Alert } from 'antd';
+import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip, Icon, TreeSelect, Dropdown, Menu, Alert, Drawer } from 'antd';
 import moment from 'moment';
 import { addRemoveRemarkForStoreItem, allStoreItemIsRemoved, calculPriceAndTaxPriceAndCount, checkSumCountAndSumPrice, checkWhichItemReadyRemove, deleteListSomeKeys, getJson2Tree, getTaxPrice, translatePurchaseRecordList, userinfo } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 import ExportJsonExcel from 'js-export-excel'
 import SearchInput5 from '../outboundStore/SearchInput5';
+import StoreHistoryView from '../storehouse/StoreHistoryView';
 
 var date_range;
 /***
@@ -22,6 +23,8 @@ export default props => {
     const [sum_tax_price, setSumTaxPrice] = useState(0)
     const [modalPanelVisible, setModalPanelVisible] = useState(false)
     const [operationRecord, setOperationRecord] = useState({})
+    const [historyStoreId, setHistoryStoreId] = useState(null)
+    const [drawerVisible, setDrawerVisible] = useState(false)
 
     const listData = useCallback(async (conditionObj) => {
         setIsLoading(true)
@@ -130,6 +133,10 @@ export default props => {
         ];
         new ExportJsonExcel(option).saveExcel(); //保存
     }, [dataSource])
+    const getHistory = useCallback((record) => {
+        setHistoryStoreId(record.store_id)
+        setDrawerVisible(true)
+    }, [])
     ////////////////
     useEffect(() => {
         listData({});
@@ -223,14 +230,14 @@ export default props => {
                 return <div>
                     <Tooltip placement='left' title={<div>
                         {record.is_insert ? (record.insert_remark ? <div>
-                            <div>{record.num ? '编号:' + record.num : '无编号'}</div>
+                            <div>{record.num ? '编号:' + record.num : '无编号'}<Button type='link' size='small' onClick={() => { getHistory(record) }}>历史记录</Button></div>
                             <div>{'备注:' + record.insert_remark}</div>
                             <div>{'时间:' + record.insert_time}</div>
                         </div> : <div>
-                            <div>{record.num ? '编号:' + record.num : '无编号'}</div>
+                            <div>{record.num ? '编号:' + record.num : '无编号'}<Button type='link' size='small' onClick={() => { getHistory(record) }}>历史记录</Button></div>
                             <div>{'时间:' + record.insert_time}</div>
                         </div>) : <div>
-                            <div>{record.num ? '编号:' + record.num : '无编号'}</div>
+                            <div>{record.num ? '编号:' + record.num : '无编号'}<Button type='link' size='small' onClick={() => { getHistory(record) }}>历史记录</Button></div>
                             {record.remark ? <div>{'备注:' + record.remark}</div> : null}
                         </div>}
                     </div>}>
@@ -453,6 +460,16 @@ export default props => {
                 </div>
             </Modal>
         </div>
+        <Drawer
+            title="物品历史记录"
+            width={800}
+            onClose={() => { setDrawerVisible(false) }}
+            visible={drawerVisible}
+            destroyOnClose={true}
+            placement={'left'}
+        >
+            <StoreHistoryView id={historyStoreId} />
+        </Drawer>
     </div >
     )
 }

@@ -534,7 +534,7 @@ export default props => {
         />
         <Drawer
           title="物品历史记录"
-          width={720}
+          width={800}
           onClose={() => { setDrawerVisible(false) }}
           visible={drawerVisible}
           destroyOnClose={true}

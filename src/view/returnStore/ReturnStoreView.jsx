@@ -1,11 +1,12 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import api from '../../http';
-import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip } from 'antd';
+import { Table, Button, Tag, Row, Col, Input, DatePicker, Select, Form, Modal, message, Tooltip, Drawer } from 'antd';
 import moment from 'moment';
 import { getTaxPrice, translatePurchaseRecordList } from '../../util/Tool';
 import HttpApi from '../../http/HttpApi';
 import ExportJsonExcel from 'js-export-excel'
 import SearchInput5 from '../outboundStore/SearchInput5';
+import StoreHistoryView from '../storehouse/StoreHistoryView';
 
 var date_range;
 /***
@@ -17,6 +18,8 @@ export default _ => {
     const [sum_price, setSumPrice] = useState(0)
     const [sum_count, setSumCount] = useState(0)
     const [sum_tax_price, setSumTaxPrice] = useState(0)
+    const [historyStoreId, setHistoryStoreId] = useState(null)
+    const [drawerVisible, setDrawerVisible] = useState(false)
 
     const listData = useCallback(async (conditionObj) => {
         setIsLoading(true)
@@ -119,6 +122,10 @@ export default _ => {
         ];
         new ExportJsonExcel(option).saveExcel(); //保存
     }, [dataSource])
+    const getHistory = useCallback((record) => {
+        setHistoryStoreId(record.store_id)
+        setDrawerVisible(true)
+    }, [])
     ////////////////
     useEffect(() => {
         listData({});
@@ -150,7 +157,13 @@ export default _ => {
             dataIndex: 'store_name',
             key: 'store_name',
             render: (text, record) => {
-                return <Tooltip placement='left' title={record.num ? '编号' + record.num : '无编号'}>
+                let title_cpt = null
+                if (record.num) {
+                    title_cpt = <div>编号{record.num}<Button type='link' size='small' onClick={() => { getHistory(record) }}>历史记录</Button></div>
+                } else {
+                    title_cpt = <div>无编号<Button type='link' size='small' onClick={() => { getHistory(record) }}>历史记录</Button></div>
+                }
+                return <Tooltip placement='left' title={title_cpt}>
                     <span>{(record.origin_index + 1 + ' ')}{text}</span>
                 </Tooltip>
             }
@@ -275,6 +288,16 @@ export default _ => {
                 }}
             />
         </div>
+        <Drawer
+            title="物品历史记录"
+            width={800}
+            onClose={() => { setDrawerVisible(false) }}
+            visible={drawerVisible}
+            destroyOnClose={true}
+            placement={'left'}
+        >
+            <StoreHistoryView id={historyStoreId} />
+        </Drawer>
     </div >
     )
 }

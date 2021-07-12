@@ -527,13 +527,16 @@ const HttpApi = {
         let sql = `select id from stores where num = ${num} and isdelete = 0`
         return await HttpApi.obs({ sql })
     },
-
+    getStoreReturnHistoryRecord: async ({ id }) => {
+        let sql = `select * from return_record where locate('"store_id":${id},',content) and isdelete = 0`
+        return await HttpApi.obs({ sql })
+    },
     getStoreInHistoryRecord: async ({ id }) => {
-        let sql = `select * from purchase_record where locate('"store_id":${id},',content)`
+        let sql = `select * from purchase_record where locate('"store_id":${id},',content) and isdelete = 0`
         return await HttpApi.obs({ sql })
     },
     getStoreOutHistoryRecord: async ({ id }) => {
-        let sql = `select * from outbound_record where locate('"store_id":${id},',content)`
+        let sql = `select * from outbound_record where locate('"store_id":${id},',content) and isdelete = 0`
         return await HttpApi.obs({ sql })
     },
     getStoreChangeHistoryRecord: async ({ id }) => {

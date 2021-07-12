@@ -641,6 +641,18 @@ export async function getStoreInHistoryRecord({ id }) {
 }
 
 /**
+ * 获取某个物品的退库历史记录
+ * @param {*} param0 
+ */
+export async function getStoreReturnHistoryRecord({ id }) {
+  let res = await HttpApi.getStoreReturnHistoryRecord({ id })
+  if (res.code === 0) {
+    return res.data
+  }
+  return []
+}
+
+/**
  * 获取某个物品的出库历史记录
  * @param {*} param0 
  */
@@ -664,7 +676,8 @@ export async function getStoreChangeHistoryRecord({ id }) {
   return []
 }
 
-export function changeDataStructure({ res_in_list, res_out_list, res_change_list, id }) {
+export function changeDataStructure({ res_return_list, res_in_list, res_out_list, res_change_list, id }) {
+  res_return_list = res_return_list.map((item) => { item.time = item.date; item.type_no = 1; item.type_remark = '退料入库'; item.content_list = JSON.parse(item.content).filter((store_item) => { return store_item.store_id === id }); return item })
   res_in_list = res_in_list.map((item) => { item.time = item.date; item.type_no = 1; item.type_remark = '采购入库'; item.content_list = JSON.parse(item.content).filter((store_item) => { return store_item.store_id === id }); return item })
   res_out_list = res_out_list.map((item) => { item.time = item.date; item.type_no = -1; item.type_remark = '自行出库'; item.content_list = JSON.parse(item.content).filter((store_item) => { return store_item.store_id === id }); return item })
   res_change_list = res_change_list.map((item) => {
@@ -686,23 +699,9 @@ export function changeDataStructure({ res_in_list, res_out_list, res_change_list
     }
     return item
   })
-  let in_list_store = []
-  res_in_list.forEach((oneRecord) => {
-    let { time, code_num, content_list, type_remark, type_no } = oneRecord
-    content_list.forEach((oneStore) => {
-      const { count, store_id, store_name, removed } = oneStore;
-      in_list_store.push({ id: store_id, name: store_name, time, count, code_num, type_remark, type_no, removed })
-    })
-  })
-  let out_list_store = []
-  res_out_list.forEach((oneRecord) => {
-    let { time, code_num, content_list, type_remark, type_no } = oneRecord
-    content_list.forEach((oneStore) => {
-      const { count, store_id, store_name, removed } = oneStore;
-      out_list_store.push({ id: store_id, name: store_name, time, count, code_num, type_remark, type_no, removed })
-    })
-  })
-
+  let return_list_store = changeHandlerForInReturnOutList(res_return_list)
+  let in_list_store = changeHandlerForInReturnOutList(res_in_list)
+  let out_list_store = changeHandlerForInReturnOutList(res_out_list)
   // console.log('res_in_list:', res_in_list);
   // console.log('res_out_list:', res_out_list);
   // console.log('res_change_list:', res_change_list);
@@ -713,23 +712,39 @@ export function changeDataStructure({ res_in_list, res_out_list, res_change_list
   // console.log('in_list_store:', in_list_store);
   // console.log('out_list_store:', out_list_store);
   ///moment(b.targetKey).toDate().getTime()
-  let all_list_temp = change_list_store.concat(in_list_store).concat(out_list_store)
+  let all_list_temp = change_list_store.concat(in_list_store).concat(out_list_store).concat(return_list_store)
   let result_list = sortHandler({ list: all_list_temp.map((item) => { item.time_stamp = moment(item.time).toDate().getTime(); return item }), targetKey: 'time_stamp' })
   //////////// 计算总量
   result_list.forEach((item, index) => {
     if (index === 0) { item.sum_count = item.count }
     else {
       let pre_item = result_list[index - 1]
-      if (item.type_no === 0) { item.sum_count = item.count }
-      else if (item.type_no === 1) {
-        item.sum_count = pre_item.sum_count + item.count
+      if (item.removed) {
+        item.sum_count = pre_item.sum_count
       } else {
-        item.sum_count = pre_item.sum_count - item.count
+        if (item.type_no === 0) { item.sum_count = item.count }
+        else if (item.type_no === 1) {
+          item.sum_count = pre_item.sum_count + item.count
+        } else {
+          item.sum_count = pre_item.sum_count - item.count
+        }
       }
     }
   })
   ////////////
   return result_list
+}
+
+function changeHandlerForInReturnOutList(list) {
+  let list_store = []
+  list.forEach((oneRecord) => {
+    let { time, code_num, content_list, type_remark, type_no } = oneRecord
+    content_list.forEach((oneStore) => {
+      const { count, store_id, store_name, removed } = oneStore;
+      list_store.push({ id: store_id, name: store_name, time, count, code_num, type_remark, type_no, removed })
+    })
+  })
+  return list_store
 }
 /**
  * 排序 返回新数组
